@@ -1010,7 +1010,7 @@ void parse_tmtc_packet_new_output(unsigned char *Target) {
     // tail
     memcpy(tmtc_buffer->tail, Target + 126, 2);
 
-    write_tmtc_buffer_new_output(*Target);
+    write_tmtc_buffer_new_output(Target);
     if (j == 0) {
         write_tmtc_buffer_master();
     }
@@ -1045,10 +1045,12 @@ void write_tmtc_buffer_new_output(unsigned char *Target) {
     int i;
     unsigned char byte[1];
 
-    for (i = 0; i < 128; i++) {
+    for (i = 0; i < 127; i++) {
         memcpy(&(byte[0]), Target + i, 1);
         fprintf(raw_outfile, "%d;", byte[0]);
     }
+    memcpy(&(byte[0]), Target + 127, 1);
+    fprintf(raw_outfile, "%d\n", byte[0]);
 }
 
 void write_tmtc_buffer_master(void) {
@@ -1078,7 +1080,7 @@ void write_tmtc_buffer_master(void) {
     ";%u;%u;%u;%u; \
     %u;%u;%u;%u;%u;%u; \
     %i;%u;%i; \
-    %i;%i;%i;%i;%i;%i;", \
+    %i;%i;%i;%i;%i;%i", \
     tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length, \
     time_buffer->year, time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec, time_buffer->sub_sec, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_counter, \
@@ -1141,7 +1143,7 @@ void write_tmtc_buffer_slave(void) {
     ";%u;%u;%u;%u; \
     %u;%u;%u;%u;%u;%u; \
     %i;%u;%i; \
-    %i;%i;%i;%i;%i;%i;", \
+    %i;%i;%i;%i;%i;%i", \
     tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length, \
     time_buffer->year, time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec, time_buffer->sub_sec, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_counter, \
