@@ -114,7 +114,7 @@ typedef struct Science {
     uint8_t  citiroc_id;
     uint8_t  channel_id;
     uint8_t  energy_filter;
-    int16_t  adc_value;
+    uint16_t  adc_value; // weird!!!
     double   energy;
 } Science;
 

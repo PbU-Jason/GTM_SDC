@@ -774,7 +774,7 @@ static void write_event_time(void) {
 static void parse_event_adc(unsigned char *Target) {
     unsigned char buffer[3] = {0x00, 0x00, 0x00};
     unsigned char adc_buffer[2];
-    uint16_t adc_temp;
+    uint16_t adc_temp; // weird!!!
 
     event_buffer->if_hit = ((*Target & 0x40) == 0x40);
     event_buffer->gtm_module = (*Target & 0x20) ? SLAVE : MASTER;
@@ -790,9 +790,10 @@ static void parse_event_adc(unsigned char *Target) {
     // read adc value
     memcpy(adc_buffer, Target + 1, 2);
     adc_temp = ( ((adc_buffer[0] & 0x3F) << 8) | (adc_buffer[1]) );
-    if (adc_temp > 0x2AF8) { // 5500*2
-        adc_temp = adc_temp | 0xC000; // 11...
-    }
+    // weird!!!
+    // if (adc_temp > 0x2AF8) { // 5500*2
+    //     adc_temp = adc_temp | 0xC000; // 11...
+    // }
     memcpy(&(event_buffer->adc_value), &adc_temp, 2);
 
     // update_energy_from_adc();
@@ -821,7 +822,8 @@ static void write_event_buffer(void) {
 
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_outfile, "event adc: ");
-        fprintf(raw_outfile, "%1u;%5u;%10u;%1u;%1u;%3u;%1u;%5i\n", event_buffer->if_hit, event_buffer->pps_counter, event_buffer->fine_counter, event_buffer->gtm_module, event_buffer->citiroc_id, event_buffer->channel_id, event_buffer->energy_filter, event_buffer->adc_value);
+        // weird!!!
+        fprintf(raw_outfile, "%1u;%5u;%10u;%1u;%1u;%3u;%1u;%5u\n", event_buffer->if_hit, event_buffer->pps_counter, event_buffer->fine_counter, event_buffer->gtm_module, event_buffer->citiroc_id, event_buffer->channel_id, event_buffer->energy_filter, event_buffer->adc_value);
     }
     if (export_mode == 2 || export_mode == 3) {
         fprintf(pipeline_outfile, "%0.8f;%s;%i;%f\n", find_time_delta(time_start, time_buffer), detector_name[event_buffer->gtm_module][event_buffer->citiroc_id][(int)(event_buffer->channel_id / 16)], event_buffer->channel_id, event_buffer->energy);
