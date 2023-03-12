@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "gtm_decoder_function.h": "c",
+        "sstream": "c",
+        "stdio.h": "c",
+        "string.h": "c",
+        "__functional_03": "c",
+        "functional": "c",
+        "cstdio": "c"
+    }
+}
