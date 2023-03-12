@@ -773,7 +773,8 @@ static void write_event_time(void) {
 
 static void parse_event_adc(unsigned char *Target) {
     unsigned char buffer[3] = {0x00, 0x00, 0x00};
-    uint16_t adc_temp_buffer;
+    unsigned char adc_buffer[2];
+    uint16_t adc_temp;
 
     event_buffer->if_hit = ((*Target & 0x40) == 0x40);
     event_buffer->gtm_module = (*Target & 0x20) ? SLAVE : MASTER;
@@ -787,26 +788,13 @@ static void parse_event_adc(unsigned char *Target) {
     memcpy(&(event_buffer->channel_id), buffer, 1);
 
     // read adc value
-    memcpy(buffer, Target + 1, 2);
-    buffer[0] = buffer[0] & 0x3F; // mask channel id and energy filter
-
-    // // if sign bit = 1, deal with 2's complement stuff -> old
-    // if (buffer[0] & 0x20) {
-    //     buffer[0] = buffer[0] | 0xE0;
-    // }
-    // big2little_endian(buffer, 2);
-    // memcpy(&(event_buffer->adc_value), buffer, 2);
-
-    // if the ADC value > dec 11000(5500x2) = bin 0010 1010 1111 1000, deal with 2's complement stuff
-    big2little_endian(buffer, 2);
-    memcpy(&adc_temp_buffer, buffer, 2);
-    if (adc_temp_buffer > 0x2AF8) { // 5500*2
-    // if (adc_temp_buffer > 0x0FA0) { // 4000
-        adc_temp_buffer = adc_temp_buffer | 0xC000; // 11...
-        // adc_temp_buffer = adc_temp_buffer | 0xF000; // 1111...
+    memcpy(adc_buffer, Target + 1, 2);
+    adc_temp = ( ((adc_buffer[0] & 0x3F) << 8) | (adc_buffer[1]) );
+    if (adc_temp > 0x2AF8) { // 5500*2
+        adc_temp = adc_temp | 0xC000; // 11...
     }
-    memcpy(&(event_buffer->adc_value), &adc_temp_buffer, 2);
-    
+    memcpy(&(event_buffer->adc_value), &adc_temp, 2);
+
     // update_energy_from_adc();
 
     write_event_buffer();
@@ -1059,7 +1047,7 @@ void write_tmtc_buffer_new_output(unsigned char *Target) {
 
     for (i = 0; i < 128; i++) {
         memcpy(&(byte[0]), Target + i, 1);
-        fprintf(raw_outfile, "%X;", byte[0]);
+        fprintf(raw_outfile, "%d;", byte[0]);
     }
 }
 
