@@ -61,10 +61,12 @@ typedef struct TMTC {
     unsigned char fine_counter[3];
     int8_t   board_temp1;
     int8_t   board_temp2;
-    int8_t   citiroc1_temp1;
-    int8_t   citiroc1_temp2;
-    int8_t   citiroc2_temp1;
-    int8_t   citiroc2_temp2;
+    // int8_t   citiroc1_temp1;
+    // int8_t   citiroc1_temp2;
+    // int8_t   citiroc2_temp1;
+    // int8_t   citiroc2_temp2;
+    unsigned char citiroc1_temp[2];
+    unsigned char citiroc2_temp[2];
     unsigned char citiroc1_livetime_busy[3];
     unsigned char citiroc2_livetime_busy[3];
     uint8_t  citiroc1_hit[32];
