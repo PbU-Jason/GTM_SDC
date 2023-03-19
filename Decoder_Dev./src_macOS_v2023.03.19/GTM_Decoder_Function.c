@@ -926,18 +926,18 @@ void parse_tmtc_packet_new_output(unsigned char *Target) {
 
     // citiroc temp (definition in ICD is Little-Endian!)
     if ((*(Target + 24) & 0x80) == 0x80) {
-        tmtc_buffer->citiroc1_temp[0] = 0xC0 + ((*(Target + 24) & 0x7E) >> 1);
+        tmtc_buffer->citiroc1_temp[0] = 0xC0 | ((*(Target + 24) & 0x7E) >> 1);
     }
     else {
-        tmtc_buffer->citiroc1_temp[0] = 0x00 + ((*(Target + 24) & 0x7E) >> 1);
+        tmtc_buffer->citiroc1_temp[0] = 0x00 | ((*(Target + 24) & 0x7E) >> 1);
     }
     memcpy(&(tmtc_buffer->citiroc1_temp[1]), Target + 22, 1);
 
     if ((*(Target + 25) & 0x80) == 0x80) {
-        tmtc_buffer->citiroc2_temp[0] = 0xC0 + ((*(Target + 25) & 0x7E) >> 1);
+        tmtc_buffer->citiroc2_temp[0] = 0xC0 | ((*(Target + 25) & 0x7E) >> 1);
     }
     else {
-        tmtc_buffer->citiroc2_temp[0] = 0x00 + ((*(Target + 25) & 0x7E) >> 1);
+        tmtc_buffer->citiroc2_temp[0] = 0x00 | ((*(Target + 25) & 0x7E) >> 1);
     }
     memcpy(&(tmtc_buffer->citiroc2_temp[1]), Target + 23, 1);
 
