@@ -6,14 +6,10 @@ Created on Mon Jul  4 20:45:06 2022
 @author: jasonpbu
 """
 
-import platform
 from ctypes import *
 
 def C_Decoder(FileName, Decode_Mode, Extract_OnOff, Export_Mode, Hit_OnOff):
-    if (platform.system() == 'Linux') or (platform.system() == 'Darwin'):
-        so_file = "./GTM_Decoder_Main.dylib"
-    else:
-        so_file = "./GTM_Decoder_Main.dll"
+    so_file = "./GTM_Decoder_Main.dll"
     c_function = CDLL(so_file)
     gain_mode = 0
     

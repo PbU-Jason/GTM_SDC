@@ -1,0 +1,153 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Dec 23 16:44:11 2022
+
+@author: jasonpbu
+"""
+
+# change backend duu to weird issue in "MacOS"
+%matplotlib Qt
+
+### package ###
+import time
+import numpy as np
+import pandas as pd 
+import matplotlib.pyplot as plt
+#====================
+
+### selection ###
+dt = 1 # s
+csv_in_master = 'master.csv'
+csv_in_slave = 'slave.csv'
+data_list = ['Packet Counter', 'Lastest PPS Counter', 'Board Temperature#1', 'CITIROC1 Live Time (Busy)'] # CITIROC1 Live time need to * (100/12499999)
+#====================
+
+### fixed variables ###
+output_png = 'monitoring.png'
+color_master = '#eea29a'
+color_slave = '#92a8d1'
+#====================
+
+### function ###
+def UpdatePlottingList(CSV, DF, RowPointer, FlagLodding, IdleCounter, LineList, DataList):
+    # initial case
+    if RowPointer == 0: 
+        # load data
+        DF = pd.read_csv(CSV)
+        # shift pointer
+        RowPointer += DF.shape[0]
+        # update data to line
+        for i in range(len(DataList)):
+            LineList[i].set_xdata(range(DF.shape[0]))
+            if DataList[i] == 'CITIROC1 Live Time (Busy)':
+                LineList[i].set_ydata(DF[DataList[i]] * (100/12499999))
+            else:
+                LineList[i].set_ydata(DF[DataList[i]])
+    # further case
+    else: 
+        # toggle lodding flag to excite below if judgment
+        FlagLodding = True
+        # load data ignore loaded rows
+        DF_temp = pd.read_csv(CSV, skiprows=[i for i in range(1, 1+RowPointer)])
+    
+    # two different cases in further case
+    if FlagLodding:
+        # further case without data
+        if DF_temp.shape[0] == 0: 
+            # accumlate idle counter
+            IdleCounter += 1
+        # further case with data
+        else: 
+            # refresh idle counter
+            IdleCounter = 0 
+            # shift pointer
+            RowPointer += DF_temp.shape[0]
+            # concatenate old & new data
+            DF = DF.append(DF_temp, ignore_index=True)
+            # update data to line
+            for i in range(len(DataList)):
+                LineList[i].set_xdata(range(DF.shape[0]))
+                if DataList[i] == 'CITIROC1 Live Time (Busy)':
+                    LineList[i].set_ydata(DF[DataList[i]] * (100/12499999))
+                else:
+                    LineList[i].set_ydata(DF[DataList[i]])
+    return DF, RowPointer, FlagLodding, IdleCounter, LineList
+#====================
+
+### main code ###
+# switch to interactive mode
+plt.ion()
+
+# create empty figure
+figure, ax = plt.subplots(len(data_list), 2, squeeze=False) # 1 * 2 subplots
+figManager = plt.get_current_fig_manager()
+figManager.window.showMaximized() # fit the size to screen
+figure.tight_layout()
+
+# create empty line
+x, y = [], []
+line_list_master, line_list_salve = [], []
+# for loop for master & slave
+for i in range(2):
+    # for loop for items in data_list
+    for j in range(len(data_list)):
+        # master
+        if i == 0:
+            globals()['line%s%s' % (j, i)], = ax[j, i].plot(x, y, marker='o', ls='', color=color_master)
+            # append new variable into list
+            line_list_master.append(globals()['line%s%s' % (j, i)])
+        # slave
+        else:
+            globals()['line%s%s' % (j, i)], = ax[j, i].plot(x, y, marker='o', ls='', color=color_slave)
+            line_list_salve.append(globals()['line%s%s' % (j, i)])
+
+# prepare empty df for master & slave
+df_master = pd.DataFrame()
+df_slave = pd.DataFrame()
+
+# preset
+row_pointer_master = 0
+row_pointer_slave = 0
+flag_lodding_master = False
+flag_lodding_slave = False
+idle_counter_master = 0
+idle_counter_slave = 0
+while True:
+    df_master, row_pointer_master, flag_lodding_master, idle_counter_master, line_list_master = UpdatePlottingList(csv_in_master, df_master, row_pointer_master, flag_lodding_master, idle_counter_master, line_list_master, data_list)
+    df_slave, row_pointer_slave, flag_lodding_slave, idle_counter_slave, line_list_salve = UpdatePlottingList(csv_in_slave, df_slave, row_pointer_slave, flag_lodding_slave, idle_counter_slave, line_list_salve, data_list)
+            
+    # plotting
+    # rescale according to line
+    for i in range(2):
+        for j in range(len(data_list)):
+            if i == 0:
+                ax[j, i].relim()
+                ax[j, i].autoscale_view(True,True,True)
+                ax[j, i].set_ylabel(data_list[j])
+                if j == 0:
+                    ax[j, i].set_title('Master')
+                elif j == len(data_list)-1:
+                    ax[j, i].set_xlabel('dummy index')
+            else:
+                ax[j, i].relim()
+                ax[j, i].autoscale_view(True,True,True)
+                if j == 0:
+                    ax[j, i].set_title('Slave')
+                elif j == len(data_list)-1:
+                    ax[j, i].set_xlabel('dummy index')
+    # update figure
+    figure.tight_layout()
+    figure.canvas.draw()
+    figure.canvas.flush_events()
+    
+    if idle_counter_master == 10 or idle_counter_slave == 10:
+        break
+    
+    time.sleep(dt)
+
+# turn off interactive mode
+plt.ioff()
+# save final figure
+plt.savefig(output_png, dpi=300)
+#====================
