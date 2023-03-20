@@ -9,9 +9,9 @@ To speed up the decoding process, we use C language to handle heavy memory calcu
 
 The GNU Compiler Collection (GCC), as it literally means, is a collection of compilers produced by the GNU project, which allowing developers around the world can use this free and powerful tool to compile various programming languages, including C. Furthermore, since our C programs need to be called from Python, instead of linking all compiled object files (.o) into an executable (.out) with GCC, we actually use GCC to link all compiled object file (.o) together to create a dynamic library (different suffix in each Operation System (OS), please refer to [Install and Execute Decoder](#Install and Execute Decoder) section to call.
 
-For installation, the process is simpler for <a href="#GCC_MacOS">MacOS</a> and <a href="#GCC_Linux">Linux</a> than <a href="#GCC_Windows">Windows</a> because GNU is Unix-like OS. If the device has not yet been installed with GCC, please move to the corresponding section to learn it.
+For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and <a href="#GCC-Linux">Linux</a> than <a href="#GCC-Windows">Windows</a> because GNU is Unix-like OS. If the device has not yet been installed with GCC, please move to the corresponding section to learn it.
 
-- ##### <a name="GCC_MacOS"></a> MacOS
+- ##### <a id="GCC-MacOS"></a> MacOS
 
   There are actually two approaches, Xcode and Homebrew, that can help us install GCC in MacOS. however, despite the fact that the former is not essentially GCC (it is Apple's Clang compiler, intentionally designed to be compatible with GCC), the latter takes longer to install and also requires changing the alias from `gcc-#` (# is the version number of GCC) to ` gcc`, which is rather inconvenient. Therefore, we recommend using Xcode to install GCC.
 
@@ -31,7 +31,7 @@ For installation, the process is simpler for <a href="#GCC_MacOS">MacOS</a> and 
 
   - `gcc --version` to verify a successful installation
 
-- ##### <a id="GCC_Linux"></a> Linux
+- ##### <a id="GCC-Linux"></a> Linux
 
   - Run the following command in Terminal
 
@@ -42,7 +42,7 @@ For installation, the process is simpler for <a href="#GCC_MacOS">MacOS</a> and 
 
   - `gcc --version` to verify a successful installation
 
-- ##### <a id="GCC_Windows"></a> Windows
+- ##### <a id="GCC-Windows"></a> Windows
 
   ...
 
