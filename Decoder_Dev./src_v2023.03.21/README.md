@@ -3,7 +3,7 @@ In this document, we will learn how to install and use the decoder developed by 
 
 ## Installation
 
-To speed up the decoding process, we use C language to handle heavy memory calculations. In addition, we imported Qt5 libary in Python language to build a friendly user interface (UI) to prevent the user from typing a lot of trivial commands in Terminal to trigger the decoder, such as TeleMetry and TeleCommand (TM/TC) or Science Data (SD), raw or pipeline SD, ..., etc. Therefore, please pre-install [GCC](#GCC) and [Python](#Python) in the device, then we can [Install and Execute Decoder](#Install and Execute Decoder) smoothly.
+To speed up the decoding process, we use C language to handle heavy memory calculations. In addition, we imported Qt5 libary in Python language to build a friendly user interface (UI) to prevent the user from typing a lot of trivial commands in Terminal to trigger the decoder, such as TeleMetry and TeleCommand (TM/TC) or Science Data (SD), raw or pipeline SD, ..., etc. Therefore, please pre-install [GCC](#GCC) and [Python](#Python) in the device, then we can [Install and Execute Decoder](#Install-and-Execute-Decoder) smoothly.
 
 ### GCC
 
@@ -13,20 +13,38 @@ For installation, the process is simpler for <a href="#GCC_MacOS">MacOS</a> and 
 
 - ##### <a id="GCC_MacOS"></a> MacOS
 
-  - 
+  There are actually two approaches, Xcode and Homebrew, that can help us install GCC in MacOS. however, despite the fact that the former is not essentially GCC (it is Apple's Clang compiler, intentionally designed to be compatible with GCC), the latter takes longer to install and also requires changing the alias from `gcc-#` (# is the version number of GCC) to ` gcc`, which is rather inconvenient. Therefore, we recommend using Xcode to install GCC.
+
+  - Open the App Store
+
+  - Install Xcode
+
+  - Install GCC by two methods
+
+    - Run the following command in Terminal
+
+      ```
+      xcode-select --install
+      ```
+
+    - Xcode app > Preferences > Downloads > Install Command Line Tools
+
+  - `gcc --version` to verify a successful installation
 
 - ##### <a id="GCC_Linux"></a> Linux
 
-  ```
-  sudo apt update
-  sudo apt install build-essential
-  ```
+  - Run the following command in Terminal
 
-  `gcc --version` to verify a successful installation
+    ```
+    sudo apt update
+    sudo apt install build-essential
+    ```
+
+  - `gcc --version` to verify a successful installation
 
 - ##### <a id="GCC_Windows"></a> Windows
 
-  
+  ...
 
 ### Python 
 
@@ -34,8 +52,8 @@ using coda to manage a new clear Python environment
 
 ### Install and Execute Decoder
 
-666
+...
 
 ## Utility
 
-fffffff
+...
