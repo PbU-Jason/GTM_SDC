@@ -3,15 +3,27 @@ In this document, you will learn how to install and use the decoder developed by
 
 ## Installation
 
-To speed up the decoding process, we use C to handle heavy memory calculation. Moreover, we import Qt5 libary in Python to build up a morden user interface (UI) to prevent user have to type in lots of trivial commands to trigger decoder in terminal, such as Telemetry and Telecommand (TM/TC) or Science Data (SD), raw or pipeline SD, ..., etc. Therefore, we recommend you to install [GCC](#GCC) and [Python](#Python) in your device to execute this software
+To speed up the decoding process, we use C to handle heavy memory calculation. Moreover, we import Qt5 libary in Python to build up a morden user interface (UI) to prevent user have to type in lots of trivial commands to trigger decoder in terminal, such as Telemetry and Telecommand (TM/TC) or Science Data (SD), raw or pipeline SD, ..., etc. Therefore, we recommend you to install [GCC](#GCC) and [Python](#Python) in your device to execute this software.
 
 ### GCC
 
 
 
+- MacOS
+
+  
+
+- Linux
+
+  
+
+- Windows
+
+  
+
 ### Python 
 
-
+using conda to manage a new clear Python environment
 
 ## Utility
 
