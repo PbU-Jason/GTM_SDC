@@ -11,7 +11,7 @@ The GNU Compiler Collection (GCC), as it literally means, is a collection of com
 
 For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and <a href="#GCC-Linux">Linux</a> than <a href="#GCC-Windows">Windows</a> because GNU is Unix-like OS. If the device has not yet been installed with GCC, please move to the corresponding section to learn it.
 
-<a id="GCC-MacOS"></a> 
+<a name="GCC-MacOS"></a> 
 
 - ##### MacOS
 
@@ -33,7 +33,9 @@ For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and 
 
   - `gcc --version` to verify a successful installation
 
-- ##### <a id="GCC-Linux"></a> Linux
+<a name="GCC-Linux"></a>
+
+- ##### Linux
 
   - Run the following command in Terminal
 
@@ -44,7 +46,9 @@ For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and 
 
   - `gcc --version` to verify a successful installation
 
-- ##### <a id="GCC-Windows"></a> Windows
+<a name="GCC-Windows"></a>
+
+- ##### Windows
 
   ...
 
