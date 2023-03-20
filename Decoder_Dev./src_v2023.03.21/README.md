@@ -7,17 +7,24 @@ To speed up the decoding process, we use C language to handle heavy memory calcu
 
 ### GCC
 
-The GNU Compiler Collection (GCC), as it literally means, is a collection of compilers produced by the GNU project, which allowing developers around the world can use this free and powerful tool to compile various programming languages, including C. Most of time
+The GNU Compiler Collection (GCC), as it literally means, is a collection of compilers produced by the GNU project, which allowing developers around the world can use this free and powerful tool to compile various programming languages, including C. Furthermore, since our C programs need to be called from Python, instead of linking all compiled object files (.o) into an executable (.out) with GCC, we actually use GCC to link all compiled object file (.o) together to create a dynamic library (different suffix in each Operation System (OS), please refer to [Install and Execute Decoder](#Install and Execute Decoder) section to call.
 
-- ##### MacOS
+For installation, the process is simpler for <a href="#GCC_MacOS">MacOS</a> and <a href="#GCC_Linux">Linux</a> than <a href="#GCC_Windows">Windows</a> because GNU is Unix-like OS. If the device has not yet been installed with GCC, please move to the corresponding section to learn it.
 
+- ##### <a id="GCC_MacOS"></a> MacOS
 
+  - 
 
-- ##### Linux
+- ##### <a id="GCC_Linux"></a> Linux
 
-  
+  ```
+  sudo apt update
+  sudo apt install build-essential
+  ```
 
-- ##### Windows
+  `gcc --version` to verify a successful installation
+
+- ##### <a id="GCC_Windows"></a> Windows
 
   
 
@@ -27,7 +34,7 @@ using coda to manage a new clear Python environment
 
 ### Install and Execute Decoder
 
-
+666
 
 ## Utility
 
