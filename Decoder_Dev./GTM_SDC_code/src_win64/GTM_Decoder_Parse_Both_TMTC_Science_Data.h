@@ -1,6 +1,0 @@
-#ifndef GTM_DECODER_PARSE_BOTH_TMTC_SCIENCE_DATA_H
-#define GTM_DECODER_PARSE_BOTH_TMTC_SCIENCE_DATA_H
-
-void parse_both_tmtc_science_data(void);
-
-#endif
