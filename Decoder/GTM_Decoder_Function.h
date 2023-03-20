@@ -52,41 +52,52 @@ typedef struct Attitude {
 typedef struct TMTC {
     unsigned char head[2];
     unsigned char tail[2];
-    uint8_t  gtm_id;
-    uint16_t packet_counter;
-    uint8_t  data_length_msb;
-    uint8_t  data_length;
-    int      gtm_id_in_pps_counter;
-    uint16_t pps_counter;
+    uint8_t       gtm_id;
+    uint16_t      packet_counter;
+    uint8_t       data_length_msb;
+    uint8_t       data_length;
+    int           gtm_id_in_pps_counter;
+    uint16_t      pps_counter;
     unsigned char fine_counter[3];
-    int8_t   board_temp1;
-    int8_t   board_temp2;
-    int8_t   citiroc1_temp1;
-    int8_t   citiroc1_temp2;
-    int8_t   citiroc2_temp1;
-    int8_t   citiroc2_temp2;
+    int8_t        board_temp1;
+    int8_t        board_temp2;
+    unsigned char citiroc1_temp[2];
+    unsigned char citiroc2_temp[2];
     unsigned char citiroc1_livetime_busy[3];
     unsigned char citiroc2_livetime_busy[3];
-    uint8_t  citiroc1_hit[32];
-    uint8_t  citiroc2_hit[32];
-    uint16_t citiroc1_trigger;
-    uint16_t citiroc2_trigger;
-    uint8_t  counter_period;
-    uint8_t  hv_dac1;
-    uint8_t  hv_dac2;
+    uint8_t       citiroc1_hit[32];
+    uint8_t       citiroc2_hit[32];
+    uint16_t      citiroc1_trigger;
+    uint16_t      citiroc2_trigger;
+    uint8_t       counter_period;
+    uint8_t       hv_dac1;
+    uint8_t       hv_dac2;
+
+    // for master
     uint8_t  spw_a_error_count;
     uint8_t  spw_a_last_receive;
     uint8_t  spw_b_error_count;
     uint8_t  spw_b_last_receive;
     uint16_t spw_a_status;
     uint16_t spw_b_status;
-    uint8_t  recv_checksum;
-    uint8_t  calc_checksum;
-    uint8_t  recv_num;
-    uint8_t  tmtc_empty[5];
+
+    // for slave
+    uint8_t  input_i;
+    uint8_t  input_v;
+    uint8_t  input_i_v;
+    int8_t   i_monitor_u22_temp;
+    uint8_t  hv_input_i;
+    uint8_t  hv_input_v;
+    uint8_t  hv_input_i_v;
+    int8_t   i_monitor_u21_temp;
+
+    uint8_t       recv_checksum;
+    uint8_t       calc_checksum;
+    uint8_t       recv_num;
+    uint8_t       tmtc_empty[5];
     unsigned char citiroc1_livetime_buffer_busy[3];
     unsigned char citiroc2_livetime_buffer_busy[3];
-    uint8_t  checksum;
+    uint8_t       checksum;
 } TMTC;
 
 typedef struct Science {
@@ -181,7 +192,7 @@ int is_tmtc_tail(unsigned char *Targrt);
 void parse_tmtc_packet_new_output(unsigned char *Target);
 void parse_utc_time_tmtc(unsigned char *Target);
 // void write_tmtc_buffer(void);
-void write_tmtc_buffer_new_output(void);
+void write_tmtc_buffer_new_output(unsigned char *Target);
 void write_tmtc_buffer_master(void);
 void write_tmtc_buffer_slave(void);
 
