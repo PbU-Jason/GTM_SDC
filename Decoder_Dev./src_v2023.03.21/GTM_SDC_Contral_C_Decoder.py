@@ -10,10 +10,14 @@ import platform
 from ctypes import *
 
 def C_Decoder(FileName, Decode_Mode, Extract_OnOff, Export_Mode, Hit_OnOff):
-    if (platform.system() == 'Linux') or (platform.system() == 'Darwin'):
+    if platform.system() == 'Darwin': # MacOS
         so_file = "./GTM_Decoder_Main.dylib"
-    else:
+    elif platform.system() == 'Linux': # Linux
+        so_file = "./GTM_Decoder_Main.so"
+    elif platform.system() == 'Windows': # Windows
         so_file = "./GTM_Decoder_Main.dll"
+    else:
+        print('please check OS!')
     c_function = CDLL(so_file)
     gain_mode = 0
     
