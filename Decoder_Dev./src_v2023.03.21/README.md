@@ -50,7 +50,11 @@ For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and 
 
 - #### Windows
 
-  ...
+  The Minimalist GNU for WindowsMinGW (MinGW) and Cygwin (formerly known as gnuwin32, renamed Cygwin32 to avoid confusion with another GnuWin32 project to emphasize Cygnus' role in developing it , whose number was dropped when Microsoft registered the Win32 trademark) are two well-known projects that provide GCC functionality on Windows.
+
+  Currently, most modern OS prefer 64-bit (because of its faster data speed and ability to address more memory) and use 64-bit edition of Python by default. As a result, MinGW (which only supports 32-bit Windows) is no longer practical. Fortunately, we still can use advanced MinGW-w64 to substitute MinGW in 64-bit Windows. However, considering most of GTM team members used Unix-like OS to develope this software, we recommend using Cygwin (which provides a unix-like environment on Windows with support for 32-bit and 64-bit Windows) to compile the code.
+
+  - 
 
 ### Python 
 
