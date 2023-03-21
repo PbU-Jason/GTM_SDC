@@ -58,7 +58,7 @@ For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and 
 
   There are several ways can install MinGW-w64. We recommend installing MinGW-w64 by Cygwin (which contains **mingw64-x86_64-gcc-core** and **make** as packages) to take advantage of the graphical user interface (GUI) that Windows is known for to help us simplify the tedious installation process. This approach also eliminates the need to manually set environment variables.
 
-  - Go [Cygwin](https://cygwin.com/install.html) to download **setup-x86_64.exe**
+  - Go <a href="https://cygwin.com/install.html" target="_blank">Cygwin</a> to download **setup-x86_64.exe**
   - Open **setup-x86_64.exe**
   - Click "Next" until see "Select Package"
   - Select "Full" in "View"
