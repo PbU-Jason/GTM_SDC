@@ -202,7 +202,7 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
         case 1:
             if (extract_mode) {
                 raw_extract_outpath = str_append(OutFilePath, "_extracted.bin");
-                raw_extract_outfile = fopen(raw_extract_outpath, "wb");
+                raw_extract_outfile = fopen(raw_extract_outpath, "ab");
                 if (!raw_extract_outfile) {
                     log_error("can't open extract output file");
                 }
@@ -211,14 +211,14 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
             else{
                 if (export_mode == 1) {
                     raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-                    raw_outfile = fopen(raw_outpath, "w");
+                    raw_outfile = fopen(raw_outpath, "a");
                     if (!raw_outfile) {
                         log_error("can't open raw output file");
                     }
                     free(raw_outpath);
 
                     raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-                    raw_sync_outfile = fopen(raw_sync_outpath, "w");
+                    raw_sync_outfile = fopen(raw_sync_outpath, "a");
                     if (!raw_sync_outfile) {
                         log_error("can't open raw sync output file");
                     }
@@ -227,14 +227,14 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                 }
                 else if (export_mode == 2) {
                     pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-                    pipeline_outfile = fopen(pipeline_outpath, "w");
+                    pipeline_outfile = fopen(pipeline_outpath, "a");
                     if (!pipeline_outfile) {
                         log_error("can't open pipeline output file");
                     }
                     free(pipeline_outpath);
 
                     pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
+                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "a");
                     if (!pipeline_sync_outfile) {
                         log_error("can't open pipeline sync output file");
                     }
@@ -242,14 +242,14 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                 }
                 else if (export_mode == 3) {
                     raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-                    raw_outfile = fopen(raw_outpath, "w");
+                    raw_outfile = fopen(raw_outpath, "a");
                     if (!raw_outfile) {
                         log_error("can't open raw output file");
                     }
                     free(raw_outpath);
 
                     raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-                    raw_sync_outfile = fopen(raw_sync_outpath, "w");
+                    raw_sync_outfile = fopen(raw_sync_outpath, "a");
                     if (!raw_sync_outfile) {
                         log_error("can't open raw sync output file");
                     }
@@ -257,14 +257,14 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                     free(raw_sync_outpath);
 
                     pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-                    pipeline_outfile = fopen(pipeline_outpath, "w");
+                    pipeline_outfile = fopen(pipeline_outpath, "a");
                     if (!pipeline_outfile) {
                         log_error("can't open pipeline output file");
                     }
                     free(pipeline_outpath);
 
                     pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
+                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "a");
                     if (!pipeline_sync_outfile) {
                         log_error("can't open pipeline sync output file");
                     }
@@ -422,7 +422,7 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
 
             // output tmtc with master + slave
             raw_outpath = str_append(OutFilePath, "_tmtc_whole_output.csv");
-            raw_outfile = fopen(raw_outpath, "w");
+            raw_outfile = fopen(raw_outpath, "a");
             if (!raw_outfile) {
                 log_error("can't open raw output file");
             }
@@ -431,7 +431,7 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
 
             // output tmtc only with master
             tmtc_master_outpath = str_append(OutFilePath, "_tmtc_master.csv");
-            tmtc_master_outfile = fopen(tmtc_master_outpath, "w");
+            tmtc_master_outfile = fopen(tmtc_master_outpath, "a");
             if (!tmtc_master_outfile) {
                 log_error("can't open tmtc master output file");
             }
@@ -440,7 +440,7 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
 
             // output tmtc only with slave
             tmtc_slave_outpath = str_append(OutFilePath, "_tmtc_slave.csv");
-            tmtc_slave_outfile = fopen(tmtc_slave_outpath, "w");
+            tmtc_slave_outfile = fopen(tmtc_slave_outpath, "a");
             if (!tmtc_slave_outfile) {
                 log_error("can't open tmtc slave output file");
             }
@@ -497,6 +497,7 @@ void close_all_file(void) {
 
 /// extract science data ///
 
+// using 1 byte to read MaxSize times to copy FileStream to TargetBuffer and return how many bytes read
 size_t read_from_file(unsigned char *TargetBuffer, FILE *FileStream, size_t MaxSize) {
     size_t already_read_size;
 

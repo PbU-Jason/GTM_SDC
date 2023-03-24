@@ -9,7 +9,7 @@ Created on Mon Jul  4 20:45:06 2022
 import platform
 from ctypes import *
 
-def C_Decoder(FileName, Decode_Mode, Extract_OnOff, Export_Mode): # , Hit_OnOff
+def C_Decoder(FileName, DecodeMode, ExtractOnOff, ExportMode, InitailFilePointer):
     if platform.system() == 'Darwin': # MacOS
         so_file = "./GTM_Decoder_Main.dylib"
     elif platform.system() == 'Linux': # Linux
@@ -22,7 +22,8 @@ def C_Decoder(FileName, Decode_Mode, Extract_OnOff, Export_Mode): # , Hit_OnOff
     # gain_mode = 0
     
     c_function.decoder(c_char_p(bytes(FileName, 'utf-8')),
-                       c_int(Decode_Mode),
-                       c_int(Extract_OnOff), 
-                       c_int(Export_Mode)
-                       ) # , c_int(Hit_OnOff), c_int(gain_mode)
+                       c_int(DecodeMode),
+                       c_int(ExtractOnOff), 
+                       c_int(ExportMode),
+                       c_int(InitailFilePointer)
+                       )

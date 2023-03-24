@@ -1,6 +1,6 @@
 #ifndef GTM_DECODER_PARSE_TMTC_DATA_NEW_OUTPUT_H
 #define GTM_DECODER_PARSE_TMTC_DATA_NEW_OUTPUT_H
 
-void parse_tmtc_data_new_output(void);
+int parse_tmtc_data_new_output(int InputFilePointer);
 
 #endif
