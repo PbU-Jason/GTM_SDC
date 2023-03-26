@@ -64,58 +64,37 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.Export_Modes_CheckBox_Sci_Pipeline.clicked.connect(self.Sci_Pipeline_CheckBoxClick)
         self.ui.Export_Modes_CheckBox_Sci_Both.clicked.connect(self.Sci_Both_CheckBoxClick)
         self.Export_Modes = 0
-        
-        # Hit Selection for Sci Export Modes
-        self.ui.Hit_Selection_CheckBox_Hit.clicked.connect(self.Hit_CheckBoxClick)
-        self.ui.Hit_Selection_CheckBox_NoHit.clicked.connect(self.NoHit_CheckBoxClick)
-        self.Hit_Selection = 0
-        
-        # Start Decoding
-        self.ui.Start_Button.clicked.connect(self.ButtonClicked_Start)
-        
-        ### Calibrator ###
-        self.ui.Calibrator_Button.clicked.connect(self.ButtonClicked_Calibrator)
-        self.Clicked_Counter_Calibrator = 0
 
-        # Calibrator On or Off
-        self.Calibrator_OnOff()
-
-        # Calibrator Input File
-        self.ui.InputFile_Calibrator_Button.clicked.connect(self.Calibrator_Open_File)
-        self.Input_Calibrator_Filename = []
-        self.Input_Calibrator_Filetype = ""
-
-        # Visualization Modes
-        self.ui.Visualization_RadioButton_Counts_ADC.clicked.connect(self.Counts_ADC_RadioButtonClick)
-        self.ui.Visualization_RadioButton_Counts_ADC_fitting.clicked.connect(self.Counts_ADC_fitting_RadioButtonClick)
+        # Monitor Modes
+        self.ui.Monitor_Modes_radioButton_Plotting.clicked.connect(self.Monitor_OnOff)
+        self.ui.Monitor_Modes_radioButton_Silence.clicked.connect(self.Monitor_OnOff)
 
         # Module and Sensor Selection
-        self.ui.Calibrator_GroupBox_Master.clicked.connect(self.Plot_OnOff)
-        self.ui.Calibrator_GroupBox_Slave.clicked.connect(self.Plot_OnOff)
+        self.ui.Master_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
+        self.ui.Slave_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
 
-        self.ui.Master_CheckBox_Sensor1.clicked.connect(self.Plot_OnOff)
-        self.ui.Master_CheckBox_Sensor2.clicked.connect(self.Plot_OnOff)
-        self.ui.Master_CheckBox_Sensor3.clicked.connect(self.Plot_OnOff)
-        self.ui.Master_CheckBox_Sensor4.clicked.connect(self.Plot_OnOff)
+        self.ui.Master_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
+        self.ui.Master_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
+        self.ui.Master_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
+        self.ui.Master_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
 
-        self.ui.Slave_CheckBox_Sensor1.clicked.connect(self.Plot_OnOff)
-        self.ui.Slave_CheckBox_Sensor2.clicked.connect(self.Plot_OnOff)
-        self.ui.Slave_CheckBox_Sensor3.clicked.connect(self.Plot_OnOff)
-        self.ui.Slave_CheckBox_Sensor4.clicked.connect(self.Plot_OnOff)
-
-        # Start Plotting
-        self.ui.Plot_Button.clicked.connect(self.ButtonClicked_Plot)
+        self.ui.Slave_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
+        self.ui.Slave_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
+        self.ui.Slave_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
+        self.ui.Slave_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
 
         # Define Plotting Variables
-        self.low_gain  = 4
-        self.high_gain = 40
-        self.dic = {'PPS'       : [],
-                    'Finetime'  : [],
-                    'GTM_Module': [],
-                    'Citiroc_ID': [],
-                    'Channel_ID': [],
-                    'Gain'      : [],
-                    'ADC'       : []}
+        self.low_gain  = 2
+        self.high_gain = 20
+        self.dic = {'GModule': [],
+                    'Citiroc': [],
+                    'Channel': [],
+                    'Gain'   : [],
+                    'ADC'    : []}
+        
+        # Start Decoding
+        self.ui.Start_groupBox.setStyleSheet("QGroupBox{border:none}")
+        self.ui.Start_Button.clicked.connect(self.ButtonClicked_Start)
         
     def display_img(self):
         self.img = cv2.imread(self.img_path)
@@ -156,7 +135,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Decode_Modes_CheckBox_TMTC.setEnabled(True)
             
             self.Sci_OnOff()
-            self.Start_OnOff()
         else:
             self.ui.InputFile_Decoder_Button.setEnabled(False)
             self.ui.InputFile_Decoder_Text.setEnabled(False)
@@ -169,14 +147,11 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Export_Modes_CheckBox_Sci_Raw.setEnabled(False)
             self.ui.Export_Modes_CheckBox_Sci_Pipeline.setEnabled(False)
             self.ui.Export_Modes_CheckBox_Sci_Both.setEnabled(False)
+
+            self.ui.Monitor_Modes_Group.setEnabled(False)
+            self.ui.Module_Sensor_GroupBox.setEnabled(False)
             
-            self.ui.Hit_Selection_Text.setEnabled(False)
-            self.ui.Hit_Selection_CheckBox_Hit.setEnabled(False)
-            self.ui.Hit_Selection_CheckBox_NoHit.setEnabled(False)
-            
-            self.ui.Start_Button.setEnabled(False)
-            self.ui.Start_progressBar.setEnabled(False)
-            self.ui.Start_Status.setEnabled(False)
+            self.ui.Start_groupBox.setEnabled(False)
     
     def Decoder_Open_File(self):
         self.Input_Decoder_Filename, self.Input_Decoder_Filetype = QFileDialog.getOpenFileNames(self, "Open file", "./")
@@ -198,8 +173,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Decode_Modes = 1
         else:
             self.Decode_Modes = 0
+
         self.Sci_OnOff()
-        self.Start_OnOff()
         
     def TMTC_CheckBoxClick(self):
         if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
@@ -207,8 +182,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Decode_Modes = 2
         else:
             self.Decode_Modes = 0
+
         self.Sci_OnOff()
-        self.Start_OnOff()
         
     def Sci_OnOff(self):
         if self.ui.Decode_Modes_CheckBox_Sci.isChecked():
@@ -217,27 +192,22 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Export_Modes_CheckBox_Sci_Raw.setEnabled(True)
             self.ui.Export_Modes_CheckBox_Sci_Pipeline.setEnabled(True)
             self.ui.Export_Modes_CheckBox_Sci_Both.setEnabled(True)
-            
-            self.ui.Hit_Selection_Text.setEnabled(True)
-            self.ui.Hit_Selection_CheckBox_Hit.setEnabled(True)
-            self.ui.Hit_Selection_CheckBox_NoHit.setEnabled(True)
         else:
             self.ui.Extract_NSPO_CheckBox.setEnabled(False)
             
             self.ui.Export_Modes_CheckBox_Sci_Raw.setEnabled(False)
             self.ui.Export_Modes_CheckBox_Sci_Pipeline.setEnabled(False)
             self.ui.Export_Modes_CheckBox_Sci_Both.setEnabled(False)
-            
-            self.ui.Hit_Selection_Text.setEnabled(False)
-            self.ui.Hit_Selection_CheckBox_Hit.setEnabled(False)
-            self.ui.Hit_Selection_CheckBox_NoHit.setEnabled(False)
+
+        self.Monitor_OnOff()
         
     def Extract_CheckBoxClick(self):
         if self.ui.Extract_NSPO_CheckBox.isChecked():
             self.Extract_Selection = 1
         else:
             self.Extract_Selection = 0
-        self.Start_OnOff()
+
+        self.Monitor_OnOff()
     
     def Sci_Raw_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Raw.isChecked():
@@ -246,7 +216,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Export_Modes = 1
         else:
             self.Export_Modes = 0
-        self.Start_OnOff()
+        
+        self.Monitor_OnOff()
     
     def Sci_Pipeline_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Pipeline.isChecked():
@@ -255,7 +226,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Export_Modes = 2
         else:
             self.Export_Modes = 0
-        self.Start_OnOff()
+        
+        self.Monitor_OnOff()
     
     def Sci_Both_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Both.isChecked():
@@ -264,84 +236,106 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Export_Modes = 3
         else:
             self.Export_Modes = 0
-        self.Start_OnOff()
         
-    def Hit_CheckBoxClick(self):
-        if self.ui.Hit_Selection_CheckBox_Hit.isChecked():
-            self.ui.Hit_Selection_CheckBox_NoHit.setChecked(False)
-            self.Hit_Selection = 1
-        else:
-            self.Hit_Selection = 0
-        self.Start_OnOff()
+        self.Monitor_OnOff()
     
-    def NoHit_CheckBoxClick(self):
-        if self.ui.Hit_Selection_CheckBox_NoHit.isChecked():
-            self.ui.Hit_Selection_CheckBox_Hit.setChecked(False)
-            self.Hit_Selection = 2
+    def Monitor_OnOff(self):
+        if self.Input_Decoder_Filename != []:
+            if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
+                self.ui.Monitor_Modes_Group.setEnabled(True)
+            elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
+                if self.ui.Export_Modes_CheckBox_Sci_Raw.isChecked():
+                    self.ui.Monitor_Modes_Group.setEnabled(True)
+                elif self.ui.Export_Modes_CheckBox_Sci_Pipeline.isChecked():
+                    self.ui.Monitor_Modes_Group.setEnabled(True)
+                elif self.ui.Export_Modes_CheckBox_Sci_Both.isChecked():
+                    self.ui.Monitor_Modes_Group.setEnabled(True)
+                else:
+                    self.ui.Monitor_Modes_Group.setEnabled(False)
+            else:
+                self.ui.Monitor_Modes_Group.setEnabled(False)
         else:
-            self.Hit_Selection = 0
+            self.ui.Monitor_Modes_Group.setEnabled(False)
+
+        self.Module_Sensor_OnOff()
+
+    def Module_Sensor_OnOff(self):
+        if self.ui.Decode_Modes_CheckBox_TMTC.isChecked(): 
+            if self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
+                self.ui.Module_Sensor_GroupBox.setEnabled(True)
+                self.ui.Master_CheckBox_Sensor1.setEnabled(False)
+                self.ui.Master_CheckBox_Sensor2.setEnabled(False)
+                self.ui.Master_CheckBox_Sensor3.setEnabled(False)
+                self.ui.Master_CheckBox_Sensor4.setEnabled(False)
+                self.ui.Slave_CheckBox_Sensor1.setEnabled(False)
+                self.ui.Slave_CheckBox_Sensor2.setEnabled(False)
+                self.ui.Slave_CheckBox_Sensor3.setEnabled(False)
+                self.ui.Slave_CheckBox_Sensor4.setEnabled(False)
+            else:
+                self.ui.Module_Sensor_GroupBox.setEnabled(False)
+        elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
+            if self.ui.Monitor_Modes_Group.isEnabled():
+                if self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
+                    self.ui.Module_Sensor_GroupBox.setEnabled(True)
+                    self.ui.Master_CheckBox_Sensor1.setEnabled(True)
+                    self.ui.Master_CheckBox_Sensor2.setEnabled(True)
+                    self.ui.Master_CheckBox_Sensor3.setEnabled(True)
+                    self.ui.Master_CheckBox_Sensor4.setEnabled(True)
+                    self.ui.Slave_CheckBox_Sensor1.setEnabled(True)
+                    self.ui.Slave_CheckBox_Sensor2.setEnabled(True)
+                    self.ui.Slave_CheckBox_Sensor3.setEnabled(True)
+                    self.ui.Slave_CheckBox_Sensor4.setEnabled(True)
+                else:
+                    self.ui.Module_Sensor_GroupBox.setEnabled(False)
+            else:
+                self.ui.Module_Sensor_GroupBox.setEnabled(False)
+        else:
+            self.ui.Module_Sensor_GroupBox.setEnabled(False)
+
         self.Start_OnOff()
-    
+
     def Start_OnOff(self):
         if self.Input_Decoder_Filename != []:
             if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
-                self.ui.Start_Button.setEnabled(True)
-                self.ui.Start_progressBar.setEnabled(True)
-                self.ui.Start_Status.setEnabled(True)
-            elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
-                if self.ui.Export_Modes_CheckBox_Sci_Raw.isChecked():
-                    if self.ui.Hit_Selection_CheckBox_Hit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
-                    elif self.ui.Hit_Selection_CheckBox_NoHit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
+                if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
+                    self.ui.Start_groupBox.setEnabled(True)
+                elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
+                    if self.ui.Master_GroupBox.isChecked():
+                        self.ui.Start_groupBox.setEnabled(True)
+                    elif self.ui.Slave_GroupBox.isChecked():
+                        self.ui.Start_groupBox.setEnabled(True)
                     else:
-                        self.ui.Start_Button.setEnabled(False)
-                        self.ui.Start_progressBar.setEnabled(False)
-                        self.ui.Start_Status.setEnabled(False)
-                elif self.ui.Export_Modes_CheckBox_Sci_Pipeline.isChecked():
-                    if self.ui.Hit_Selection_CheckBox_Hit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
-                    elif self.ui.Hit_Selection_CheckBox_NoHit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
-                    else:
-                        self.ui.Start_Button.setEnabled(False)
-                        self.ui.Start_progressBar.setEnabled(False)
-                        self.ui.Start_Status.setEnabled(False)
-                elif self.ui.Export_Modes_CheckBox_Sci_Both.isChecked():
-                    if self.ui.Hit_Selection_CheckBox_Hit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
-                    elif self.ui.Hit_Selection_CheckBox_NoHit.isChecked():
-                        self.ui.Start_Button.setEnabled(True)
-                        self.ui.Start_progressBar.setEnabled(True)
-                        self.ui.Start_Status.setEnabled(True)
-                    else:
-                        self.ui.Start_Button.setEnabled(False)
-                        self.ui.Start_progressBar.setEnabled(False)
-                        self.ui.Start_Status.setEnabled(False)
+                        self.ui.Start_groupBox.setEnabled(False)
                 else:
-                    self.ui.Start_Button.setEnabled(False)
-                    self.ui.Start_progressBar.setEnabled(False)
-                    self.ui.Start_Status.setEnabled(False)
+                    self.ui.Start_groupBox.setEnabled(False)
+            elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
+                if self.ui.Monitor_Modes_Group.isEnabled():
+                    if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
+                        self.ui.Start_groupBox.setEnabled(True)
+                    elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
+                        if self.ui.Master_GroupBox.isChecked():
+                            if self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
+                            or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked():
+                                self.ui.Start_groupBox.setEnabled(True)
+                            else:
+                                self.ui.Start_groupBox.setEnabled(False)
+                        elif self.ui.Slave_GroupBox.isChecked():
+                            if self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked()\
+                            or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked():
+                                self.ui.Start_groupBox.setEnabled(True)
+                            else:
+                                self.ui.Start_groupBox.setEnabled(False)
+                        else:
+                            self.ui.Start_groupBox.setEnabled(False)
+                    else:
+                        self.ui.Start_groupBox.setEnabled(False)
+                else:
+                    self.ui.Start_groupBox.setEnabled(False)
             else:
-                self.ui.Start_Button.setEnabled(False)
-                self.ui.Start_progressBar.setEnabled(False)
-                self.ui.Start_Status.setEnabled(False)
+                self.ui.Start_groupBox.setEnabled(False)
         else:
-            self.ui.Start_Button.setEnabled(False)
-            self.ui.Start_progressBar.setEnabled(False)
-            self.ui.Start_Status.setEnabled(False)
-            
-    
+            self.ui.Start_groupBox.setEnabled(False)
+
     def ButtonClicked_Start(self):
         print("Decoding!")
 
@@ -379,7 +373,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                 time.sleep(1)
 
-
                 continue_decode = True
                 while continue_decode:
                     new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
@@ -393,98 +386,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         new_file_pointer_extract_cache = new_file_pointer_extract
                         new_file_pointer_decode_cache = new_file_pointer_decode
                         time.sleep(10)
-
-    def ButtonClicked_Calibrator(self):
-        self.Clicked_Counter_Calibrator += 1
-        if (self.Clicked_Counter_Calibrator%2) != 0:
-            self.ui.Calibrator_Button.setStyleSheet("background-color: #2B5DD1;"
-                                                  "color: #FFFFFF;"
-                                                  "border-style: outset;"
-                                                  "padding: 2px;"
-                                                  "font: bold 20px;"
-                                                  "border-width: 3px;"
-                                                  "border-radius: 10px;"
-                                                  "border-color: #2752B8;")
-            self.ui.Calibrator_Button_Status.setText("Calibrator Selected!")
-        else:
-            self.ui.Calibrator_Button.setStyleSheet("")
-            self.ui.Calibrator_Button_Status.setText("     ")
-        self.Calibrator_OnOff()
-        
-    def Calibrator_OnOff(self):
-        if (self.Clicked_Counter_Calibrator%2) != 0:
-            self.ui.InputFile_Calibrator_Button.setEnabled(True)
-            self.ui.InputFile_Calibrator_Text.setEnabled(True)
-            
-            self.ui.Calibrator_GroupBox_Visualization.setEnabled(True)
-
-            self.Visualization_OnOff()
-        else:
-            self.ui.InputFile_Calibrator_Button.setEnabled(False)
-            self.ui.InputFile_Calibrator_Text.setEnabled(False)
-            
-            self.ui.Calibrator_GroupBox_Visualization.setEnabled(False)
-            self.ui.Calibrator_GroupBox_Module_Sensor.setEnabled(False)
-            self.ui.Calibrator_GroupBox_PlottingSetup.setEnabled(False)
-            self.ui.Calibrator_GroupBox_FittingSetup.setEnabled(False)
-
-            self.ui.Plotting_Widget.setEnabled(False)
-    
-    def Calibrator_Open_File(self):
-        self.Input_Calibrator_Filename, self.Input_Calibrator_Filetype = QFileDialog.getOpenFileNames(self, "Open file", "./")
-
-        if len(self.Input_Calibrator_Filename) == 1:
-            self.ui.InputFile_Calibrator_Text.setText(self.Input_Calibrator_Filename[0])
-        
-        if len(self.Input_Calibrator_Filename) > 1:
-            Input_Calibrator_Filename_print = ""
-            for Input_Calibrator_Filename_print_temp in self.Input_Calibrator_Filename:
-                Input_Calibrator_Filename_print += Input_Calibrator_Filename_print_temp + ";"
-            self.ui.InputFile_Calibrator_Text.setText(Input_Calibrator_Filename_print)
-
-        self.Plot_OnOff()
-     
-    def Counts_ADC_RadioButtonClick(self):
-        self.ui.Calibrator_GroupBox_Module_Sensor.setEnabled(True)
-        self.ui.Calibrator_GroupBox_PlottingSetup.setEnabled(True)
-        self.ui.Calibrator_GroupBox_FittingSetup.setEnabled(False)
-
-        self.Plot_OnOff()
-    
-    def Counts_ADC_fitting_RadioButtonClick(self):
-        self.ui.Calibrator_GroupBox_Module_Sensor.setEnabled(True)
-        self.ui.Calibrator_GroupBox_PlottingSetup.setEnabled(True)
-        self.ui.Calibrator_GroupBox_FittingSetup.setEnabled(True)
-
-        self.Plot_OnOff()
-
-    def Visualization_OnOff(self):
-        if self.ui.Visualization_RadioButton_Counts_ADC.isChecked():
-            self.Counts_ADC_RadioButtonClick()
-        if self.ui.Visualization_RadioButton_Counts_ADC_fitting.isChecked():
-            self.Counts_ADC_fitting_RadioButtonClick()
-    
-    def Plot_OnOff(self):
-        if self.Input_Calibrator_Filename != []:
-            if self.ui.Visualization_RadioButton_Counts_ADC.isChecked() or self.ui.Visualization_RadioButton_Counts_ADC_fitting.isChecked():
-                if self.ui.Calibrator_GroupBox_Master.isChecked():
-                    if self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked() or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked():
-                        self.ui.Plotting_Widget.setEnabled(True)
-                    else:
-                        self.ui.Plotting_Widget.setEnabled(False)
-                elif self.ui.Calibrator_GroupBox_Slave.isChecked():
-                    if self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked() or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked():
-                        self.ui.Plotting_Widget.setEnabled(True)
-                    else:
-                        self.ui.Plotting_Widget.setEnabled(False)
-                else:
-                    self.ui.Plotting_Widget.setEnabled(False)
-            else:
-                self.ui.Plotting_Widget.setEnabled(False)
-        else:
-            self.ui.Plotting_Widget.setEnabled(False)
                     
-    def ButtonClicked_Plot(self):
+    def Plotting(self):
         print("Plotting!")
         
         # basic window setup
