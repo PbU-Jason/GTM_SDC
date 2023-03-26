@@ -25,7 +25,6 @@ int decoder(char *FileName, int DecodeMode, int ExtractMode, int ExportMode, int
             if (extract_mode) {
                 log_message("start extracting science data");
                 new_file_pointer = extract_science_data(InitailFilePointer);
-                close_all_file();
             }
             else {
                 log_message("start decoding science data");

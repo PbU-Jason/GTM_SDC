@@ -1,6 +1,6 @@
 #ifndef GTM_DECODER_EXTRACT_SCIENCE_DATA_H
 #define GTM_DECODER_EXTRACT_SCIENCE_DATA_H
 
-int parse_tmtc_data_new_output(int InputFilePointer);
+int extract_science_data(int InputFilePointer);
 
 #endif

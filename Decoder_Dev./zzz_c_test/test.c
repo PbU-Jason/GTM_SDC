@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 int main(void) {
     unsigned char A = 0xB6;
@@ -33,6 +34,34 @@ int main(void) {
 
     c = ( ((C1 >> 4) << 8) | ((C1 << 4) | C2 >> 4) );
     printf("%X\n", c);
+
+    FILE *fp;
+    unsigned char *buffer;
+    size_t numread;
+
+    buffer = (unsigned char *)malloc(10000000);
+
+    fp = fopen("fake.bin", "rb");
+    if (fp == NULL) {
+        printf("failed to open the file.\n");
+        return 1; // EXIT_FAILURE
+    }
+
+    // fseek(fp, 2, SEEK_SET);
+    numread = fread(buffer, 1, 1174405120, fp);
+
+    printf("read %lu bytes\n", numread);
+    printf("%s\n", buffer);
+
+    sleep(2); // 1s
+
+    numread = fread(buffer, 1, 1174405120, fp);
+
+    printf("read %lu bytes\n", numread);
+    printf("%s\n", buffer);
+
+    free(buffer);
+    fclose(fp);
 
     return 0;
 }

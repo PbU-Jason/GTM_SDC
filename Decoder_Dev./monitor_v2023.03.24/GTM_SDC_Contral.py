@@ -352,6 +352,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 print(new_file_pointer)
                 new_file_pointer_cache = new_file_pointer
 
+                time.sleep(1)
+
                 continue_decode = True
                 while continue_decode:
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
@@ -374,6 +376,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
                 print(new_file_pointer_decode)
                 new_file_pointer_decode_cache = new_file_pointer_decode
+
+                time.sleep(1)
+
 
                 continue_decode = True
                 while continue_decode:

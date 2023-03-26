@@ -25,7 +25,7 @@ size_t max_binary_buffer_size   = 1174405120; // 1GB
 unsigned char *binary_buffer    = NULL;
 
 unsigned char *sync_data_buffer = NULL;
-// unsigned char *tmtc_data_buffer = NULL;
+
 Time *time_buffer         = NULL;
 Time *time_start          = NULL;
 Attitude *position_buffer = NULL;
@@ -280,7 +280,9 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
             if (!raw_outfile) {
                 log_error("can't open raw output file");
             }
-            fputs(tmtc_header_all, raw_outfile);
+            if (ftell(raw_outfile) == 0) {
+                fputs(tmtc_header_all, raw_outfile);
+            }
             free(raw_outpath);
 
             // output tmtc only with master
@@ -289,7 +291,9 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
             if (!tmtc_master_outfile) {
                 log_error("can't open tmtc master output file");
             }
-            fputs(tmtc_header_master, tmtc_master_outfile);
+            if (ftell(tmtc_master_outfile) == 0) {
+                fputs(tmtc_header_master, tmtc_master_outfile);
+            }
             free(tmtc_master_outpath);
 
             // output tmtc only with slave
@@ -298,7 +302,9 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
             if (!tmtc_slave_outfile) {
                 log_error("can't open tmtc slave output file");
             }
-            fputs(tmtc_header_slave, tmtc_slave_outfile);
+            if (ftell(tmtc_slave_outfile) == 0) {
+                fputs(tmtc_header_slave, tmtc_slave_outfile);
+            }
             free(tmtc_slave_outpath);
             break;
         default:
@@ -380,15 +386,13 @@ void pop_bytes(unsigned char *Target, size_t PopSize, size_t TotalSize) {
 
 /// parse science data ///
 
-
 int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize) {
     size_t location;
 
     // quick check
-    location = CurrentSdHeaderLocation + SCIENCE_DATA_SIZE + SD_HEADER_SIZE;
+    location = CurrentSdHeaderLocation + SD_HEADER_SIZE + SCIENCE_DATA_SIZE;
     if (location <= ActualBufferSize - SD_HEADER_SIZE) {
-        if (is_sd_header(Buffer + location))
-        {
+        if (is_sd_header(Buffer + location)) {
             return location;
         }
     }
@@ -672,20 +676,6 @@ static void parse_event_data(unsigned char *Target) {
     if ((*Target & 0xC0) == 0x40) {
             parse_event_adc(Target);
         }
-
-    // if (hit_mode == 1) {
-    //     if ((*Target & 0xC0) == 0x40) {
-    //         parse_event_adc(Target);
-    //     }
-    // }
-    // else if (hit_mode == 2) {
-    //     if ((*Target & 0xC0) == 0x00) {
-    //         parse_event_adc(Target);
-    //     }
-    // }
-    // else {
-    //     log_error("unknown exclude nohit");
-    // }
 }
 
 static void write_event_time(void) {

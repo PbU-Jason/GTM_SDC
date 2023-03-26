@@ -18,8 +18,11 @@ int parse_tmtc_data_new_output(int InputFilePointer) {
         log_error("fail to create tmtc data buffer");
     }
 
+    // moving pointer inside bin_infile base on InputFilePointer
+    fseek(bin_infile, InputFilePointer, SEEK_SET);
+
     // recording how many bytes in binary_buffer
-    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile+InputFilePointer);
+    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile);
 
     // updating file pointer by InputFilePointer and actual_binary_buffer_size
     output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
@@ -32,7 +35,7 @@ int parse_tmtc_data_new_output(int InputFilePointer) {
 
         // parsing data in binary_buffer
         for (location=0; location < actual_binary_buffer_size; location++) {
-            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, binary_buffer+InputFilePointer+location, 1);
+            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, binary_buffer+location, 1);
             tmtc_data_buffer_counter++;
 
             // checking TMTC header

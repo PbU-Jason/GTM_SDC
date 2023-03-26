@@ -9,8 +9,8 @@
 int parse_science_data(int InputFilePointer) {
     size_t actual_binary_buffer_size;
     int output_file_pointer;
-    size_t sd_header_location = 0;
-    size_t old_sd_header_location = 0;
+    size_t sd_header_location;
+    size_t old_sd_header_location;
     size_t full = 0;
     size_t broken = 0;
     uint8_t CRC_next_packet, CRC_calculate;
@@ -19,24 +19,38 @@ int parse_science_data(int InputFilePointer) {
     event_buffer->pps_counter = 0;
     event_buffer->fine_counter = 0;
 
+    // moving pointer inside bin_infile base on InputFilePointer
+    fseek(bin_infile, InputFilePointer, SEEK_SET);
+
     // recording how many bytes in binary_buffer
-    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile+InputFilePointer);
+    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile);
     
     // updating file pointer by InputFilePointer and actual_binary_buffer_size
     output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
 
-    // finding first SD header (not clear!)
-    sd_header_location = find_next_sd_header(binary_buffer, -SD_HEADER_SIZE, actual_binary_buffer_size);
-    if (sd_header_location != 0) {
-        log_message("Binary file doesn't start with science data header, first science data header is at byte %zu", (size_t)ftell(bin_infile) - actual_binary_buffer_size + sd_header_location);
-        fseek(bin_infile, sd_header_location - actual_binary_buffer_size, SEEK_CUR);
-        actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
+    // skip (actual_binary_buffer_size == 0) to avoid error in find_next_sd_header()
+    if ((int)actual_binary_buffer_size == 0) {
+        return output_file_pointer;
+    }
+    else {
+        ///// ↓↓↓ need checking!!!
+        // finding first SD header
+        sd_header_location = find_next_sd_header(binary_buffer, -SD_HEADER_SIZE, actual_binary_buffer_size);
+        if (sd_header_location != 0) {
+            log_message("Binary file doesn't start with science data header, first science data header is at byte %zu", (size_t)ftell(bin_infile) - actual_binary_buffer_size + sd_header_location);
+            
+            // moving pointer inside bin_infile base on sd_header_location
+            fseek(bin_infile, sd_header_location - actual_binary_buffer_size, SEEK_CUR);
+
+            // updating how many bytes in binary_buffer
+            actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile);
+        }
     }
 
     while (1) {
         log_message("load new chunk");
-        sd_header_location = 0;
 
+        // leaving when encountering below weird conditions
         if (actual_binary_buffer_size <= SD_HEADER_SIZE) {
             break;
         }
@@ -44,15 +58,19 @@ int parse_science_data(int InputFilePointer) {
             log_error("Bin file doesn't start with sd header");
         }
 
-        // loop through packet in buffer
+        // initializing the position of sd_header_location
+        sd_header_location = 0;
+
+        // parsing data in binary_buffer
         while (sd_header_location < actual_binary_buffer_size) {
+
             // if the packet is not continueous, reset related parameter
             if (!continuous_packet) {
                 log_message("Non contiuous occurs around bytes %zu", (size_t)ftell(bin_infile) - actual_binary_buffer_size + sd_header_location);
                 got_first_sync_data = 0;
             }
 
-            // find next sd header
+            // finding next SD header
             old_sd_header_location = sd_header_location;
             sd_header_location = find_next_sd_header(binary_buffer, sd_header_location, actual_binary_buffer_size);
 
@@ -107,18 +125,19 @@ int parse_science_data(int InputFilePointer) {
                 broken++;
             }
         }
-
-        if (actual_binary_buffer_size < max_binary_buffer_size) {
-            break;
-        }
-        // offset position indicator of input file stream based on previous sd header position
-        fseek(bin_infile, old_sd_header_location - actual_binary_buffer_size, SEEK_CUR);
-        actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
+        break;
+        // if (actual_binary_buffer_size < max_binary_buffer_size) {
+        //     break;
+        // }
+        // // offset position indicator of input file stream based on previous sd header position
+        // fseek(bin_infile, old_sd_header_location - actual_binary_buffer_size, SEEK_CUR);
+        // actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
     }
     log_message("packet summary: full = %zu, broken = %zu", full, broken);
+    
     got_first_sync_data = 0;
-
     free_got_first_sd_header();
+    ///// ↑↑↑ need checking!!!
 
     // returning new file pointer to main funciton
     return output_file_pointer;
