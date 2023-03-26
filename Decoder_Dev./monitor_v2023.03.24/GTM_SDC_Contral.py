@@ -11,7 +11,7 @@ import time
 import numpy as np
 import pandas as pd
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtTest
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
 import cv2
@@ -68,29 +68,30 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # Monitor Modes
         self.ui.Monitor_Modes_radioButton_Plotting.clicked.connect(self.Monitor_OnOff)
         self.ui.Monitor_Modes_radioButton_Silence.clicked.connect(self.Monitor_OnOff)
+        self.Monitor_Modes = 0 # 1 for TMTC, 2 foe SD
 
         # Module and Sensor Selection
         self.ui.Master_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
         self.ui.Slave_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
+        self.Plotting_Module_list = []
 
         self.ui.Master_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
         self.ui.Master_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
         self.ui.Master_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
         self.ui.Master_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
+        self.Plotting_Master_Sensor_list = []
 
         self.ui.Slave_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
         self.ui.Slave_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
         self.ui.Slave_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
         self.ui.Slave_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
+        self.Plotting_Slave_Sensor_list = []
 
         # Define Plotting Variables
         self.low_gain  = 2
         self.high_gain = 20
-        self.dic = {'GModule': [],
-                    'Citiroc': [],
-                    'Channel': [],
-                    'Gain'   : [],
-                    'ADC'    : []}
+        self.df_1 = None
+        self.df_2 = None
         
         # Start Decoding
         self.ui.Start_groupBox.setStyleSheet("QGroupBox{border:none}")
@@ -298,11 +299,14 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         if self.Input_Decoder_Filename != []:
             if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
                 if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
+                    self.Monitor_Modes = 0
                     self.ui.Start_groupBox.setEnabled(True)
                 elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
                     if self.ui.Master_GroupBox.isChecked():
+                        self.Monitor_Modes = 1
                         self.ui.Start_groupBox.setEnabled(True)
                     elif self.ui.Slave_GroupBox.isChecked():
+                        self.Monitor_Modes = 1
                         self.ui.Start_groupBox.setEnabled(True)
                     else:
                         self.ui.Start_groupBox.setEnabled(False)
@@ -311,17 +315,20 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
                 if self.ui.Monitor_Modes_Group.isEnabled():
                     if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
+                        self.Monitor_Modes = 0
                         self.ui.Start_groupBox.setEnabled(True)
                     elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
                         if self.ui.Master_GroupBox.isChecked():
                             if self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
                             or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked():
+                                self.Monitor_Modes = 2
                                 self.ui.Start_groupBox.setEnabled(True)
                             else:
                                 self.ui.Start_groupBox.setEnabled(False)
                         elif self.ui.Slave_GroupBox.isChecked():
                             if self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked()\
                             or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked():
+                                self.Monitor_Modes = 2
                                 self.ui.Start_groupBox.setEnabled(True)
                             else:
                                 self.ui.Start_groupBox.setEnabled(False)
@@ -339,75 +346,186 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def ButtonClicked_Start(self):
         print("Decoding!")
 
-        # for pure TMTC and SD decoding (only need one file pointer)
-        if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
-            for Input_Decoder_Filename in self.Input_Decoder_Filename:
-                new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                print(new_file_pointer)
-                new_file_pointer_cache = new_file_pointer
+        # silence mode
+        if self.Monitor_Modes == 0:
 
-                time.sleep(1)
-
-                continue_decode = True
-                while continue_decode:
-                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+            # for pure TMTC and SD decoding (only need one file pointer)
+            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer)
+                    new_file_pointer_cache = new_file_pointer
 
-                    if new_file_pointer == new_file_pointer_cache:
-                        break
-                    else:
-                        new_file_pointer_cache = new_file_pointer
-                        time.sleep(10)
-        
-        # for SD (with header and tail) decoding ( need two file pointers)
-        if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
-            for Input_Decoder_Filename in self.Input_Decoder_Filename:
-                new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                print(new_file_pointer_extract)
-                new_file_pointer_extract_cache = new_file_pointer_extract
+                    QtTest.QTest.qWait(1000)
 
-                Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
-                new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
-                print(new_file_pointer_decode)
-                new_file_pointer_decode_cache = new_file_pointer_decode
+                    continue_decode = True
+                    while continue_decode:
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        print(new_file_pointer)
 
-                time.sleep(1)
-
-                continue_decode = True
-                while continue_decode:
-                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                        if new_file_pointer == new_file_pointer_cache:
+                            break
+                        else:
+                            new_file_pointer_cache = new_file_pointer
+                            QtTest.QTest.qWait(10000)
+            
+            # for SD (with header and tail) decoding ( need two file pointers)
+            if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer_extract)
-                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
-                    print(new_file_pointer_decode)
+                    new_file_pointer_extract_cache = new_file_pointer_extract
 
-                    if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
-                        break
-                    else:
-                        new_file_pointer_extract_cache = new_file_pointer_extract
-                        new_file_pointer_decode_cache = new_file_pointer_decode
-                        time.sleep(10)
-                    
-    def Plotting(self):
-        print("Plotting!")
+                    Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
+                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
+                    print(new_file_pointer_decode)
+                    new_file_pointer_decode_cache = new_file_pointer_decode
+
+                    QtTest.QTest.qWait(1000)
+
+                    continue_decode = True
+                    while continue_decode:
+                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                        print(new_file_pointer_extract)
+                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
+                        print(new_file_pointer_decode)
+
+                        if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
+                            break
+                        else:
+                            new_file_pointer_extract_cache = new_file_pointer_extract
+                            new_file_pointer_decode_cache = new_file_pointer_decode
+                            QtTest.QTest.qWait(10000)
+
+        # TMTC plotting mode
+        elif self.Monitor_Modes == 1:
+            # self.Open_PlottingWindow()
+
+            if self.ui.Master_GroupBox.isChecked():
+                self.Plotting_Module_list.append('Master')
+                
+            if self.ui.Slave_GroupBox.isChecked():
+                self.Plotting_Module_list.append('Slave')
+
+            # for pure TMTC and SD decoding (only need one file pointer)
+            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    print(new_file_pointer)
+                    new_file_pointer_cache = new_file_pointer
+
+                    QtTest.QTest.qWait(1000)
+
+                    Input_Decoder_Filename_TMTC_Master = Input_Decoder_Filename.replace('.bin','_tmtc_master.csv')
+                    Input_Decoder_Filename_TMTC_Slave = Input_Decoder_Filename.replace('.bin','_tmtc_slave.csv')
+
+                    continue_decode = True
+                    while continue_decode:
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        print(new_file_pointer)
+
+                        if new_file_pointer == new_file_pointer_cache:
+                            break
+                        else:
+                            new_file_pointer_cache = new_file_pointer
+                            QtTest.QTest.qWait(5000)
+                        
+                        if self.Plotting_Module_list == ['Master', 'Slave']:
+                            self.Plotting([Input_Decoder_Filename_TMTC_Master, Input_Decoder_Filename_TMTC_Slave])
+                        elif self.Plotting_Module_list == ['Master']:
+                            self.Plotting([Input_Decoder_Filename_TMTC_Master])
+                        elif self.Plotting_Module_list == ['Slave']:
+                            self.Plotting([Input_Decoder_Filename_TMTC_Slave])
+                        else:
+                            print('Checking!')
         
+        # SD plotting mode
+        elif self.Monitor_Modes == 2:
+
+            # for pure TMTC and SD decoding (only need one file pointer)
+            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    print(new_file_pointer)
+                    new_file_pointer_cache = new_file_pointer
+
+                    QtTest.QTest.qWait(1000)
+
+                    continue_decode = True
+                    while continue_decode:
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        print(new_file_pointer)
+
+                        if new_file_pointer == new_file_pointer_cache:
+                            break
+                        else:
+                            new_file_pointer_cache = new_file_pointer
+                            QtTest.QTest.qWait(10000)
+            
+            # for SD (with header and tail) decoding ( need two file pointers)
+            if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    print(new_file_pointer_extract)
+                    new_file_pointer_extract_cache = new_file_pointer_extract
+
+                    Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
+                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
+                    print(new_file_pointer_decode)
+                    new_file_pointer_decode_cache = new_file_pointer_decode
+
+                    QtTest.QTest.qWait(1000)
+
+                    continue_decode = True
+                    while continue_decode:
+                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                        print(new_file_pointer_extract)
+                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
+                        print(new_file_pointer_decode)
+
+                        if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
+                            break
+                        else:
+                            new_file_pointer_extract_cache = new_file_pointer_extract
+                            new_file_pointer_decode_cache = new_file_pointer_decode
+                            QtTest.QTest.qWait(1000)
+            
+            else:
+                print('Checking Monitor Modes!')
+
+    # def Open_PlottingWindow(self):
+    #     global window_1 
+    #     global ui_1
+        
+    #     window_1 = QtWidgets.QMainWindow()
+    #     ui_1 = Ui_PlottingWindow()
+    #     ui_1.setupUi(window_1)
+    #     window_1.show()
+    #     print(999)
+
+    def Plotting(self, FilenameList):
+        print('Plotting')
+
         # basic window setup
-        self.window = QtWidgets.QMainWindow()
-        self.uiPlotting = Ui_PlottingWindow()
-        self.uiPlotting.setupUi(self.window)
-        
-        # # loading data
-        # for Input_Calibrator_Filename in self.Input_Calibrator_Filename:
-        #     Loader(Input_Calibrator_Filename, self.dic, 1)
+        self.window_Plotting = QtWidgets.QMainWindow()
+        self.ui_Plotting = Ui_PlottingWindow()
+        self.ui_Plotting.setupUi(self.window_Plotting)
+
+        # loading data
+        self.df_1 = Loader(FilenameList[0])
+        self.df_2 = Loader(FilenameList[1])
 
         # creat figure
-        sc = MplCanvas(self.window)
+        sc = MplCanvas(self.window_Plotting)
 
         # plotting
-        for i in range(16):
-            sc.axesList[i].plot([0,1,2,3,4], [10,1,20,3,40])
+        # for i in range(16):
+        #     sc.axesList[i].plot([0,1,2,3,4], [10,1,20,3,40])
+        sc.axesList[0].plot(range(len(self.df_1['Board Temperature#1'])), self.df_1['Board Temperature#1'])
+        sc.axesList[1].plot(range(len(self.df_2['Board Temperature#1'])), self.df_2['Board Temperature#1'])
 
         # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
-        toolbar = NavigationToolbar(sc, self.window)
+        toolbar = NavigationToolbar(sc, self.window_Plotting)
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(toolbar)
@@ -416,7 +534,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # Create a placeholder widget to hold our toolbar and canvas.
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
-        self.window.setCentralWidget(widget)
+        self.window_Plotting.setCentralWidget(widget)
 
-        self.window.show()
+        self.window_Plotting.show()
             
