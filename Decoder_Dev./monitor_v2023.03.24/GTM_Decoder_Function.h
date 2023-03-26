@@ -188,11 +188,9 @@ void free_got_first_sd_header();
 /// parse tmtc data ///
 int is_tmtc_header(unsigned char *Target);
 int is_tmtc_tail(unsigned char *Targrt);
-// void parse_tmtc_packet(unsigned char *Target);
-void parse_tmtc_packet_new_output(unsigned char *Target);
+void parse_tmtc_packet(unsigned char *Target);
 void parse_utc_time_tmtc(unsigned char *Target);
-// void write_tmtc_buffer(void);
-void write_tmtc_buffer_new_output(unsigned char *Target);
+void write_tmtc_buffer_all(unsigned char *Target);
 void write_tmtc_buffer_master(void);
 void write_tmtc_buffer_slave(void);
 

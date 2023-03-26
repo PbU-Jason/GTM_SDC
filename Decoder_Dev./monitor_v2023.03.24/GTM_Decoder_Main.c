@@ -4,7 +4,6 @@
 #include "GTM_Decoder_Extract_Science_Data.h"
 #include "GTM_Decoder_Parse_Science_Data.h"
 #include "GTM_Decoder_Parse_TMTC_Data.h"
-#include "GTM_Decoder_Parse_TMTC_Data_New_Ouput.h"
 
 int decoder(char *FileName, int DecodeMode, int ExtractMode, int ExportMode, int InitailFilePointer) {
     char *output_file_path ;
@@ -33,7 +32,7 @@ int decoder(char *FileName, int DecodeMode, int ExtractMode, int ExportMode, int
             break;
         case 2:
             log_message("start decoding telemetry data");
-            new_file_pointer = parse_tmtc_data_new_output(InitailFilePointer);
+            new_file_pointer = parse_tmtc_data(InitailFilePointer);
             break;
         case 3:
             log_message("start decoding telemetry and science data simultaneously");

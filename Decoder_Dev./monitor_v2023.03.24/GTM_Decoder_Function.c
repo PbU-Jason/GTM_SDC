@@ -805,7 +805,7 @@ int is_tmtc_tail(unsigned char *Targrt) {
     return 0;
 }
 
-void parse_tmtc_packet_new_output(unsigned char *Target) {
+void parse_tmtc_packet(unsigned char *Target) {
     int i;
     int j;
 
@@ -924,7 +924,7 @@ void parse_tmtc_packet_new_output(unsigned char *Target) {
     // tail
     memcpy(tmtc_buffer->tail, Target + 126, 2);
 
-    write_tmtc_buffer_new_output(Target);
+    write_tmtc_buffer_all(Target);
     if (j == 0) {
         write_tmtc_buffer_master();
     }
@@ -955,7 +955,7 @@ void parse_utc_time_tmtc(unsigned char *Target) {
     return;
 }
 
-void write_tmtc_buffer_new_output(unsigned char *Target) { 
+void write_tmtc_buffer_all(unsigned char *Target) { 
     int i;
     unsigned char byte[1];
 
