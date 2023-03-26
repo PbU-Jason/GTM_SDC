@@ -7,12 +7,10 @@
 #include "GTM_Decoder_Parse_TMTC_Data_New_Ouput.h"
 
 int decoder(char *FileName, int DecodeMode, int ExtractMode, int ExportMode, int InitailFilePointer) {
-    char *input_file_path  = NULL;
-    char *output_file_path = NULL;
-    const char *file_end   = ".bin";
+    char *output_file_path ;
+    const char *file_end = ".bin";
     int new_file_pointer;
 
-    input_file_path  = FileName;
     output_file_path = str_remove(FileName, file_end); // FileName - .bin
 
     decode_mode  = DecodeMode;  // 1 = Science Data; 2 = TMTC Data # ; 3 = Consider Both Together
@@ -21,23 +19,17 @@ int decoder(char *FileName, int DecodeMode, int ExtractMode, int ExportMode, int
 
     check_endianness();
     create_all_buffer();
-    open_all_file(input_file_path, output_file_path);
+    open_all_file(FileName, output_file_path);
     switch (decode_mode) {
         case 1:
             if (extract_mode) {
                 log_message("start extracting science data");
-                extract_science_data();
+                new_file_pointer = extract_science_data(InitailFilePointer);
                 close_all_file();
-                extract_mode = 0;
-                input_file_path = str_append(output_file_path, "_extracted.bin");
-                output_file_path = str_append(output_file_path, "_extracted");
-                open_all_file(input_file_path, output_file_path);
-                log_message("start decoding science data");
-                parse_science_data();
             }
             else {
                 log_message("start decoding science data");
-                parse_science_data();
+                new_file_pointer = parse_science_data(InitailFilePointer);
             }
             break;
         case 2:

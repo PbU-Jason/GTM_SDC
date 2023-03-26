@@ -12,8 +12,6 @@
 int decode_mode  = 0;
 int extract_mode = 0;
 int export_mode  = 0;
-// int hit_mode     = 0;
-// int gain_mode    = 0;
 FILE *bin_infile            = NULL;
 FILE *raw_extract_outfile   = NULL;
 FILE *raw_outfile           = NULL;
@@ -273,153 +271,9 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                 else{
                     log_error("unknown export mode");
                 }
-                
-            //     if (hit_mode == 1) {
-            //         if (export_mode == 1) {
-            //             raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-            //             raw_outfile = fopen(raw_outpath, "w");
-            //             if (!raw_outfile) {
-            //                 log_error("can't open raw output file");
-            //             }
-            //             free(raw_outpath);
-
-            //             raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-            //             raw_sync_outfile = fopen(raw_sync_outpath, "w");
-            //             if (!raw_sync_outfile) {
-            //                 log_error("can't open raw sync output file");
-            //             }
-            //             fputs(raw_sync_header, raw_sync_outfile);
-            //             free(raw_sync_outpath);
-            //         }
-            //         else if (export_mode == 2) {
-            //             pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-            //             pipeline_outfile = fopen(pipeline_outpath, "w");
-            //             if (!pipeline_outfile) {
-            //                 log_error("can't open pipeline output file");
-            //             }
-            //             free(pipeline_outpath);
-
-            //             pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-            //             pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
-            //             if (!pipeline_sync_outfile) {
-            //                 log_error("can't open pipeline sync output file");
-            //             }
-            //             free(pipeline_sync_outpath);
-            //         }
-            //         else if (export_mode == 3) {
-            //             raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-            //             raw_outfile = fopen(raw_outpath, "w");
-            //             if (!raw_outfile) {
-            //                 log_error("can't open raw output file");
-            //             }
-            //             free(raw_outpath);
-
-            //             raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-            //             raw_sync_outfile = fopen(raw_sync_outpath, "w");
-            //             if (!raw_sync_outfile) {
-            //                 log_error("can't open raw sync output file");
-            //             }
-            //             fputs(raw_sync_header, raw_sync_outfile);
-            //             free(raw_sync_outpath);
-
-            //             pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-            //             pipeline_outfile = fopen(pipeline_outpath, "w");
-            //             if (!pipeline_outfile) {
-            //                 log_error("can't open pipeline output file");
-            //             }
-            //             free(pipeline_outpath);
-
-            //             pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-            //             pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
-            //             if (!pipeline_sync_outfile) {
-            //                 log_error("can't open pipeline sync output file");
-            //             }
-            //             free(pipeline_sync_outpath);
-            //         }
-            //         else{
-            //             log_error("unknown export mode");
-            //         }
-            //     }
-            //     else if (hit_mode == 2) {
-            //         if (export_mode == 1) {
-            //             raw_outpath = str_append(OutFilePath, "_science_raw_noHit.txt");
-            //             raw_outfile = fopen(raw_outpath, "w");
-            //             if (!raw_outfile) {
-            //                 log_error("can't open raw output file");
-            //             }
-            //             free(raw_outpath);
-
-            //             raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync_noHit.csv");
-            //             raw_sync_outfile = fopen(raw_sync_outpath, "w");
-            //             if (!raw_sync_outfile) {
-            //                 log_error("can't open raw sync output file");
-            //             }
-            //             fputs(raw_sync_header, raw_sync_outfile);
-            //             free(raw_sync_outpath);
-            //         }
-            //         else if (export_mode == 2) {
-            //             pipeline_outpath = str_append(OutFilePath, "_science_pipeline_noHit.txt");
-            //             pipeline_outfile = fopen(pipeline_outpath, "w");
-            //             if (!pipeline_outfile) {
-            //                 log_error("can't open pipeline output file");
-            //             }
-            //             free(pipeline_outpath);
-
-            //             pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync_noHit.txt");
-            //             pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
-            //             if (!pipeline_sync_outfile) {
-            //                 log_error("can't open pipeline sync output file");
-            //             }
-            //             free(pipeline_sync_outpath);
-            //         }
-            //         else if (export_mode == 3) {
-            //             raw_outpath = str_append(OutFilePath, "_science_raw_noHit.txt");
-            //             raw_outfile = fopen(raw_outpath, "w");
-            //             if (!raw_outfile) {
-            //                 log_error("can't open raw output file");
-            //             }
-            //             free(raw_outpath);
-
-            //             raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync_noHit.csv");
-            //             raw_sync_outfile = fopen(raw_sync_outpath, "w");
-            //             if (!raw_sync_outfile) {
-            //                 log_error("can't open raw sync output file");
-            //             }
-            //             fputs(raw_sync_header, raw_sync_outfile);
-            //             free(raw_sync_outpath);
-
-            //             pipeline_outpath = str_append(OutFilePath, "_science_pipeline_noHit.txt");
-            //             pipeline_outfile = fopen(pipeline_outpath, "w");
-            //             if (!pipeline_outfile) {
-            //                 log_error("can't open pipeline output file");
-            //             }
-            //             free(pipeline_outpath);
-
-            //             pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync_noHit.txt");
-            //             pipeline_sync_outfile = fopen(pipeline_sync_outpath, "w");
-            //             if (!pipeline_sync_outfile) {
-            //                 log_error("can't open pipeline sync output file");
-            //             }
-            //             free(pipeline_sync_outpath);
-            //         }
-            //         else {
-            //             log_error("unknown export mode");
-            //         }
-            //     }
-            //     else {
-            //         log_error("unknown exclude nohit");
-            //     }
             }
             break;
         case 2:
-            // raw_outpath = str_append(OutFilePath, "_tmtc.csv");
-            // raw_outfile = fopen(raw_outpath, "w");
-            // if (!raw_outfile) {
-            //     log_error("can't open raw output file");
-            // }
-            // fputs(tmtc_raw_header, raw_outfile);
-            // free(raw_outpath);
-
             // output tmtc with master + slave
             raw_outpath = str_append(OutFilePath, "_tmtc_whole_output.csv");
             raw_outfile = fopen(raw_outpath, "a");
@@ -525,6 +379,7 @@ void pop_bytes(unsigned char *Target, size_t PopSize, size_t TotalSize) {
 }
 
 /// parse science data ///
+
 
 int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize) {
     size_t location;

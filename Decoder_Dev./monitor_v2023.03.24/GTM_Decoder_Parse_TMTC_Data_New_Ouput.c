@@ -8,9 +8,9 @@
 int parse_tmtc_data_new_output(int InputFilePointer) {
     unsigned char *tmtc_data_buffer;
     size_t actual_binary_buffer_size;
-    size_t location;
-    int tmtc_data_buffer_counter;
     int output_file_pointer;
+    int tmtc_data_buffer_counter;
+    size_t location;
 
     // dynamic memory allocation for each 128 bytes TMTC data
     tmtc_data_buffer = (unsigned char *)malloc(TMTC_DATA_SIZE); // (unsigned char *) is not necessary!
@@ -19,7 +19,6 @@ int parse_tmtc_data_new_output(int InputFilePointer) {
     }
 
     // recording how many bytes in binary_buffer
-    // actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
     actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile+InputFilePointer);
 
     // updating file pointer by InputFilePointer and actual_binary_buffer_size
@@ -32,8 +31,8 @@ int parse_tmtc_data_new_output(int InputFilePointer) {
         tmtc_data_buffer_counter = 0;
 
         // parsing data in binary_buffer
-        for (location = 0; location < actual_binary_buffer_size; location++) {
-            memcpy(tmtc_data_buffer + tmtc_data_buffer_counter, binary_buffer + location, 1);
+        for (location=0; location < actual_binary_buffer_size; location++) {
+            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, binary_buffer+InputFilePointer+location, 1);
             tmtc_data_buffer_counter++;
 
             // checking TMTC header

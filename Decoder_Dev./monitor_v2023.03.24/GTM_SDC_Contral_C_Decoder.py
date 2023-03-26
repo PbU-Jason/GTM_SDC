@@ -19,11 +19,12 @@ def C_Decoder(FileName, DecodeMode, ExtractOnOff, ExportMode, InitailFilePointer
     else:
         print('please check OS!')
     c_function = CDLL(so_file)
-    # gain_mode = 0
     
-    c_function.decoder(c_char_p(bytes(FileName, 'utf-8')),
-                       c_int(DecodeMode),
-                       c_int(ExtractOnOff), 
-                       c_int(ExportMode),
-                       c_int(InitailFilePointer)
-                       )
+    c_int(new_file_pointer) = c_function.decoder(c_char_p(bytes(FileName, 'utf-8')), 
+                                                 c_int(DecodeMode),
+                                                 c_int(ExtractOnOff), 
+                                                 c_int(ExportMode),
+                                                 c_int(InitailFilePointer)
+                                                 )
+    
+    return new_file_pointer

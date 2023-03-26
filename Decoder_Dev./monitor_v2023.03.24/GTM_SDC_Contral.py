@@ -7,6 +7,7 @@ Created on Mon Jun 27 14:58:23 2022
 """
 
 import re
+import time
 import numpy as np
 import pandas as pd
 
@@ -24,7 +25,6 @@ import matplotlib
 matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-
 
 class MainWindow_controller(QtWidgets.QMainWindow):
     def __init__(self):
@@ -344,9 +344,51 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     
     def ButtonClicked_Start(self):
         print("Decoding!")
-        for Input_Decoder_Filename in self.Input_Decoder_Filename:
-            C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes) # , self.Hit_Selection
-    
+
+        # for pure TMTC and SD decoding (only need one file pointer)
+        if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+            for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                print(new_file_pointer)
+                new_file_pointer_cache = new_file_pointer
+
+                continue_decode = True
+                while continue_decode:
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                    print(new_file_pointer)
+
+                    if new_file_pointer == new_file_pointer_cache:
+                        break
+                    else:
+                        new_file_pointer_cache = new_file_pointer
+                        time.sleep(10)
+        
+        # for SD (with header and tail) decoding ( need two file pointers)
+        if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+            for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                print(new_file_pointer_extract)
+                new_file_pointer_extract_cache = new_file_pointer_extract
+
+                Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
+                new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
+                print(new_file_pointer_decode)
+                new_file_pointer_decode_cache = new_file_pointer_decode
+
+                continue_decode = True
+                while continue_decode:
+                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                    print(new_file_pointer_extract)
+                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
+                    print(new_file_pointer_decode)
+
+                    if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
+                        break
+                    else:
+                        new_file_pointer_extract_cache = new_file_pointer_extract
+                        new_file_pointer_decode_cache = new_file_pointer_decode
+                        time.sleep(10)
+
     def ButtonClicked_Calibrator(self):
         self.Clicked_Counter_Calibrator += 1
         if (self.Clicked_Counter_Calibrator%2) != 0:

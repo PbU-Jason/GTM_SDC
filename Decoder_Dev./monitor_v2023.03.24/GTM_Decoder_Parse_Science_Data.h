@@ -1,6 +1,6 @@
 #ifndef GTM_DECODER_PARSE_SCIENCE_DATA_H
 #define GTM_DECODER_PARSE_SCIENCE_DATA_H
 
-void parse_science_data(void);
+int parse_science_data(int InputFilePointer);
 
 #endif

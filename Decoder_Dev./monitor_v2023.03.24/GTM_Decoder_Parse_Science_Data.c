@@ -6,29 +6,33 @@
 #include "GTM_Decoder_Function.h"
 #include "GTM_Decoder_CRC_Check.h"
 
-void parse_science_data(void)
-{
-    size_t actual_binary_buffer_size = 0;
+int parse_science_data(int InputFilePointer) {
+    size_t actual_binary_buffer_size;
+    int output_file_pointer;
     size_t sd_header_location = 0;
     size_t old_sd_header_location = 0;
     size_t full = 0;
     size_t broken = 0;
     uint8_t CRC_next_packet, CRC_calculate;
 
-    event_buffer->pps_counter = INI_PPS_COUNTER;
-    event_buffer->fine_counter = INI_FINE_COUNTER;
+    // initializing pps and finetime counter
+    event_buffer->pps_counter = 0;
+    event_buffer->fine_counter = 0;
 
-    actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
-    // find first sd header
+    // recording how many bytes in binary_buffer
+    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile+InputFilePointer);
+    
+    // updating file pointer by InputFilePointer and actual_binary_buffer_size
+    output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
+
+    // finding first SD header (not clear!)
     sd_header_location = find_next_sd_header(binary_buffer, -SD_HEADER_SIZE, actual_binary_buffer_size);
-    if (sd_header_location != 0)
-    {
+    if (sd_header_location != 0) {
         log_message("Binary file doesn't start with science data header, first science data header is at byte %zu", (size_t)ftell(bin_infile) - actual_binary_buffer_size + sd_header_location);
         fseek(bin_infile, sd_header_location - actual_binary_buffer_size, SEEK_CUR);
         actual_binary_buffer_size = read_from_file(binary_buffer, bin_infile, max_binary_buffer_size);
     }
 
-    // loop through buffer
     while (1) {
         log_message("load new chunk");
         sd_header_location = 0;
@@ -113,5 +117,9 @@ void parse_science_data(void)
     }
     log_message("packet summary: full = %zu, broken = %zu", full, broken);
     got_first_sync_data = 0;
+
     free_got_first_sd_header();
+
+    // returning new file pointer to main funciton
+    return output_file_pointer;
 }
