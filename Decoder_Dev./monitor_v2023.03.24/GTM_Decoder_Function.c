@@ -12,10 +12,13 @@
 int decode_mode  = 0;
 int extract_mode = 0;
 int export_mode  = 0;
+
 FILE *bin_infile            = NULL;
+
 FILE *raw_extract_outfile   = NULL;
-FILE *raw_outfile           = NULL;
+FILE *raw_outfile           = NULL; // SD and TMTC shared
 FILE *raw_sync_outfile      = NULL;
+FILE *raw_adc_only_outfile  = NULL; // temporarily used for realtime plotting
 FILE *pipeline_outfile      = NULL;
 FILE *pipeline_sync_outfile = NULL;
 FILE *tmtc_master_outfile   = NULL;
@@ -42,8 +45,8 @@ int continuous_packet        = 1;
 char tmtc_header_all[] = "Bytes 0;Bytes 1;Bytes 2;Bytes 3;Bytes 4;Bytes 5;Bytes 6;Bytes 7;Bytes 8;Bytes 9;Bytes 10;Bytes 11;Bytes 12;Bytes 13;Bytes 14;Bytes 15;Bytes 16;Bytes 17;Bytes 18;Bytes 19;Bytes 20;Bytes 21;Bytes 22;Bytes 23;Bytes 24;Bytes 25;Bytes 26;Bytes 27;Bytes 28;Bytes 29;Bytes 30;Bytes 31;Bytes 32;Bytes 33;Bytes 34;Bytes 35;Bytes 36;Bytes 37;Bytes 38;Bytes 39;Bytes 40;Bytes 41;Bytes 42;Bytes 43;Bytes 44;Bytes 45;Bytes 46;Bytes 47;Bytes 48;Bytes 49;Bytes 50;Bytes 51;Bytes 52;Bytes 53;Bytes 54;Bytes 55;Bytes 56;Bytes 57;Bytes 58;Bytes 59;Bytes 60;Bytes 61;Bytes 62;Bytes 63;Bytes 64;Bytes 65;Bytes 66;Bytes 67;Bytes 68;Bytes 69;Bytes 70;Bytes 71;Bytes 72;Bytes 73;Bytes 74;Bytes 75;Bytes 76;Bytes 77;Bytes 78;Bytes 79;Bytes 80;Bytes 81;Bytes 82;Bytes 83;Bytes 84;Bytes 85;Bytes 86;Bytes 87;Bytes 88;Bytes 89;Bytes 90;Bytes 91;Bytes 92;Bytes 93;Bytes 94;Bytes 95;Bytes 96;Bytes 97;Bytes 98;Bytes 99;Bytes 100;Bytes 101;Bytes 102;Bytes 103;Bytes 104;Bytes 105;Bytes 106;Bytes 107;Bytes 108;Bytes 109;Bytes 110;Bytes 111;Bytes 112;Bytes 113;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;Bytes 119;Bytes 120;Bytes 121;Bytes 122;Bytes 123;Bytes 124;Bytes 125;Bytes 126;Bytes 127\n";
 char tmtc_header_master[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
 char tmtc_header_slave[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;Input Current Value;Input Voltage Value;Current Monitor Chip (U22) Temperature;HV Input Current Value;HV Input Voltage Value;Current Monitor Chip (U21) Temperature;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
-char raw_sync_header[]     = "gtm module;PPS counts;CMD-SAD sequence number;UTC day;UTC hour;UTC minute;UTC sec;UTC subsec;x position;y position;z position;x velocity;y velocity;z velocity;S/C Quaternion 1;S/C Quaternion 2;S/C Quaternion 3;S/C Quaternion 4\n";
-char tmtc_science_header[] = "PPS, UTC, Module ID, HV DAC, Recv CMDs Num, PCB Temp, CTR Temp, CTR Busy, CTR Busy+Buffer, Position, Velocity, Quaternion, Hit, Gain, ADC\n";
+char raw_sync_header[] = "gtm module;PPS counts;CMD-SAD sequence number;UTC day;UTC hour;UTC minute;UTC sec;UTC subsec;x position;y position;z position;x velocity;y velocity;z velocity;S/C Quaternion 1;S/C Quaternion 2;S/C Quaternion 3;S/C Quaternion 4\n";
+char raw_adc_only_header[] = "Module;CITIROC;Channel;Gain;ADC\n";
 int got_first_sd_header = 0;
 uint8_t sequence_count = 0;
 int got_first_time_info = 0;
@@ -183,6 +186,7 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
     char *raw_extract_outpath = NULL;
     char *raw_outpath = NULL;
     char *raw_sync_outpath = NULL;
+    char *raw_adc_only_outpath = NULL;
     char *pipeline_outpath = NULL;
     char *pipeline_sync_outpath = NULL;
     char *tmtc_master_outpath = NULL;
@@ -220,8 +224,20 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                     if (!raw_sync_outfile) {
                         log_error("can't open raw sync output file");
                     }
-                    fputs(raw_sync_header, raw_sync_outfile);
+                    if (ftell(raw_sync_outfile) == 0) {
+                        fputs(raw_sync_header, raw_sync_outfile);
+                    }
                     free(raw_sync_outpath);
+
+                    raw_adc_only_outpath = str_append(OutFilePath, "_science_raw_adc_only.csv");
+                    raw_adc_only_outfile = fopen(raw_adc_only_outpath, "a");
+                    if (!raw_adc_only_outfile) {
+                        log_error("can't open raw adc only output file");
+                    }
+                    if (ftell(raw_adc_only_outfile) == 0) {
+                        fputs(raw_adc_only_header, raw_adc_only_outfile);
+                    }
+                    free(raw_adc_only_outpath);
                 }
                 else if (export_mode == 2) {
                     pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
@@ -251,8 +267,20 @@ void open_all_file(char *InputFilePath, char *OutFilePath) {
                     if (!raw_sync_outfile) {
                         log_error("can't open raw sync output file");
                     }
-                    fputs(raw_sync_header, raw_sync_outfile);
+                    if (ftell(raw_sync_outfile) == 0) {
+                        fputs(raw_sync_header, raw_sync_outfile);
+                    }
                     free(raw_sync_outpath);
+
+                    raw_adc_only_outpath = str_append(OutFilePath, "_science_raw_adc_only.csv");
+                    raw_adc_only_outfile = fopen(raw_adc_only_outpath, "a");
+                    if (!raw_adc_only_outfile) {
+                        log_error("can't open raw adc only output file");
+                    }
+                    if (ftell(raw_adc_only_outfile) == 0) {
+                        fputs(raw_adc_only_header, raw_adc_only_outfile);
+                    }
+                    free(raw_adc_only_outpath);
 
                     pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
                     pipeline_outfile = fopen(pipeline_outpath, "a");
@@ -327,6 +355,7 @@ void close_all_file(void) {
                 if (export_mode == 1) {
                     fclose(raw_outfile);
                     fclose(raw_sync_outfile);
+                    fclose(raw_adc_only_outfile);
                 }
                 else if (export_mode == 2) {
                     fclose(pipeline_outfile);
@@ -335,6 +364,7 @@ void close_all_file(void) {
                 else if (export_mode == 3) {
                     fclose(raw_outfile);
                     fclose(raw_sync_outfile);
+                    fclose(raw_adc_only_outfile);
                     fclose(pipeline_outfile);
                     fclose(pipeline_sync_outfile);
                 }
@@ -736,6 +766,10 @@ static void write_event_buffer(void) {
         fprintf(raw_outfile, "event adc: ");
         // weird!!!
         fprintf(raw_outfile, "%1u;%5u;%10u;%1u;%1u;%3u;%1u;%5i\n", event_buffer->if_hit, event_buffer->pps_counter, event_buffer->fine_counter, event_buffer->gtm_module, event_buffer->citiroc_id, event_buffer->channel_id, event_buffer->energy_filter, event_buffer->adc_value);
+
+        // temporary output for realtime plotting
+        fprintf(raw_adc_only_outfile, "%u;%u;%u;%u;%i\n", event_buffer->gtm_module, event_buffer->citiroc_id, event_buffer->channel_id, event_buffer->energy_filter, event_buffer->adc_value);
+
     }
     if (export_mode == 2 || export_mode == 3) {
         fprintf(pipeline_outfile, "%0.8f;%s;%i;%f\n", find_time_delta(time_start, time_buffer), detector_name[event_buffer->gtm_module][event_buffer->citiroc_id][(int)(event_buffer->channel_id / 16)], event_buffer->channel_id, event_buffer->energy);

@@ -124,6 +124,7 @@ extern FILE *bin_infile;
 extern FILE *raw_extract_outfile;
 extern FILE *raw_outfile;
 extern FILE *raw_sync_outfile;
+extern FILE *raw_adc_only_outfile;
 extern FILE *pipeline_outfile;
 extern FILE *pipeline_sync_outfile;
 extern FILE *tmtc_master_outfile;
