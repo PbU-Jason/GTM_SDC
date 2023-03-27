@@ -19,13 +19,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class MplCanvas(FigureCanvasQTAgg):
 
     def __init__(self, parent=None, width=16, height=9, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi, constrained_layout=True)
+        self.fig = Figure(figsize=(width, height), dpi=dpi, constrained_layout=True)
         self.axesList = []
         # for i in range(1, 16+1, 1):
         #     self.axesList.append(fig.add_subplot(4, 4, i))
-        for i in range(1, 2+1, 1):
-            self.axesList.append(fig.add_subplot(1, 2, i))
-        super(MplCanvas, self).__init__(fig)
+        super(MplCanvas, self).__init__(self.fig)
 
 ### function ###
 def Loader(Filename):

@@ -18,13 +18,17 @@ import cv2
 
 from GTM_SDC_UI import Ui_MainWindow
 from GTM_SDC_Contral_C_Decoder import C_Decoder
-from GTM_SDC_PlottingWindow import Ui_PlottingWindow
-from GTM_SDC_PlottingFunction import MplCanvas, Loader
 
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+# # old version using matplotlib
+# from GTM_SDC_PlottingWindow import Ui_PlottingWindow
+# from GTM_SDC_PlottingFunction import MplCanvas, Loader
+# import matplotlib
+# matplotlib.use('Qt5Agg')
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.figure import Figure
+
+from pyqtgraph import PlotWidget, plot
+import pyqtgraph as pg
 
 class MainWindow_controller(QtWidgets.QMainWindow):
     def __init__(self):
@@ -36,7 +40,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def setup_control(self):
         ### GTM icon ###
         self.img_path = 'GTM_icon.png'
-        self.display_img()
+        self.Display_Img()
         
         ### Decoder ###
         self.ui.Decoder_Button.clicked.connect(self.ButtonClicked_Decoder)
@@ -90,14 +94,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # Define Plotting Variables
         self.low_gain  = 2
         self.high_gain = 20
-        self.df_1 = None
-        self.df_2 = None
+        self.Initailize_Plotting_Variables()
         
         # Start Decoding
         self.ui.Start_groupBox.setStyleSheet("QGroupBox{border:none}")
         self.ui.Start_Button.clicked.connect(self.ButtonClicked_Start)
         
-    def display_img(self):
+    def Display_Img(self):
         self.img = cv2.imread(self.img_path)
         height, width, channel = self.img.shape
         bytesPerline = 3 * width
@@ -343,6 +346,14 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.ui.Start_groupBox.setEnabled(False)
 
+    def Initailize_Plotting_Variables(self):
+        self.df_tmtc_master = pd.DataFrame()
+        self.df_tmtc_master_skip_num = 0
+        self.df_tmtc_slave = pd.DataFrame()
+        self.df_tmtc_slave_skip_num = 0
+        self.df_sd = pd.DataFrame()
+        self.df_sd_skip_num = 0
+    
     def ButtonClicked_Start(self):
         print("Decoding!")
 
@@ -399,13 +410,14 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
         # TMTC plotting mode
         elif self.Monitor_Modes == 1:
-            # self.Open_PlottingWindow()
 
             if self.ui.Master_GroupBox.isChecked():
                 self.Plotting_Module_list.append('Master')
                 
             if self.ui.Slave_GroupBox.isChecked():
                 self.Plotting_Module_list.append('Slave')
+
+            self.Open_PlottingWindow_TMTC()
 
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
@@ -419,26 +431,37 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     Input_Decoder_Filename_TMTC_Master = Input_Decoder_Filename.replace('.bin','_tmtc_master.csv')
                     Input_Decoder_Filename_TMTC_Slave = Input_Decoder_Filename.replace('.bin','_tmtc_slave.csv')
 
+                    if self.Plotting_Module_list == ['Master', 'Slave']:
+                        self.Plotting_TMTC([Input_Decoder_Filename_TMTC_Master, Input_Decoder_Filename_TMTC_Slave])
+                    elif self.Plotting_Module_list == ['Master']:
+                        self.Plotting_TMTC([Input_Decoder_Filename_TMTC_Master])
+                    elif self.Plotting_Module_list == ['Slave']:
+                        self.Plotting_TMTC([Input_Decoder_Filename_TMTC_Slave])
+                    else:
+                        print(self.Plotting_Module_list)
+                        print('Checking ButtonClicked_Start Plotting_TMTC!')
+
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
                         print(new_file_pointer)
-
+                        
                         if new_file_pointer == new_file_pointer_cache:
+                            self.Plotting_Module_list = []
                             break
                         else:
                             new_file_pointer_cache = new_file_pointer
                             QtTest.QTest.qWait(5000)
-                        
-                        if self.Plotting_Module_list == ['Master', 'Slave']:
-                            self.Plotting([Input_Decoder_Filename_TMTC_Master, Input_Decoder_Filename_TMTC_Slave])
-                        elif self.Plotting_Module_list == ['Master']:
-                            self.Plotting([Input_Decoder_Filename_TMTC_Master])
-                        elif self.Plotting_Module_list == ['Slave']:
-                            self.Plotting([Input_Decoder_Filename_TMTC_Slave])
-                        else:
-                            print('Checking!')
-        
+
+                            if self.Plotting_Module_list == ['Master', 'Slave']:
+                                self.Updating_Plotting_TMTC([Input_Decoder_Filename_TMTC_Master, Input_Decoder_Filename_TMTC_Slave])
+                            elif self.Plotting_Module_list == ['Master']:
+                                self.Updating_Plotting_TMTC([Input_Decoder_Filename_TMTC_Master])
+                            elif self.Plotting_Module_list == ['Slave']:
+                                self.Updating_Plotting_TMTC([Input_Decoder_Filename_TMTC_Slave])
+                            else:
+                                print('Checking ButtonClicked_Start Updating_Plotting_TMTC!')
+
         # SD plotting mode
         elif self.Monitor_Modes == 2:
 
@@ -493,48 +516,145 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             else:
                 print('Checking Monitor Modes!')
 
-    # def Open_PlottingWindow(self):
-    #     global window_1 
-    #     global ui_1
+    def Open_PlottingWindow_TMTC(self):
+
+        # Create layout to hold multiple subplots
+        self.pg_layout = pg.GraphicsLayoutWidget()
+        self.pg_layout.showMaximized()
+
+    def Plotting_TMTC(self, FilenameList):
+        print('Plotting TMTC!')
+
+        self.Initailize_Plotting_Variables()
+
+        if self.Plotting_Module_list == ['Master', 'Slave']:
+            # load data
+            self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+            # Add subplots
+            self.df_tmtc_master_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            self.df_tmtc_slave_pg_layout = self.pg_layout.addPlot(row=0, col=1, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+            # plotting
+            self.df_tmtc_master_data_line = self.df_tmtc_master_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+            self.df_tmtc_slave_data_line = self.df_tmtc_slave_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+
+        elif self.Plotting_Module_list == ['Master']:
+            # load data
+            self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            
+            # Add subplots
+            self.df_tmtc_master_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+            # plotting
+            self.df_tmtc_master_data_line = self.df_tmtc_master_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+
+        elif self.Plotting_Module_list == ['Slave']:
+            # load data
+            self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+            # Add subplots
+            self.df_tmtc_slave_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+            # plotting
+            self.df_tmtc_slave_data_line = self.df_tmtc_slave_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+
+        else:
+            print('Checking Plotting_TMTC!')
         
-    #     window_1 = QtWidgets.QMainWindow()
-    #     ui_1 = Ui_PlottingWindow()
-    #     ui_1.setupUi(window_1)
-    #     window_1.show()
-    #     print(999)
+        # Show our layout holding multiple subplots
+        self.pg_layout.show()
 
-    def Plotting(self, FilenameList):
-        print('Plotting')
+    def Updating_Plotting_TMTC(self, FilenameList):
 
-        # basic window setup
-        self.window_Plotting = QtWidgets.QMainWindow()
-        self.ui_Plotting = Ui_PlottingWindow()
-        self.ui_Plotting.setupUi(self.window_Plotting)
+        if self.Plotting_Module_list == ['Master', 'Slave']:
+            # updating data
+            self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+            # updating plotting
+            self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
+            self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
+        
+        elif self.Plotting_Module_list == ['Master']:
+            # updating data
+            self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            
+            # updating plotting
+            self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
+        
+        elif self.Plotting_Module_list == ['Slave']:
+            # updating data
+            self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+            # updating plotting
+            self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
+        
+        else:
+            print('Checking Updating_Plotting_TMTC!')
 
-        # loading data
-        self.df_1 = Loader(FilenameList[0])
-        self.df_2 = Loader(FilenameList[1])
+    def Loader(self, Filename, DataFrame, SkipNum):
+        if SkipNum == 0:
+            DataFrame = pd.read_csv(Filename, sep=';')
+        else:
+            df = pd.read_csv(Filename, sep=';', skiprows=SkipNum)
+            df.columns = DataFrame.columns
+            DataFrame = pd.concat([DataFrame, df], axis=0, ignore_index=True)
+        SkipNum = DataFrame.shape[0]
+        return DataFrame, SkipNum
 
-        # creat figure
-        sc = MplCanvas(self.window_Plotting)
 
-        # plotting
-        # for i in range(16):
-        #     sc.axesList[i].plot([0,1,2,3,4], [10,1,20,3,40])
-        sc.axesList[0].plot(range(len(self.df_1['Board Temperature#1'])), self.df_1['Board Temperature#1'])
-        sc.axesList[1].plot(range(len(self.df_2['Board Temperature#1'])), self.df_2['Board Temperature#1'])
 
-        # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
-        toolbar = NavigationToolbar(sc, self.window_Plotting)
+    # # old version using matplotlib
 
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(toolbar)
-        layout.addWidget(sc)
+    # def Open_PlottingWindow_TMTC(self):
+    #     # basic window setup
+    #     self.window_plotting_tmtc = QtWidgets.QMainWindow()
+    #     self.ui_plotting_tmtc = Ui_PlottingWindow()
+    #     self.ui_plotting_tmtc.setupUi(self.window_plotting_tmtc)
 
-        # Create a placeholder widget to hold our toolbar and canvas.
-        widget = QtWidgets.QWidget()
-        widget.setLayout(layout)
-        self.window_Plotting.setCentralWidget(widget)
+    # def Plotting_TMTC(self, FilenameList):
+    #     print('Plotting TMTC!')
 
-        self.window_Plotting.show()
+    #     # creat figure
+    #     sc_tmtc = MplCanvas(self.window_plotting_tmtc)
+
+    #     if self.Plotting_Module_list == ['Master', 'Slave']:
+    #         # loading data
+    #         self.df_tmtc_master = Loader(FilenameList[0])
+    #         self.df_tmtc_slave = Loader(FilenameList[1])
+    #         # plotting
+    #         for i in range(1, 2+1, 1):
+    #             sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 2, i))
+    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'])
+    #         sc_tmtc.axesList[1].plot(range(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'])
+    #     elif self.Plotting_Module_list == ['Master']:
+    #         # loading data
+    #         self.df_tmtc_master = Loader(FilenameList[0])
+    #         # plotting
+    #         sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 1, 1))
+    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'])
+    #     elif self.Plotting_Module_list == ['Slave']:
+    #         # loading data
+    #         self.df_tmtc_slave = Loader(FilenameList[0])
+    #         # plotting
+    #         sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 1, 1))
+    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'])
+    #     else:
+    #         print('Checking!')
+
+    #     # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
+    #     toolbar = NavigationToolbar(sc_tmtc, self.window_plotting_tmtc)
+
+    #     layout = QtWidgets.QVBoxLayout()
+    #     layout.addWidget(toolbar)
+    #     layout.addWidget(sc_tmtc)
+
+    #     # Create a placeholder widget to hold our toolbar and canvas.
+    #     widget = QtWidgets.QWidget()
+    #     widget.setLayout(layout)
+    #     self.window_plotting_tmtc.setCentralWidget(widget)
+
+    #     self.window_plotting_tmtc.show()
             

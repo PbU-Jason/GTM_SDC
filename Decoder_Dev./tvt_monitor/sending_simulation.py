@@ -14,8 +14,8 @@ import pandas as pd
 #====================
 
 ### selection ###
-dt = 0.001 # s
-file_in = '083353.369.bin'
+dt = 0.01 # s
+file_in = '123352.477.bin'
 #====================
 
 ### fixed variables ###
