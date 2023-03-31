@@ -438,7 +438,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     elif self.Plotting_Module_list == ['Slave']:
                         self.Plotting_TMTC([Input_Decoder_Filename_TMTC_Slave])
                     else:
-                        print(self.Plotting_Module_list)
                         print('Checking ButtonClicked_Start Plotting_TMTC!')
 
                     continue_decode = True
@@ -465,6 +464,26 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # SD plotting mode
         elif self.Monitor_Modes == 2:
 
+            if self.ui.Master_CheckBox_Sensor1.isChecked():
+                self.Plotting_Master_Sensor_list.append('M1')
+            if self.ui.Master_CheckBox_Sensor2.isChecked():
+                self.Plotting_Master_Sensor_list.append('M2')
+            if self.ui.Master_CheckBox_Sensor3.isChecked():
+                self.Plotting_Master_Sensor_list.append('M3')
+            if self.ui.Master_CheckBox_Sensor4.isChecked():
+                self.Plotting_Master_Sensor_list.append('M4')
+
+            if self.ui.Slave_CheckBox_Sensor1.isChecked():
+                self.Plotting_Slave_Sensor_list.append('S1')
+            if self.ui.Slave_CheckBox_Sensor2.isChecked():
+                self.Plotting_Slave_Sensor_list.append('S2')
+            if self.ui.Slave_CheckBox_Sensor3.isChecked():
+                self.Plotting_Slave_Sensor_list.append('S3')
+            if self.ui.Slave_CheckBox_Sensor4.isChecked():
+                self.Plotting_Slave_Sensor_list.append('S4')
+
+            self.Open_PlottingWindow_SD()
+
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
@@ -474,16 +493,23 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     QtTest.QTest.qWait(1000)
 
+                    Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_science_raw_adc_only.csv')
+                    self.Plotting_TMTC([Input_Decoder_Filename_SD])
+
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
                         print(new_file_pointer)
 
                         if new_file_pointer == new_file_pointer_cache:
+                            self.Plotting_Master_Sensor_list = []
+                            self.Plotting_Slave_Sensor_list = []
                             break
                         else:
                             new_file_pointer_cache = new_file_pointer
-                            QtTest.QTest.qWait(10000)
+                            QtTest.QTest.qWait(5000)
+
+                            self.Plotting_TMTC([Input_Decoder_Filename_SD])
             
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
@@ -499,6 +525,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     QtTest.QTest.qWait(1000)
 
+                    Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_extracted_science_raw_adc_only.csv')
+                    self.Plotting_TMTC([Input_Decoder_Filename_SD])
+
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
@@ -507,11 +536,15 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         print(new_file_pointer_decode)
 
                         if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
+                            self.Plotting_Master_Sensor_list = []
+                            self.Plotting_Slave_Sensor_list = []
                             break
                         else:
                             new_file_pointer_extract_cache = new_file_pointer_extract
                             new_file_pointer_decode_cache = new_file_pointer_decode
-                            QtTest.QTest.qWait(1000)
+                            QtTest.QTest.qWait(5000)
+
+                            self.Plotting_TMTC([Input_Decoder_Filename_SD])
             
             else:
                 print('Checking Monitor Modes!')
@@ -519,8 +552,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def Open_PlottingWindow_TMTC(self):
 
         # Create layout to hold multiple subplots
-        self.pg_layout = pg.GraphicsLayoutWidget()
-        self.pg_layout.showMaximized()
+        self.tmtc_pg_layout = pg.GraphicsLayoutWidget()
+        self.tmtc_pg_layout.showMaximized()
 
     def Plotting_TMTC(self, FilenameList):
         print('Plotting TMTC!')
@@ -533,38 +566,38 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
             
             # Add subplots
-            self.df_tmtc_master_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
-            self.df_tmtc_slave_pg_layout = self.pg_layout.addPlot(row=0, col=1, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=1, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
 
             # plotting
-            self.df_tmtc_master_data_line = self.df_tmtc_master_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
-            self.df_tmtc_slave_data_line = self.df_tmtc_slave_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+            self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+            self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
 
         elif self.Plotting_Module_list == ['Master']:
             # load data
             self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
             
             # Add subplots
-            self.df_tmtc_master_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
 
             # plotting
-            self.df_tmtc_master_data_line = self.df_tmtc_master_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+            self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
 
         elif self.Plotting_Module_list == ['Slave']:
             # load data
             self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
             
             # Add subplots
-            self.df_tmtc_slave_pg_layout = self.pg_layout.addPlot(row=0, col=0, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
 
             # plotting
-            self.df_tmtc_slave_data_line = self.df_tmtc_slave_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+            self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
 
         else:
             print('Checking Plotting_TMTC!')
         
         # Show our layout holding multiple subplots
-        self.pg_layout.show()
+        self.tmtc_pg_layout.show()
 
     def Updating_Plotting_TMTC(self, FilenameList):
 
@@ -593,6 +626,116 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         
         else:
             print('Checking Updating_Plotting_TMTC!')
+
+    def Open_PlottingWindow_SD(self):
+
+        if ('M1' in Plotting_Master_Sensor_list) or ('M2' in Plotting_Master_Sensor_list):
+            # Create layout to hold multiple subplots
+            self.sd_master_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_B_pg_layout.showMaximized()
+            # second for lg (now)
+            self.sd_master_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_B_lg_pg_layout.showMaximized()
+
+        if ('M3' in Plotting_Master_Sensor_list) or ('M4' in Plotting_Master_Sensor_list):
+            # Create layout to hold multiple subplots
+            self.sd_master_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_A_pg_layout.showMaximized()
+            # second for lg (now)
+            self.sd_master_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_A_lg_pg_layout.showMaximized()
+
+        if ('S1' in Plotting_Slave_Sensor_list) or ('S2' in Plotting_Slave_Sensor_list):
+            # Create layout to hold multiple subplots
+            self.sd_slave_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_B_pg_layout.showMaximized()
+            # second for lg (now)
+            self.sd_slave_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_B_lg_pg_layout.showMaximized()
+
+        if ('S3' in Plotting_Slave_Sensor_list) or ('S4' in Plotting_Slave_Sensor_list):
+            # Create layout to hold multiple subplots
+            self.sd_slave_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_A_pg_layout.showMaximized()
+            # second for lg (now)
+            self.sd_slave_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_A_lg_pg_layout.showMaximized()
+    
+    def Plotting_SD(self, FilenameList):
+        print('Plotting SD!')
+
+        self.Initailize_Plotting_Variables()
+
+        # load data
+        self.df_sd, self.df_sd_skip_num = self.Loader(FilenameList[0], self.df_sd, self.df_sd_skip_num)
+
+        # if self.Plotting_Module_list == ['Master', 'Slave']:
+        #     # load data
+        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+        #     # Add subplots
+        #     self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+        #     self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=1, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+        #     # plotting
+        #     self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+        #     self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+
+        # elif self.Plotting_Module_list == ['Master']:
+        #     # load data
+        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            
+        #     # Add subplots
+        #     self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+        #     # plotting
+        #     self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
+
+        # elif self.Plotting_Module_list == ['Slave']:
+        #     # load data
+        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+        #     # Add subplots
+        #     self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+
+        #     # plotting
+        #     self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+
+        # else:
+        #     print('Checking Plotting_TMTC!')
+        
+        # # Show our layout holding multiple subplots
+        # self.tmtc_pg_layout.show()
+
+    def Updating_Plotting_SD(self, FilenameList):
+
+        # if self.Plotting_Module_list == ['Master', 'Slave']:
+        #     # updating data
+        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+        #     # updating plotting
+        #     self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
+        #     self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
+        
+        # elif self.Plotting_Module_list == ['Master']:
+        #     # updating data
+        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
+            
+        #     # updating plotting
+        #     self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
+        
+        # elif self.Plotting_Module_list == ['Slave']:
+        #     # updating data
+        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+            
+        #     # updating plotting
+        #     self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
+        
+        # else:
+        #     print('Checking Updating_Plotting_TMTC!')
+
 
     def Loader(self, Filename, DataFrame, SkipNum):
         if SkipNum == 0:
