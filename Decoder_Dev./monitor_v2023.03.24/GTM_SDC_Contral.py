@@ -10,6 +10,7 @@ import re
 import time
 import numpy as np
 import pandas as pd
+from itertools import product
 
 from PyQt5 import QtCore, QtWidgets, QtTest
 from PyQt5.QtGui import QImage, QPixmap
@@ -94,7 +95,11 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # Define Plotting Variables
         self.low_gain  = 2
         self.high_gain = 20
-        self.Initailize_Plotting_Variables()
+        self.plot_min = -1000
+        self.plot_max = 2**14
+        self.bin_size = 5
+        self.Initailize_Plotting_DF()
+        self.Initailize_Plotting_Skip_Num()
         
         # Start Decoding
         self.ui.Start_groupBox.setStyleSheet("QGroupBox{border:none}")
@@ -321,7 +326,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         self.Monitor_Modes = 0
                         self.ui.Start_groupBox.setEnabled(True)
                     elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
-                        if self.ui.Master_GroupBox.isChecked():
+                        if self.ui.Master_GroupBox.isChecked() and self.ui.Slave_GroupBox.isChecked():
+                            if (self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
+                            or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked())\
+                            and (self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked()\
+                            or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked()):
+                                self.Monitor_Modes = 2
+                                self.ui.Start_groupBox.setEnabled(True)
+                            else:
+                                self.ui.Start_groupBox.setEnabled(False)
+                        elif self.ui.Master_GroupBox.isChecked():
                             if self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
                             or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked():
                                 self.Monitor_Modes = 2
@@ -346,12 +360,17 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.ui.Start_groupBox.setEnabled(False)
 
-    def Initailize_Plotting_Variables(self):
+    def Initailize_Plotting_DF(self):
         self.df_tmtc_master = pd.DataFrame()
-        self.df_tmtc_master_skip_num = 0
         self.df_tmtc_slave = pd.DataFrame()
-        self.df_tmtc_slave_skip_num = 0
+
         self.df_sd = pd.DataFrame()
+        self.df_sd_grouped = pd.DataFrame()
+
+    def Initailize_Plotting_Skip_Num(self):
+        self.df_tmtc_master_skip_num = 0
+        self.df_tmtc_slave_skip_num = 0
+
         self.df_sd_skip_num = 0
     
     def ButtonClicked_Start(self):
@@ -411,22 +430,32 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # TMTC plotting mode
         elif self.Monitor_Modes == 1:
 
+            self.Initailize_Plotting_DF()  
+
             if self.ui.Master_GroupBox.isChecked():
                 self.Plotting_Module_list.append('Master')
-                
+        
             if self.ui.Slave_GroupBox.isChecked():
-                self.Plotting_Module_list.append('Slave')
+                self.Plotting_Module_list.append('Slave')     
 
             self.Open_PlottingWindow_TMTC()
 
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
-                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+                    
+                    self.Initailize_Plotting_Skip_Num()
+
+                    if file_ind != 0:
+                        if self.ui.Master_GroupBox.isChecked():
+                            self.Plotting_Module_list.append('Master')
+                    
+                        if self.ui.Slave_GroupBox.isChecked():
+                            self.Plotting_Module_list.append('Slave')
+
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
-
-                    QtTest.QTest.qWait(1000)
 
                     Input_Decoder_Filename_TMTC_Master = Input_Decoder_Filename.replace('.bin','_tmtc_master.csv')
                     Input_Decoder_Filename_TMTC_Slave = Input_Decoder_Filename.replace('.bin','_tmtc_slave.csv')
@@ -439,6 +468,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         self.Plotting_TMTC([Input_Decoder_Filename_TMTC_Slave])
                     else:
                         print('Checking ButtonClicked_Start Plotting_TMTC!')
+
+                    QtTest.QTest.qWait(1000)
 
                     continue_decode = True
                     while continue_decode:
@@ -464,37 +495,69 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         # SD plotting mode
         elif self.Monitor_Modes == 2:
 
-            if self.ui.Master_CheckBox_Sensor1.isChecked():
-                self.Plotting_Master_Sensor_list.append('M1')
-            if self.ui.Master_CheckBox_Sensor2.isChecked():
-                self.Plotting_Master_Sensor_list.append('M2')
-            if self.ui.Master_CheckBox_Sensor3.isChecked():
-                self.Plotting_Master_Sensor_list.append('M3')
-            if self.ui.Master_CheckBox_Sensor4.isChecked():
-                self.Plotting_Master_Sensor_list.append('M4')
+            self.Initailize_Plotting_DF()
 
-            if self.ui.Slave_CheckBox_Sensor1.isChecked():
-                self.Plotting_Slave_Sensor_list.append('S1')
-            if self.ui.Slave_CheckBox_Sensor2.isChecked():
-                self.Plotting_Slave_Sensor_list.append('S2')
-            if self.ui.Slave_CheckBox_Sensor3.isChecked():
-                self.Plotting_Slave_Sensor_list.append('S3')
-            if self.ui.Slave_CheckBox_Sensor4.isChecked():
-                self.Plotting_Slave_Sensor_list.append('S4')
+            if self.ui.Master_GroupBox.isChecked():
+                if self.ui.Master_CheckBox_Sensor1.isChecked():
+                    self.Plotting_Master_Sensor_list.append('M1')
+                if self.ui.Master_CheckBox_Sensor2.isChecked():
+                    self.Plotting_Master_Sensor_list.append('M2')
+                if self.ui.Master_CheckBox_Sensor3.isChecked():
+                    self.Plotting_Master_Sensor_list.append('M3')
+                if self.ui.Master_CheckBox_Sensor4.isChecked():
+                    self.Plotting_Master_Sensor_list.append('M4')
+
+            if self.ui.Slave_GroupBox.isChecked():
+                if self.ui.Slave_CheckBox_Sensor1.isChecked():
+                    self.Plotting_Slave_Sensor_list.append('S1')
+                if self.ui.Slave_CheckBox_Sensor2.isChecked():
+                    self.Plotting_Slave_Sensor_list.append('S2')
+                if self.ui.Slave_CheckBox_Sensor3.isChecked():
+                    self.Plotting_Slave_Sensor_list.append('S3')
+                if self.ui.Slave_CheckBox_Sensor4.isChecked():
+                    self.Plotting_Slave_Sensor_list.append('S4')
 
             self.Open_PlottingWindow_SD()
 
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
-                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+                    
+                    self.Initailize_Plotting_Skip_Num()
+
+                    if file_ind != 0:
+
+                        if self.ui.Master_GroupBox.isChecked():
+                            if self.ui.Master_CheckBox_Sensor1.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M1')
+                            if self.ui.Master_CheckBox_Sensor2.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M2')
+                            if self.ui.Master_CheckBox_Sensor3.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M3')
+                            if self.ui.Master_CheckBox_Sensor4.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M4')
+
+                        if self.ui.Slave_GroupBox.isChecked():
+                            if self.ui.Slave_CheckBox_Sensor1.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S1')
+                            if self.ui.Slave_CheckBox_Sensor2.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S2')
+                            if self.ui.Slave_CheckBox_Sensor3.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S3')
+                            if self.ui.Slave_CheckBox_Sensor4.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S4')
+
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
-                    QtTest.QTest.qWait(1000)
-
                     Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_science_raw_adc_only.csv')
-                    self.Plotting_TMTC([Input_Decoder_Filename_SD])
+                    if file_ind == 0:
+                        self.Plotting_SD([Input_Decoder_Filename_SD])
+                    else:
+                        self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
+
+                    QtTest.QTest.qWait(1000)
 
                     continue_decode = True
                     while continue_decode:
@@ -509,11 +572,36 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             new_file_pointer_cache = new_file_pointer
                             QtTest.QTest.qWait(5000)
 
-                            self.Plotting_TMTC([Input_Decoder_Filename_SD])
+                            self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
             
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
-                for Input_Decoder_Filename in self.Input_Decoder_Filename:
+                for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+                    
+                    self.Initailize_Plotting_Skip_Num()
+
+                    if file_ind != 0:
+
+                        if self.ui.Master_GroupBox.isChecked():
+                            if self.ui.Master_CheckBox_Sensor1.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M1')
+                            if self.ui.Master_CheckBox_Sensor2.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M2')
+                            if self.ui.Master_CheckBox_Sensor3.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M3')
+                            if self.ui.Master_CheckBox_Sensor4.isChecked():
+                                self.Plotting_Master_Sensor_list.append('M4')
+
+                        if self.ui.Slave_GroupBox.isChecked():
+                            if self.ui.Slave_CheckBox_Sensor1.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S1')
+                            if self.ui.Slave_CheckBox_Sensor2.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S2')
+                            if self.ui.Slave_CheckBox_Sensor3.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S3')
+                            if self.ui.Slave_CheckBox_Sensor4.isChecked():
+                                self.Plotting_Slave_Sensor_list.append('S4')
+
                     new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
@@ -523,10 +611,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     print(new_file_pointer_decode)
                     new_file_pointer_decode_cache = new_file_pointer_decode
 
-                    QtTest.QTest.qWait(1000)
-
                     Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_extracted_science_raw_adc_only.csv')
-                    self.Plotting_TMTC([Input_Decoder_Filename_SD])
+                    if file_ind == 0:
+                        self.Plotting_SD([Input_Decoder_Filename_SD])
+                    else:
+                        self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
+
+                    QtTest.QTest.qWait(1000)
 
                     continue_decode = True
                     while continue_decode:
@@ -544,7 +635,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             new_file_pointer_decode_cache = new_file_pointer_decode
                             QtTest.QTest.qWait(5000)
 
-                            self.Plotting_TMTC([Input_Decoder_Filename_SD])
+                            self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
             
             else:
                 print('Checking Monitor Modes!')
@@ -557,8 +648,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def Plotting_TMTC(self, FilenameList):
         print('Plotting TMTC!')
-
-        self.Initailize_Plotting_Variables()
 
         if self.Plotting_Module_list == ['Master', 'Slave']:
             # load data
@@ -600,6 +689,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.tmtc_pg_layout.show()
 
     def Updating_Plotting_TMTC(self, FilenameList):
+        print('Updating TMTC!')
 
         if self.Plotting_Module_list == ['Master', 'Slave']:
             # updating data
@@ -629,116 +719,559 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def Open_PlottingWindow_SD(self):
 
-        if ('M1' in Plotting_Master_Sensor_list) or ('M2' in Plotting_Master_Sensor_list):
+        if ('M1' in self.Plotting_Master_Sensor_list) or ('M2' in self.Plotting_Master_Sensor_list):
             # Create layout to hold multiple subplots
             self.sd_master_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_master_CITIROC_B_pg_layout.showMaximized()
             # second for lg (now)
             self.sd_master_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_master_CITIROC_B_lg_pg_layout.showMaximized()
+            # # Show our layout holding multiple subplots
+            # self.sd_master_CITIROC_B_pg_layout.show()
+            # self.sd_master_CITIROC_B_lg_pg_layout.show()
 
-        if ('M3' in Plotting_Master_Sensor_list) or ('M4' in Plotting_Master_Sensor_list):
+        if ('M3' in self.Plotting_Master_Sensor_list) or ('M4' in self.Plotting_Master_Sensor_list):
             # Create layout to hold multiple subplots
             self.sd_master_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_master_CITIROC_A_pg_layout.showMaximized()
             # second for lg (now)
             self.sd_master_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_master_CITIROC_A_lg_pg_layout.showMaximized()
+            # # Show our layout holding multiple subplots
+            # self.sd_master_CITIROC_A_pg_layout.show()
+            # self.sd_master_CITIROC_A_lg_pg_layout.show()
 
-        if ('S1' in Plotting_Slave_Sensor_list) or ('S2' in Plotting_Slave_Sensor_list):
+        if ('S1' in self.Plotting_Slave_Sensor_list) or ('S2' in self.Plotting_Slave_Sensor_list):
             # Create layout to hold multiple subplots
             self.sd_slave_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_slave_CITIROC_B_pg_layout.showMaximized()
             # second for lg (now)
             self.sd_slave_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_slave_CITIROC_B_lg_pg_layout.showMaximized()
+            # # Show our layout holding multiple subplots
+            # self.sd_slave_CITIROC_B_pg_layout.show()
+            # self.sd_slave_CITIROC_B_lg_pg_layout.show()
 
-        if ('S3' in Plotting_Slave_Sensor_list) or ('S4' in Plotting_Slave_Sensor_list):
+        if ('S3' in self.Plotting_Slave_Sensor_list) or ('S4' in self.Plotting_Slave_Sensor_list):
             # Create layout to hold multiple subplots
             self.sd_slave_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_slave_CITIROC_A_pg_layout.showMaximized()
             # second for lg (now)
             self.sd_slave_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
             self.sd_slave_CITIROC_A_lg_pg_layout.showMaximized()
+            # # Show our layout holding multiple subplots
+            # self.sd_slave_CITIROC_A_pg_layout.show()
+            # self.sd_slave_CITIROC_A_lg_pg_layout.show()
     
     def Plotting_SD(self, FilenameList):
         print('Plotting SD!')
 
-        self.Initailize_Plotting_Variables()
-
         # load data
         self.df_sd, self.df_sd_skip_num = self.Loader(FilenameList[0], self.df_sd, self.df_sd_skip_num)
+        # group data
+        self.df_sd_grouped = self.df_sd.groupby(['Module', 'CITIROC', 'Channel', 'Gain'])
 
-        # if self.Plotting_Module_list == ['Master', 'Slave']:
-        #     # load data
-        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
-        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
+        # M1 & M2 cases
+        if ('M1' in self.Plotting_Master_Sensor_list) or ('M2' in self.Plotting_Master_Sensor_list):
+
+            if ('M1' in self.Plotting_Master_Sensor_list) and ('M2' in self.Plotting_Master_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    if channel[0] >= 4:
+                        sensor_name = 'sensor_1'
+                    else:
+                        sensor_name = 'sensor_2'
+                    
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"] = self.sd_master_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    
+                    # plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            elif 'M1' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"] = self.sd_master_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
+                
+                    # plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
             
-        #     # Add subplots
-        #     self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
-        #     self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=1, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            elif 'M2' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"] = self.sd_master_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
 
-        #     # plotting
-        #     self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
-        #     self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
+                    # plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
 
-        # elif self.Plotting_Module_list == ['Master']:
-        #     # load data
-        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
-            
-        #     # Add subplots
-        #     self.df_tmtc_master_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Master Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
+            else:
+                print('Checking M1 & M2!')
 
-        #     # plotting
-        #     self.df_tmtc_master_data_line = self.df_tmtc_master_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_master['Board Temperature#1'])),self.df_tmtc_master['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(255, 0, 0)))
-
-        # elif self.Plotting_Module_list == ['Slave']:
-        #     # load data
-        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
-            
-        #     # Add subplots
-        #     self.df_tmtc_slave_tmtc_pg_layout = self.tmtc_pg_layout.addPlot(row=0, col=0, title="Slave Board Temperature#1", labels={'left': 'Temperature [°C]', 'bottom': 'Dummy Count [#]'})
-
-        #     # plotting
-        #     self.df_tmtc_slave_data_line = self.df_tmtc_slave_tmtc_pg_layout.plot(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy(), pen=pg.mkPen(color=(0, 0, 255)))
-
-        # else:
-        #     print('Checking Plotting_TMTC!')
+            # Show our layout holding multiple subplots
+            self.sd_master_CITIROC_B_pg_layout.show()
+            self.sd_master_CITIROC_B_lg_pg_layout.show()
         
-        # # Show our layout holding multiple subplots
-        # self.tmtc_pg_layout.show()
+        # M3 & M4 cases
+        if ('M3' in self.Plotting_Master_Sensor_list) or ('M4' in self.Plotting_Master_Sensor_list):
+
+            if ('M3' in self.Plotting_Master_Sensor_list) and ('M4' in self.Plotting_Master_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    if channel[0] >= 4:
+                        sensor_name = 'sensor_3'
+                    else:
+                        sensor_name = 'sensor_4'
+                    
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"] = self.sd_master_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    
+                    # plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            elif 'M3' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"] = self.sd_master_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
+                
+                    # plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+            
+            elif 'M4' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"] = self.sd_master_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
+                    globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
+
+                    # plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            else:
+                print('Checking M3 & M4!')
+
+            # Show our layout holding multiple subplots
+            self.sd_master_CITIROC_A_pg_layout.show()
+            self.sd_master_CITIROC_A_lg_pg_layout.show()
+
+        # S1 & S2 cases
+        if ('S1' in self.Plotting_Slave_Sensor_list) or ('S2' in self.Plotting_Slave_Sensor_list):
+
+            if ('S1' in self.Plotting_Slave_Sensor_list) and ('S2' in self.Plotting_Slave_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    if channel[0] >= 4:
+                        sensor_name = 'sensor_1'
+                    else:
+                        sensor_name = 'sensor_2'
+                    
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"] = self.sd_slave_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    
+                    # plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            elif 'S1' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"] = self.sd_slave_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
+                
+                    # plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+            
+            elif 'S2' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"] = self.sd_slave_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
+
+                    # plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            else:
+                print('Checking S1 & S2!')
+
+            # Show our layout holding multiple subplots
+            self.sd_slave_CITIROC_B_pg_layout.show()
+            self.sd_slave_CITIROC_B_lg_pg_layout.show()
+        
+        # S3 & S4 cases
+        if ('S3' in self.Plotting_Slave_Sensor_list) or ('S4' in self.Plotting_Slave_Sensor_list):
+
+            if ('S4' in self.Plotting_Slave_Sensor_list) and ('S3' in self.Plotting_Slave_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    if channel[0] >= 4:
+                        sensor_name = 'sensor_3'
+                    else:
+                        sensor_name = 'sensor_4'
+                    
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"] = self.sd_slave_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
+                    
+                    # plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            elif 'S3' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"] = self.sd_slave_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
+                
+                    # plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+            
+            elif 'S4' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # Add subplots
+                    globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"] = self.sd_slave_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
+                    globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
+
+                    # plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+                            
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
+
+            else:
+                print('Checking S3 & S4!')
+
+            # Show our layout holding multiple subplots
+            self.sd_slave_CITIROC_A_pg_layout.show()
+            self.sd_slave_CITIROC_A_lg_pg_layout.show()
 
     def Updating_Plotting_SD(self, FilenameList):
+        print('Updating SD!')
 
-        # if self.Plotting_Module_list == ['Master', 'Slave']:
-        #     # updating data
-        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
-        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[1], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
-            
-        #     # updating plotting
-        #     self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
-        #     self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
-        
-        # elif self.Plotting_Module_list == ['Master']:
-        #     # updating data
-        #     self.df_tmtc_master, self.df_tmtc_master_skip_num = self.Loader(FilenameList[0], self.df_tmtc_master, self.df_tmtc_master_skip_num)
-            
-        #     # updating plotting
-        #     self.df_tmtc_master_data_line.setData(np.arange(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'].to_numpy())
-        
-        # elif self.Plotting_Module_list == ['Slave']:
-        #     # updating data
-        #     self.df_tmtc_slave, self.df_tmtc_slave_skip_num = self.Loader(FilenameList[0], self.df_tmtc_slave, self.df_tmtc_slave_skip_num)
-            
-        #     # updating plotting
-        #     self.df_tmtc_slave_data_line.setData(np.arange(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'].to_numpy())
-        
-        # else:
-        #     print('Checking Updating_Plotting_TMTC!')
+        # update data
+        self.df_sd, self.df_sd_skip_num = self.Loader(FilenameList[0], self.df_sd, self.df_sd_skip_num)
+        # regroup data
+        self.df_sd_grouped = self.df_sd.groupby(['Module', 'CITIROC', 'Channel', 'Gain'])
 
+        # M1 & M2 cases
+        if ('M1' in self.Plotting_Master_Sensor_list) or ('M2' in self.Plotting_Master_Sensor_list):
+
+            if ('M1' in self.Plotting_Master_Sensor_list) and ('M2' in self.Plotting_Master_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'M1' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)            
+            elif 'M2' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+                            
+                    lg_config = ((0, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            else:
+                print('Checking M1 & M2!')
+
+        # M3 & M4 cases
+        if ('M3' in self.Plotting_Master_Sensor_list) or ('M4' in self.Plotting_Master_Sensor_list):
+
+            if ('M3' in self.Plotting_Master_Sensor_list) and ('M4' in self.Plotting_Master_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'M3' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'M4' in self.Plotting_Master_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((0, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((0, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_master_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            else:
+                print('Checking M3 & M4!')
+
+        # S1 & S2 cases
+        if ('S1' in self.Plotting_Slave_Sensor_list) or ('S2' in self.Plotting_Slave_Sensor_list):
+
+            if ('S1' in self.Plotting_Slave_Sensor_list) and ('S2' in self.Plotting_Slave_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'S1' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'S2' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 1, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 1, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_B_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            else:
+                print('Checking S1 & S2!')
+        
+        # S3 & S4 cases
+        if ('S3' in self.Plotting_Slave_Sensor_list) or ('S4' in self.Plotting_Slave_Sensor_list):
+
+            if ('S4' in self.Plotting_Slave_Sensor_list) and ('S3' in self.Plotting_Slave_Sensor_list):
+                for index, channel in enumerate(list(product(range(8), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'S3' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            elif 'S4' in self.Plotting_Slave_Sensor_list:
+                for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # updating plotting
+                    hg_config = ((1, 0, index, 0))
+                    if hg_config in self.df_sd_grouped.groups.keys():
+                        adc_hg = self.df_sd_grouped.get_group(hg_config)
+                        hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+                    lg_config = ((1, 0, index, 1))
+                    if lg_config in self.df_sd_grouped.groups.keys():
+                        adc_lg = self.df_sd_grouped.get_group(lg_config)
+                        hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
+                        globals()[f"self.sd_slave_CITIROC_A_lg_data_line_{index}"].setData(bin_edges[:-1], hist)
+
+            else:
+                print('Checking S3 & S4!')
 
     def Loader(self, Filename, DataFrame, SkipNum):
-        if SkipNum == 0:
+        if DataFrame.empty:
             DataFrame = pd.read_csv(Filename, sep=';')
         else:
             df = pd.read_csv(Filename, sep=';', skiprows=SkipNum)
@@ -746,6 +1279,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             DataFrame = pd.concat([DataFrame, df], axis=0, ignore_index=True)
         SkipNum = DataFrame.shape[0]
         return DataFrame, SkipNum
+
+
 
 
 
