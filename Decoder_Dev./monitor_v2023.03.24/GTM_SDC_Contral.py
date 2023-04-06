@@ -62,10 +62,11 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.Export_Modes_CheckBox_Sci_Both.clicked.connect(self.Sci_Both_CheckBoxClick)
         self.Export_Modes = 0
 
-        # Monitor Modes
-        self.ui.Monitor_Modes_radioButton_Plotting.clicked.connect(self.Monitor_OnOff)
-        self.ui.Monitor_Modes_radioButton_Silence.clicked.connect(self.Monitor_OnOff)
+        # Monitor Modes (both need Update Rate)
+        self.ui.Monitor_Modes_radioButton_Plotting.clicked.connect(self.Monitor_Update_OnOff)
+        self.ui.Monitor_Modes_radioButton_Silence.clicked.connect(self.Monitor_Update_OnOff)
         self.Monitor_Modes = 0 # 1 for TMTC, 2 foe SD
+        self.ui.Update_Rate_comboBox.setCurrentIndex(4) # default is 1 min
 
         # Module and Sensor Selection
         self.ui.Master_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
@@ -151,6 +152,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Export_Modes_CheckBox_Sci_Both.setEnabled(False)
 
             self.ui.Monitor_Modes_Group.setEnabled(False)
+            self.ui.Update_Rate_Group.setEnabled(False)
             self.ui.Module_Sensor_GroupBox.setEnabled(False)
             
             self.ui.Control_groupBox.setEnabled(False)
@@ -201,7 +203,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Export_Modes_CheckBox_Sci_Pipeline.setEnabled(False)
             self.ui.Export_Modes_CheckBox_Sci_Both.setEnabled(False)
 
-        self.Monitor_OnOff()
+        self.Monitor_Update_OnOff()
         
     def Extract_CheckBoxClick(self):
         if self.ui.Extract_NSPO_CheckBox.isChecked():
@@ -209,7 +211,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.Extract_Selection = 0
 
-        self.Monitor_OnOff()
+        self.Monitor_Update_OnOff()
     
     def Sci_Raw_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Raw.isChecked():
@@ -219,7 +221,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.Export_Modes = 0
         
-        self.Monitor_OnOff()
+        self.Monitor_Update_OnOff()
     
     def Sci_Pipeline_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Pipeline.isChecked():
@@ -229,7 +231,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.Export_Modes = 0
         
-        self.Monitor_OnOff()
+        self.Monitor_Update_OnOff()
     
     def Sci_Both_CheckBoxClick(self):
         if self.ui.Export_Modes_CheckBox_Sci_Both.isChecked():
@@ -239,25 +241,32 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.Export_Modes = 0
         
-        self.Monitor_OnOff()
+        self.Monitor_Update_OnOff()
     
-    def Monitor_OnOff(self):
+    def Monitor_Update_OnOff(self):
         if self.Input_Decoder_Filename != []:
             if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
                 self.ui.Monitor_Modes_Group.setEnabled(True)
+                self.ui.Update_Rate_Group.setEnabled(True)
             elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
                 if self.ui.Export_Modes_CheckBox_Sci_Raw.isChecked():
                     self.ui.Monitor_Modes_Group.setEnabled(True)
+                    self.ui.Update_Rate_Group.setEnabled(True)
                 elif self.ui.Export_Modes_CheckBox_Sci_Pipeline.isChecked():
                     self.ui.Monitor_Modes_Group.setEnabled(True)
+                    self.ui.Update_Rate_Group.setEnabled(True)
                 elif self.ui.Export_Modes_CheckBox_Sci_Both.isChecked():
                     self.ui.Monitor_Modes_Group.setEnabled(True)
+                    self.ui.Update_Rate_Group.setEnabled(True)
                 else:
                     self.ui.Monitor_Modes_Group.setEnabled(False)
+                    self.ui.Update_Rate_Group.setEnabled(False)
             else:
                 self.ui.Monitor_Modes_Group.setEnabled(False)
+                self.ui.Update_Rate_Group.setEnabled(False)
         else:
             self.ui.Monitor_Modes_Group.setEnabled(False)
+            self.ui.Update_Rate_Group.setEnabled(False)
 
         self.Module_Sensor_OnOff()
 
@@ -400,6 +409,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def ButtonClicked_Start(self):
         print("Decoding!")
 
+        self.Update_Rate_ms = int(self.ui.Update_Rate_comboBox.currentText()) * 1000
+
         # silence mode
         if self.Monitor_Modes == 0:
 
@@ -410,7 +421,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     self.Initailize_Output_Files(Input_Decoder_Filename)
 
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer)
+                    print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
                     QtTest.QTest.qWait(1000)
@@ -418,13 +429,15 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
-                        print(new_file_pointer)
+                        print('current file pointer:', new_file_pointer)
 
                         if new_file_pointer == new_file_pointer_cache:
                             break
                         else:
                             new_file_pointer_cache = new_file_pointer
-                            QtTest.QTest.qWait(10000)
+
+                            print(f"Wait {self.Update_Rate_ms} ms...")
+                            QtTest.QTest.qWait(self.Update_Rate_ms)
             
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
@@ -433,12 +446,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     self.Initailize_Output_Files(Input_Decoder_Filename)
 
                     new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer_extract)
+                    print('current file pointer:', new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
 
                     Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
                     new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer_decode)
+                    print('current file pointer:', new_file_pointer_decode)
                     new_file_pointer_decode_cache = new_file_pointer_decode
 
                     QtTest.QTest.qWait(1000)
@@ -446,16 +459,18 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
-                        print(new_file_pointer_extract)
+                        print('current file pointer:', new_file_pointer_extract)
                         new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
-                        print(new_file_pointer_decode)
+                        print('current file pointer:', new_file_pointer_decode)
 
                         if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
                             break
                         else:
                             new_file_pointer_extract_cache = new_file_pointer_extract
                             new_file_pointer_decode_cache = new_file_pointer_decode
-                            QtTest.QTest.qWait(10000)
+
+                            print(f"Wait {self.Update_Rate_ms} ms...")
+                            QtTest.QTest.qWait(self.Update_Rate_ms)
 
         # TMTC plotting mode
         elif self.Monitor_Modes == 1:
@@ -486,7 +501,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             self.Plotting_Module_list.append('Slave')
 
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer)
+                    print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
                     Input_Decoder_Filename_TMTC_Master = Input_Decoder_Filename.replace('.bin','_tmtc_master.csv')
@@ -506,14 +521,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
-                        print(new_file_pointer)
+                        print('current file pointer:', new_file_pointer)
                         
                         if new_file_pointer == new_file_pointer_cache:
                             self.Plotting_Module_list = []
                             break
                         else:
                             new_file_pointer_cache = new_file_pointer
-                            QtTest.QTest.qWait(5000)
+
+                            print(f"Wait {self.Update_Rate_ms} ms...")
+                            QtTest.QTest.qWait(self.Update_Rate_ms)
 
                             if self.Plotting_Module_list == ['Master', 'Slave']:
                                 self.Updating_Plotting_TMTC([Input_Decoder_Filename_TMTC_Master, Input_Decoder_Filename_TMTC_Slave])
@@ -582,7 +599,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                                 self.Plotting_Slave_Sensor_list.append('S4')
 
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer)
+                    print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
                     Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_science_raw_adc_only.csv')
@@ -596,7 +613,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
-                        print(new_file_pointer)
+                        print('current file pointer:', new_file_pointer)
 
                         if new_file_pointer == new_file_pointer_cache:
                             self.Plotting_Master_Sensor_list = []
@@ -604,7 +621,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             break
                         else:
                             new_file_pointer_cache = new_file_pointer
-                            QtTest.QTest.qWait(5000)
+
+                            print(f"Wait {self.Update_Rate_ms} ms...")
+                            QtTest.QTest.qWait(self.Update_Rate_ms)
 
                             self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
             
@@ -639,12 +658,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                                 self.Plotting_Slave_Sensor_list.append('S4')
 
                     new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer_extract)
+                    print('current file pointer:', new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
 
                     Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
                     new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
-                    print(new_file_pointer_decode)
+                    print('current file pointer:', new_file_pointer_decode)
                     new_file_pointer_decode_cache = new_file_pointer_decode
 
                     Input_Decoder_Filename_SD = Input_Decoder_Filename.replace('.bin','_extracted_science_raw_adc_only.csv')
@@ -658,9 +677,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     continue_decode = True
                     while continue_decode:
                         new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
-                        print(new_file_pointer_extract)
+                        print('current file pointer:', new_file_pointer_extract)
                         new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
-                        print(new_file_pointer_decode)
+                        print('current file pointer:', new_file_pointer_decode)
 
                         if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
                             self.Plotting_Master_Sensor_list = []
@@ -669,7 +688,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         else:
                             new_file_pointer_extract_cache = new_file_pointer_extract
                             new_file_pointer_decode_cache = new_file_pointer_decode
-                            QtTest.QTest.qWait(5000)
+
+                            print(f"Wait {self.Update_Rate_ms} ms...")
+                            QtTest.QTest.qWait(self.Update_Rate_ms)
 
                             self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
             
@@ -677,7 +698,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 print('Checking Monitor Modes!')
 
     def Open_PlottingWindow_TMTC(self):
-
         # Create layout to hold multiple subplots
         self.tmtc_pg_layout = pg.GraphicsLayoutWidget()
         self.tmtc_pg_layout.showMaximized()
@@ -754,7 +774,6 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             print('Checking Updating_Plotting_TMTC!')
 
     def Open_PlottingWindow_SD(self):
-
         if ('M1' in self.Plotting_Master_Sensor_list) or ('M2' in self.Plotting_Master_Sensor_list):
             # Create layout to hold multiple subplots
             self.sd_master_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
