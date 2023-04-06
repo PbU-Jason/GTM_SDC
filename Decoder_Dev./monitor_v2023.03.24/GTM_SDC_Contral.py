@@ -6,8 +6,8 @@ Created on Mon Jun 27 14:58:23 2022
 @author: jasonpbu
 """
 
-import re
-import time
+import os
+import sys
 import numpy as np
 import pandas as pd
 from itertools import product
@@ -19,14 +19,6 @@ import cv2
 
 from GTM_SDC_UI import Ui_MainWindow
 from GTM_SDC_Contral_C_Decoder import C_Decoder
-
-# # old version using matplotlib
-# from GTM_SDC_PlottingWindow import Ui_PlottingWindow
-# from GTM_SDC_PlottingFunction import MplCanvas, Loader
-# import matplotlib
-# matplotlib.use('Qt5Agg')
-# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
-# from matplotlib.figure import Figure
 
 from pyqtgraph import PlotWidget, plot
 import pyqtgraph as pg
@@ -80,16 +72,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.Slave_GroupBox.clicked.connect(self.Module_Sensor_OnOff)
         self.Plotting_Module_list = []
 
-        self.ui.Master_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
-        self.ui.Master_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
-        self.ui.Master_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
-        self.ui.Master_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
+        self.ui.Master_CheckBox_Sensor1.clicked.connect(self.Control_OnOff)
+        self.ui.Master_CheckBox_Sensor2.clicked.connect(self.Control_OnOff)
+        self.ui.Master_CheckBox_Sensor3.clicked.connect(self.Control_OnOff)
+        self.ui.Master_CheckBox_Sensor4.clicked.connect(self.Control_OnOff)
         self.Plotting_Master_Sensor_list = []
 
-        self.ui.Slave_CheckBox_Sensor1.clicked.connect(self.Start_OnOff)
-        self.ui.Slave_CheckBox_Sensor2.clicked.connect(self.Start_OnOff)
-        self.ui.Slave_CheckBox_Sensor3.clicked.connect(self.Start_OnOff)
-        self.ui.Slave_CheckBox_Sensor4.clicked.connect(self.Start_OnOff)
+        self.ui.Slave_CheckBox_Sensor1.clicked.connect(self.Control_OnOff)
+        self.ui.Slave_CheckBox_Sensor2.clicked.connect(self.Control_OnOff)
+        self.ui.Slave_CheckBox_Sensor3.clicked.connect(self.Control_OnOff)
+        self.ui.Slave_CheckBox_Sensor4.clicked.connect(self.Control_OnOff)
         self.Plotting_Slave_Sensor_list = []
 
         # Define Plotting Variables
@@ -101,9 +93,10 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.Initailize_Plotting_DF()
         self.Initailize_Plotting_Skip_Num()
         
-        # Start Decoding
-        self.ui.Start_groupBox.setStyleSheet("QGroupBox{border:none}")
+        # Control Decoding
+        self.ui.Control_groupBox.setStyleSheet("QGroupBox{border:none}")
         self.ui.Start_Button.clicked.connect(self.ButtonClicked_Start)
+        self.ui.Terminate_Button.clicked.connect(self.ButtonClicked_Terminate)
         
     def Display_Img(self):
         self.img = cv2.imread(self.img_path)
@@ -160,7 +153,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.ui.Monitor_Modes_Group.setEnabled(False)
             self.ui.Module_Sensor_GroupBox.setEnabled(False)
             
-            self.ui.Start_groupBox.setEnabled(False)
+            self.ui.Control_groupBox.setEnabled(False)
     
     def Decoder_Open_File(self):
         self.Input_Decoder_Filename, self.Input_Decoder_Filetype = QFileDialog.getOpenFileNames(self, "Open file", "./")
@@ -174,7 +167,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                 Input_Decoder_Filename_print += Input_Decoder_Filename_print_temp + ";"
             self.ui.InputFile_Decoder_Text.setText(Input_Decoder_Filename_print)
 
-        self.Start_OnOff()
+        self.Control_OnOff()
     
     def Sci_CheckBoxClick(self):
         if self.ui.Decode_Modes_CheckBox_Sci.isChecked():
@@ -301,30 +294,30 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         else:
             self.ui.Module_Sensor_GroupBox.setEnabled(False)
 
-        self.Start_OnOff()
+        self.Control_OnOff()
 
-    def Start_OnOff(self):
+    def Control_OnOff(self):
         if self.Input_Decoder_Filename != []:
             if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
                 if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
                     self.Monitor_Modes = 0
-                    self.ui.Start_groupBox.setEnabled(True)
+                    self.ui.Control_groupBox.setEnabled(True)
                 elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
                     if self.ui.Master_GroupBox.isChecked():
                         self.Monitor_Modes = 1
-                        self.ui.Start_groupBox.setEnabled(True)
+                        self.ui.Control_groupBox.setEnabled(True)
                     elif self.ui.Slave_GroupBox.isChecked():
                         self.Monitor_Modes = 1
-                        self.ui.Start_groupBox.setEnabled(True)
+                        self.ui.Control_groupBox.setEnabled(True)
                     else:
-                        self.ui.Start_groupBox.setEnabled(False)
+                        self.ui.Control_groupBox.setEnabled(False)
                 else:
-                    self.ui.Start_groupBox.setEnabled(False)
+                    self.ui.Control_groupBox.setEnabled(False)
             elif self.ui.Decode_Modes_CheckBox_Sci.isChecked():
                 if self.ui.Monitor_Modes_Group.isEnabled():
                     if self.ui.Monitor_Modes_radioButton_Silence.isChecked():
                         self.Monitor_Modes = 0
-                        self.ui.Start_groupBox.setEnabled(True)
+                        self.ui.Control_groupBox.setEnabled(True)
                     elif self.ui.Monitor_Modes_radioButton_Plotting.isChecked():
                         if self.ui.Master_GroupBox.isChecked() and self.ui.Slave_GroupBox.isChecked():
                             if (self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
@@ -332,33 +325,33 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             and (self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked()\
                             or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked()):
                                 self.Monitor_Modes = 2
-                                self.ui.Start_groupBox.setEnabled(True)
+                                self.ui.Control_groupBox.setEnabled(True)
                             else:
-                                self.ui.Start_groupBox.setEnabled(False)
+                                self.ui.Control_groupBox.setEnabled(False)
                         elif self.ui.Master_GroupBox.isChecked():
                             if self.ui.Master_CheckBox_Sensor1.isChecked() or self.ui.Master_CheckBox_Sensor2.isChecked()\
                             or self.ui.Master_CheckBox_Sensor3.isChecked() or self.ui.Master_CheckBox_Sensor4.isChecked():
                                 self.Monitor_Modes = 2
-                                self.ui.Start_groupBox.setEnabled(True)
+                                self.ui.Control_groupBox.setEnabled(True)
                             else:
-                                self.ui.Start_groupBox.setEnabled(False)
+                                self.ui.Control_groupBox.setEnabled(False)
                         elif self.ui.Slave_GroupBox.isChecked():
                             if self.ui.Slave_CheckBox_Sensor1.isChecked() or self.ui.Slave_CheckBox_Sensor2.isChecked()\
                             or self.ui.Slave_CheckBox_Sensor3.isChecked() or self.ui.Slave_CheckBox_Sensor4.isChecked():
                                 self.Monitor_Modes = 2
-                                self.ui.Start_groupBox.setEnabled(True)
+                                self.ui.Control_groupBox.setEnabled(True)
                             else:
-                                self.ui.Start_groupBox.setEnabled(False)
+                                self.ui.Control_groupBox.setEnabled(False)
                         else:
-                            self.ui.Start_groupBox.setEnabled(False)
+                            self.ui.Control_groupBox.setEnabled(False)
                     else:
-                        self.ui.Start_groupBox.setEnabled(False)
+                        self.ui.Control_groupBox.setEnabled(False)
                 else:
-                    self.ui.Start_groupBox.setEnabled(False)
+                    self.ui.Control_groupBox.setEnabled(False)
             else:
-                self.ui.Start_groupBox.setEnabled(False)
+                self.ui.Control_groupBox.setEnabled(False)
         else:
-            self.ui.Start_groupBox.setEnabled(False)
+            self.ui.Control_groupBox.setEnabled(False)
 
     def Initailize_Plotting_DF(self):
         self.df_tmtc_master = pd.DataFrame()
@@ -372,6 +365,37 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.df_tmtc_slave_skip_num = 0
 
         self.df_sd_skip_num = 0
+
+    def Initailize_Output_Files(self, Filename):
+        if (self.Decode_Modes == 1) and (self.Extract_Selection == 0):
+            if os.path.exists(Filename.replace('.bin','_science_raw.txt')):
+                os.remove(Filename.replace('.bin','_science_raw.txt'))
+            if os.path.exists(Filename.replace('.bin','_science_raw_sync.csv')):
+                os.remove(Filename.replace('.bin','_science_raw_sync.csv'))
+            if os.path.exists(Filename.replace('.bin','_science_raw_adc_only.csv')):
+                os.remove(Filename.replace('.bin','_science_raw_adc_only.csv'))
+        
+        if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+            if os.path.exists(Filename.replace('.bin','_extracted.bin')):
+                os.remove(Filename.replace('.bin','_extracted.bin'))
+            if os.path.exists(Filename.replace('.bin','_extracted_science_raw.txt')):
+                os.remove(Filename.replace('.bin','_extracted_science_raw.txt'))
+            if os.path.exists(Filename.replace('.bin','_extracted_science_raw_sync.csv')):
+                os.remove(Filename.replace('.bin','_extracted_science_raw_sync.csv'))
+            if os.path.exists(Filename.replace('.bin','_extracted_science_raw_adc_only.csv')):
+                os.remove(Filename.replace('.bin','_extracted_science_raw_adc_only.csv'))
+
+        if self.Decode_Modes == 2:
+            if os.path.exists(Filename.replace('.bin','_tmtc_whole_output.csv')):
+                os.remove(Filename.replace('.bin','_tmtc_whole_output.csv'))
+            if os.path.exists(Filename.replace('.bin','_tmtc_master.csv')):
+                os.remove(Filename.replace('.bin','_tmtc_master.csv'))
+            if os.path.exists(Filename.replace('.bin','_tmtc_slave.csv')):
+                os.remove(Filename.replace('.bin','_tmtc_slave.csv'))
+
+
+    def ButtonClicked_Terminate(self):
+        sys.exit()
     
     def ButtonClicked_Start(self):
         print("Decoding!")
@@ -382,6 +406,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
+
+                    self.Initailize_Output_Files(Input_Decoder_Filename)
+
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
@@ -402,6 +429,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
+
+                    self.Initailize_Output_Files(Input_Decoder_Filename)
+
                     new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
                     print(new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
@@ -443,6 +473,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+
+                    self.Initailize_Output_Files(Input_Decoder_Filename)
                     
                     self.Initailize_Plotting_Skip_Num()
 
@@ -522,6 +554,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             # for pure TMTC and SD decoding (only need one file pointer)
             if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+
+                    self.Initailize_Output_Files(Input_Decoder_Filename)
                     
                     self.Initailize_Plotting_Skip_Num()
 
@@ -577,6 +611,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
+
+                    self.Initailize_Output_Files(Input_Decoder_Filename)
                     
                     self.Initailize_Plotting_Skip_Num()
 
@@ -1267,60 +1303,3 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             DataFrame = pd.concat([DataFrame, df], axis=0, ignore_index=True)
         SkipNum = DataFrame.shape[0]
         return DataFrame, SkipNum
-
-
-
-
-
-    # # old version using matplotlib
-
-    # def Open_PlottingWindow_TMTC(self):
-    #     # basic window setup
-    #     self.window_plotting_tmtc = QtWidgets.QMainWindow()
-    #     self.ui_plotting_tmtc = Ui_PlottingWindow()
-    #     self.ui_plotting_tmtc.setupUi(self.window_plotting_tmtc)
-
-    # def Plotting_TMTC(self, FilenameList):
-    #     print('Plotting TMTC!')
-
-    #     # creat figure
-    #     sc_tmtc = MplCanvas(self.window_plotting_tmtc)
-
-    #     if self.Plotting_Module_list == ['Master', 'Slave']:
-    #         # loading data
-    #         self.df_tmtc_master = Loader(FilenameList[0])
-    #         self.df_tmtc_slave = Loader(FilenameList[1])
-    #         # plotting
-    #         for i in range(1, 2+1, 1):
-    #             sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 2, i))
-    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'])
-    #         sc_tmtc.axesList[1].plot(range(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'])
-    #     elif self.Plotting_Module_list == ['Master']:
-    #         # loading data
-    #         self.df_tmtc_master = Loader(FilenameList[0])
-    #         # plotting
-    #         sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 1, 1))
-    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_master['Board Temperature#1'])), self.df_tmtc_master['Board Temperature#1'])
-    #     elif self.Plotting_Module_list == ['Slave']:
-    #         # loading data
-    #         self.df_tmtc_slave = Loader(FilenameList[0])
-    #         # plotting
-    #         sc_tmtc.axesList.append(sc_tmtc.fig.add_subplot(1, 1, 1))
-    #         sc_tmtc.axesList[0].plot(range(len(self.df_tmtc_slave['Board Temperature#1'])), self.df_tmtc_slave['Board Temperature#1'])
-    #     else:
-    #         print('Checking!')
-
-    #     # Create toolbar, passing canvas as first parament, parent (self, the MainWindow) as second.
-    #     toolbar = NavigationToolbar(sc_tmtc, self.window_plotting_tmtc)
-
-    #     layout = QtWidgets.QVBoxLayout()
-    #     layout.addWidget(toolbar)
-    #     layout.addWidget(sc_tmtc)
-
-    #     # Create a placeholder widget to hold our toolbar and canvas.
-    #     widget = QtWidgets.QWidget()
-    #     widget.setLayout(layout)
-    #     self.window_plotting_tmtc.setCentralWidget(widget)
-
-    #     self.window_plotting_tmtc.show()
-            
