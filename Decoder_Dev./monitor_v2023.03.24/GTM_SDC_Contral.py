@@ -699,7 +699,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def Open_PlottingWindow_TMTC(self):
         # Create layout to hold multiple subplots
-        self.tmtc_pg_layout = pg.GraphicsLayoutWidget()
+        self.tmtc_pg_layout = pg.GraphicsLayoutWidget(title='TMTC')
         self.tmtc_pg_layout.showMaximized()
 
     def Plotting_TMTC(self, FilenameList):
@@ -776,34 +776,34 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def Open_PlottingWindow_SD(self):
         if ('M1' in self.Plotting_Master_Sensor_list) or ('M2' in self.Plotting_Master_Sensor_list):
             # Create layout to hold multiple subplots
-            self.sd_master_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget(title='SD Master CITIROCB HG')
             self.sd_master_CITIROC_B_pg_layout.showMaximized()
             # second for lg (now)
-            self.sd_master_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget(title='SD Master CITIROCB LG')
             self.sd_master_CITIROC_B_lg_pg_layout.showMaximized()
 
         if ('M3' in self.Plotting_Master_Sensor_list) or ('M4' in self.Plotting_Master_Sensor_list):
             # Create layout to hold multiple subplots
-            self.sd_master_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget(title='SD Master CITIROCA HG')
             self.sd_master_CITIROC_A_pg_layout.showMaximized()
             # second for lg (now)
-            self.sd_master_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_master_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget(title='SD Master CITIROCA LG')
             self.sd_master_CITIROC_A_lg_pg_layout.showMaximized()
 
         if ('S1' in self.Plotting_Slave_Sensor_list) or ('S2' in self.Plotting_Slave_Sensor_list):
             # Create layout to hold multiple subplots
-            self.sd_slave_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_B_pg_layout = pg.GraphicsLayoutWidget(title='SD Slave CITIROCB HG')
             self.sd_slave_CITIROC_B_pg_layout.showMaximized()
             # second for lg (now)
-            self.sd_slave_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_B_lg_pg_layout = pg.GraphicsLayoutWidget(title='SD Slave CITIROCB LG')
             self.sd_slave_CITIROC_B_lg_pg_layout.showMaximized()
 
         if ('S3' in self.Plotting_Slave_Sensor_list) or ('S4' in self.Plotting_Slave_Sensor_list):
             # Create layout to hold multiple subplots
-            self.sd_slave_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_A_pg_layout = pg.GraphicsLayoutWidget(title='SD Slave CITIROCA HG')
             self.sd_slave_CITIROC_A_pg_layout.showMaximized()
             # second for lg (now)
-            self.sd_slave_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget()
+            self.sd_slave_CITIROC_A_lg_pg_layout = pg.GraphicsLayoutWidget(title='SD Slave CITIROCA LG')
             self.sd_slave_CITIROC_A_lg_pg_layout.showMaximized()
     
     def Plotting_SD(self, FilenameList):
@@ -829,13 +829,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
                     
                     # plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
-                            
-                    lg_config = ((0, 1, index, 1))
+
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -848,13 +848,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
                 
                     # plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
                             
-                    lg_config = ((0, 1, index, 1))
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -867,13 +867,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
 
                     # plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(255, 0, 0)))
                             
-                    lg_config = ((0, 1, index, 1))
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -901,13 +901,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
                     
                     # plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(250, 140, 0)))
                             
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -920,13 +920,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
                 
                     # plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(250, 140, 0)))
                             
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -939,13 +939,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
 
                     # plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(250, 140, 0)))
                             
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -973,13 +973,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
                     
                     # plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 0, 250)))
                             
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -992,13 +992,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
                 
                     # plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 0, 250)))
                             
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1011,13 +1011,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_2_channel_{index}')
 
                     # plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 0, 250)))
                             
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1045,13 +1045,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'{sensor_name}_channel_{index}')
                     
                     # plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 100, 250)))
                             
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1064,13 +1064,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
                 
                     # plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 100, 250)))
                             
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1083,13 +1083,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                     globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_4_channel_{index}')
 
                     # plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"] = globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"].plot(bin_edges[:-1], hist, pen=pg.mkPen(color=(0, 100, 250)))
                             
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1116,13 +1116,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if ('M1' in self.Plotting_Master_Sensor_list) and ('M2' in self.Plotting_Master_Sensor_list):
                 for index, channel in enumerate(list(product(range(8), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
                             
-                    lg_config = ((0, 1, index, 1))
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1131,13 +1131,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'M1' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
                             
-                    lg_config = ((0, 1, index, 1))
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1145,13 +1145,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'M2' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 1, index, 0))
+                    hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
                             
-                    lg_config = ((0, 1, index, 1))
+                    lg_config = ((0, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1166,13 +1166,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if ('M3' in self.Plotting_Master_Sensor_list) and ('M4' in self.Plotting_Master_Sensor_list):
                 for index, channel in enumerate(list(product(range(8), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1181,13 +1181,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'M3' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1196,13 +1196,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'M4' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((0, 0, index, 0))
+                    hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_master_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((0, 0, index, 1))
+                    lg_config = ((0, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1217,13 +1217,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if ('S1' in self.Plotting_Slave_Sensor_list) and ('S2' in self.Plotting_Slave_Sensor_list):
                 for index, channel in enumerate(list(product(range(8), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1232,13 +1232,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'S1' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1247,13 +1247,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'S2' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 1, index, 0))
+                    hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_B_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 1, index, 1))
+                    lg_config = ((1, 1, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1268,13 +1268,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if ('S4' in self.Plotting_Slave_Sensor_list) and ('S3' in self.Plotting_Slave_Sensor_list):
                 for index, channel in enumerate(list(product(range(8), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1283,13 +1283,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'S3' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
@@ -1298,13 +1298,13 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             elif 'S4' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
                     # updating plotting
-                    hg_config = ((1, 0, index, 0))
+                    hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
                         adc_hg = self.df_sd_grouped.get_group(hg_config)
                         hist, bin_edges = np.histogram(adc_hg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
                         globals()[f"self.sd_slave_CITIROC_A_data_line_{index}"].setData(bin_edges[:-1], hist)
 
-                    lg_config = ((1, 0, index, 1))
+                    lg_config = ((1, 0, index, 0))
                     if lg_config in self.df_sd_grouped.groups.keys():
                         adc_lg = self.df_sd_grouped.get_group(lg_config)
                         hist, bin_edges = np.histogram(adc_lg['ADC'], bins=np.arange(self.plot_min, self.plot_max+self.bin_size, self.bin_size), density=False)
