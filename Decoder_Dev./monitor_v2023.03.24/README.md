@@ -65,7 +65,6 @@ For installation, the process is simpler for <a href="#GCC-MacOS">MacOS</a> and 
   - Type "gcc" in "Search" > Find **mingw64-x86_64-gcc-core** in "Package" > Change "Skip" to lastet version in "New"
   - Type "make" in "Search" > Find **make** in "Package" > Change "Skip" to lastet version in "New"
   - Click "Next" until see "Finish" > Click "Finish"
-  - Run `x86_64-w64-mingw32-gcc --version` in Command Prompt to verify a successful installation
 
 ### Python 
 
