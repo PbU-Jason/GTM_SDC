@@ -31,9 +31,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.setup_control()
 
     def setup_control(self):
-        ### GTM icon ###
-        self.img_path = 'GTM_icon.png'
-        self.Display_Img()
+        # ### GTM icon ###
+        # self.img_path = 'GTM_icon.png'
+        # self.Display_Img()
         
         ### Decoder ###
         self.ui.Decoder_Button.clicked.connect(self.ButtonClicked_Decoder)
@@ -99,16 +99,16 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.ui.Start_Button.clicked.connect(self.ButtonClicked_Start)
         self.ui.Terminate_Button.clicked.connect(self.ButtonClicked_Terminate)
         
-    def Display_Img(self):
-        self.img = cv2.imread(self.img_path)
-        height, width, channel = self.img.shape
-        bytesPerline = 3 * width
-        self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
-        self.qpixmap = QPixmap.fromImage(self.qimg)
-        self.qpixmap_height = self.qpixmap.height()
-        self.qpixmap_height -= 210
-        scaled_pixmap = self.qpixmap.scaledToHeight(self.qpixmap_height)
-        self.ui.GTM_ICON.setPixmap(scaled_pixmap)
+    # def Display_Img(self):
+    #     self.img = cv2.imread(self.img_path)
+    #     height, width, channel = self.img.shape
+    #     bytesPerline = 3 * width
+    #     self.qimg = QImage(self.img, width, height, bytesPerline, QImage.Format_RGB888).rgbSwapped()
+    #     self.qpixmap = QPixmap.fromImage(self.qimg)
+    #     self.qpixmap_height = self.qpixmap.height()
+    #     self.qpixmap_height -= 210
+    #     scaled_pixmap = self.qpixmap.scaledToHeight(self.qpixmap_height)
+    #     self.ui.GTM_ICON.setPixmap(scaled_pixmap)
     
     def ButtonClicked_Decoder(self):
         self.Clicked_Counter_Decoder += 1
