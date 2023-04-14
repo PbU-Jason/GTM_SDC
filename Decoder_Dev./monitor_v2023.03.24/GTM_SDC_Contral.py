@@ -15,7 +15,7 @@ from itertools import product
 from PyQt5 import QtCore, QtWidgets, QtTest
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFileDialog
-import cv2
+# import cv2
 
 from GTM_SDC_UI import Ui_MainWindow
 from GTM_SDC_Contral_C_Decoder import C_Decoder
