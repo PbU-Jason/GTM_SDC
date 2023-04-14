@@ -843,6 +843,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'M1' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+
                     # Add subplots
                     globals()[f"self.sd_master_CITIROC_B_pg_layout_{index}"] = self.sd_master_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
                     globals()[f"self.sd_master_CITIROC_B_lg_pg_layout_{index}"] = self.sd_master_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
@@ -915,6 +918,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'M3' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+
                     # Add subplots
                     globals()[f"self.sd_master_CITIROC_A_pg_layout_{index}"] = self.sd_master_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
                     globals()[f"self.sd_master_CITIROC_A_lg_pg_layout_{index}"] = self.sd_master_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
@@ -987,6 +993,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'S1' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # Add subplots
                     globals()[f"self.sd_slave_CITIROC_B_pg_layout_{index}"] = self.sd_slave_CITIROC_B_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
                     globals()[f"self.sd_slave_CITIROC_B_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_B_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_1_channel_{index}')
@@ -1059,6 +1068,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'S3' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # Add subplots
                     globals()[f"self.sd_slave_CITIROC_A_pg_layout_{index}"] = self.sd_slave_CITIROC_A_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
                     globals()[f"self.sd_slave_CITIROC_A_lg_pg_layout_{index}"] = self.sd_slave_CITIROC_A_lg_pg_layout.addPlot(row=channel[0], col=channel[1], title=f'sensor_3_channel_{index}')
@@ -1130,6 +1142,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'M1' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # updating plotting
                     hg_config = ((0, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
@@ -1180,6 +1195,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'M3' in self.Plotting_Master_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # updating plotting
                     hg_config = ((0, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
@@ -1231,6 +1249,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'S1' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # updating plotting
                     hg_config = ((1, 1, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
@@ -1282,6 +1303,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
             elif 'S3' in self.Plotting_Slave_Sensor_list:
                 for index, channel in enumerate(list(product(range(4), range(4)))):
+                    # odd sensor only, shift index
+                    index = index+16
+                    
                     # updating plotting
                     hg_config = ((1, 0, index, 1))
                     if hg_config in self.df_sd_grouped.groups.keys():
