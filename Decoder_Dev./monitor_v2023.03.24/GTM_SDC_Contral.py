@@ -540,6 +540,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                                 self.Updating_Plotting_TMTC([Input_Decoder_Filename_TMTC_Slave])
                             else:
                                 print('Checking ButtonClicked_Start Updating_Plotting_TMTC!')
+                            
+                            QtWidgets.QApplication.processEvents()
 
         # SD plotting mode
         elif self.Monitor_Modes == 2:
@@ -626,6 +628,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             QtTest.QTest.qWait(self.Update_Rate_ms)
 
                             self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
+                            
+                            QtWidgets.QApplication.processEvents()
             
             # for SD (with header and tail) decoding ( need two file pointers)
             if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
@@ -693,6 +697,8 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             QtTest.QTest.qWait(self.Update_Rate_ms)
 
                             self.Updating_Plotting_SD([Input_Decoder_Filename_SD])
+
+                            QtWidgets.QApplication.processEvents()
             
             else:
                 print('Checking Monitor Modes!')
