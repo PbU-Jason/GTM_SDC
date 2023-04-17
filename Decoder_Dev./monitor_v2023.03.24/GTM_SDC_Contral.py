@@ -1339,9 +1339,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
     def Loader(self, Filename, DataFrame, SkipNum):
         if DataFrame.empty:
-            DataFrame = pd.read_csv(Filename, sep=';')
+            DataFrame = pd.read_csv(Filename, sep=';', dtype={"Module": int, "CITIROC": int, "Channel": int, "Gain": int, "ADC": int})
         else:
-            df = pd.read_csv(Filename, sep=';', skiprows=SkipNum)
+            df = pd.read_csv(Filename, sep=';', skiprows=SkipNum, dtype={"Module": int, "CITIROC": int, "Channel": int, "Gain": int, "ADC": int})
             df.columns = DataFrame.columns
             DataFrame = pd.concat([DataFrame, df], axis=0, ignore_index=True)
         SkipNum = DataFrame.shape[0]
