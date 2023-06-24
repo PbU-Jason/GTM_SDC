@@ -1,8 +1,9 @@
-#include <stdio.h>
+#include <stdint.h> // for uint
+#include <stdarg.h> // for va_list
+#include <stdio.h> // for printf
+
 #include <stdlib.h>
-#include <stdint.h>
 #include <string.h>
-#include <stdarg.h>
 #include <time.h>
 #include <math.h>
 
@@ -67,51 +68,55 @@ int got_first_time_info = 0;
 
 /// main ///
 
-void check_endianness(void) {
-    unsigned char x[2] = {0x00, 0x01};
+// checked~
+void check_endianness() {
+    unsigned char x[2] = {0x00, 0x01}; 
+    // using char array to declare string
+    // x[2] means there are two charaters
+    // x stores the address of first charater, which is x[0] (like value)
+    // char array decay to char pointer, so they are differnet but similar
+
     uint16_t *y;
+
     y = (uint16_t *)x;
+    // (uint16_t *) to make two pointer types compatible 
+    // for little endian (most of PC), int(hex(*y)) == int(0x0100) == 256
+    // for big endian (GTM data), int(hex(*y)) == int(0x0001) == 1
+    // this program is designed to decode GTM data to recognized data in most of PC
     
     if (*y == 1) {
-        log_error("Your computer use big endian format, which is not supported by this program!!");
+        log_error("This program can't be run on big endian system!");
     }
 }
 
-void log_error(const char *Format, ...) {
+// checked~
+// not necessary, just see how to write printf in the user's own way
+// please refer below link to see ..., va_list, va_start, vprintf and va_end
+// https://www.ibm.com/docs/en/zos/2.1.0?topic=functions-vprintf-format-print-data-stdout
+void log_error(const char *sentence, ...) {
+    // using char pointer to declare string
+    // sentence stores the address of first charater, which is *sentence
+    // second charater is *(sentence + 1)
+    // const make string unchangeable
+
     va_list args;
 
-    va_start(args, Format);
-    printf("ERROR: ");
-    vprintf(Format, args);
+    va_start(args, sentence);
+    printf("Error: ");
+    vprintf(sentence, args);
     printf("\n");
     va_end(args);
-    exit(1);
+    exit(1); // means abnormal exit
 }
 
-void log_message(const char *Format, ...) {
+// checked~
+void log_message(const char *sentence, ...) {
     va_list args;
 
-    va_start(args, Format);
+    va_start(args, sentence);
     printf("Message: ");
-    vprintf(Format, args);
+    vprintf(sentence, args);
     printf("\n");
-}
-
-char *str_remove(char *Str, const char *Sub) {
-    char *new;
-    size_t len_str = strlen(Str);
-    size_t len_sub = strlen(Sub);
-
-    new = (char *)malloc((len_str + 1) * sizeof(char));
-    strcpy(new, Str);
-    if (len_sub > 0) {
-        char *p = new;
-        while ((p = strstr(p, Sub)) != NULL) {
-            memmove(p, p + len_sub, strlen(p + len_sub) + 1);
-        }
-    }
-
-    return new;
 }
 
 char *str_append(char *Prefix, char *Postfix) {

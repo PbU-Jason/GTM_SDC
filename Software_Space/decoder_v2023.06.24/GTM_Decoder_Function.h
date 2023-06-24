@@ -176,10 +176,9 @@ extern int continuous_packet;
 // end
 
 /// main ///
-void check_endianness(void);
+void check_endianness();
 void log_error(const char *Format, ...);
 void log_message(const char *Format, ...);
-char *str_remove(char *Str, const char *Sub);
 char *str_append(char *Prefix, char *Postfix);
 void create_all_buffer(void);
 void destroy_all_buffer(void);
