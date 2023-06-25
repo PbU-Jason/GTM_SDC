@@ -26,6 +26,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
         // decode science data
         case 2:
             log_message("Start decoding science data");
+
             // initialize some setting about sd time to continously decoding
             sync_data_buffer_master_counter = 0;
             sync_data_buffer_slave_counter  = 0;
@@ -34,6 +35,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
             got_first_sync_data_master      = 0;
             got_first_sync_data_slave       = 0;
             new_file_pointer = parse_science_data(initail_file_pointer);
+            
             break;
 
         default:

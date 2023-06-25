@@ -4,6 +4,9 @@
         "stdint.h": "c",
         "stdarg.h": "c",
         "gtm_decoder_parse_science_data.h": "c",
-        "gtm_decoder_parse_tmtc_data.h": "c"
+        "gtm_decoder_parse_tmtc_data.h": "c",
+        "gtm_decoder_function.h": "c",
+        "time.h": "c",
+        "math.h": "c"
     }
 }

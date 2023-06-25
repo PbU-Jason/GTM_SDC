@@ -1,11 +1,9 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "GTM_Decoder_Parse_TMTC_Data.h"
 #include "GTM_Decoder_Function.h"
+#include "GTM_Decoder_Parse_TMTC_Data.h"
 
-int parse_tmtc_data(int InputFilePointer) {
+
+
+int parse_tmtc_data(int input_file_pointer) {
     unsigned char *tmtc_data_buffer;
     size_t actual_binary_buffer_size;
     int output_file_pointer;
@@ -18,14 +16,14 @@ int parse_tmtc_data(int InputFilePointer) {
         log_error("fail to create tmtc data buffer");
     }
 
-    // moving pointer inside input_binary base on InputFilePointer
-    fseek(input_binary, InputFilePointer, SEEK_SET);
+    // moving pointer inside input_binary base on input_file_pointer
+    fseek(input_binary, input_file_pointer, SEEK_SET);
 
     // recording how many bytes in binary_buffer
     actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, input_binary);
 
-    // updating file pointer by InputFilePointer and actual_binary_buffer_size
-    output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
+    // updating file pointer by input_file_pointer and actual_binary_buffer_size
+    output_file_pointer = input_file_pointer + (int)actual_binary_buffer_size;
 
     while (1) {
         log_message("load new chunk");

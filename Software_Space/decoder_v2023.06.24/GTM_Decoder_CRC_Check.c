@@ -1,9 +1,7 @@
-#include <stdint.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "GTM_Decoder_CRC_Check.h"
 #include "GTM_Decoder_Function.h"
+#include "GTM_Decoder_CRC_Check.h"
+
+
 
 // local variables
 uint8_t lookup_table[256];

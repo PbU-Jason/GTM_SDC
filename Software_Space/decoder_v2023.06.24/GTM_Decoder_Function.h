@@ -4,15 +4,12 @@
 #include <stdio.h>  // for size_t, File, printf, fopen, ..., etc
 #include <stdint.h> // for uint8_t, uint16_t & uint32_t
 
-#define NSPO_DATA_SIZE 1127 // total size of a NSPO packet
-#define NSPO_HEADER_SIZE 16 // spacewire RMAP HEAD + CRC
-#define NSPO_TAIL_SIZE 1    // data CRC8 value, EOP control character is not included
-
-#define SCIENCE_DATA_SIZE 1104
-#define SD_HEADER_SIZE 6
-#define SYNC_DATA_SIZE 45
-
 #define TMTC_DATA_SIZE 128
+#define SCIENCE_HEADER_SIZE 6
+#define SCIENCE_DATA_SIZE 1104
+#define SCIENCE_SYNC_SIZE 45
+
+
 
 typedef struct Time {
     // from UTC
@@ -141,7 +138,20 @@ typedef struct Science {
 extern int decode_mode;
 extern int export_mode;
 
+extern int sync_data_buffer_master_counter;
+extern int sync_data_buffer_slave_counter; 
+extern int missing_sync_data_master;
+extern int missing_sync_data_slave;
+extern int got_first_sync_data_master;
+extern int got_first_sync_data_slave;
+
 /// main_end ///
+
+/// parse_science_data ///
+
+extern int continuous_packet;
+
+/// parse_science_data_end ///
 
 /// create_all_buffer ///
 
@@ -171,18 +181,6 @@ extern FILE *science_pipeline_output_file;
 
 /// open_all_file_end ///
 
-extern int sync_data_buffer_counter;
-extern int sync_data_buffer_master_counter;
-extern int sync_data_buffer_slave_counter;
-extern int missing_sync_data;   // =1 after sync data with no tail
-extern int missing_sync_data_master;
-extern int missing_sync_data_slave;
-extern int got_first_sync_data; // =1 after parsing first sync data
-extern int got_first_sync_data_master;
-extern int got_first_sync_data_slave;
-
-extern int continuous_packet;
-
 //* declare_global_variable_end *//
 
 
@@ -202,12 +200,20 @@ void destroy_all_buffer();
 
 /// main_end ///
 
-/// extract science data ///
-size_t read_from_file(unsigned char *TargetBuffer, FILE *FileStream, size_t MaxSize);
-int is_nspo_header(unsigned char *Target);
-void pop_bytes(unsigned char *Target, size_t PopSize, size_t TotalSize);
+/// parse_tmtc_data ///
 
-/// parse science data ///
+int is_tmtc_header(unsigned char *Target);
+int is_tmtc_tail(unsigned char *Targrt);
+void parse_tmtc_packet(unsigned char *Target);
+void parse_utc_time_tmtc(unsigned char *Target);
+void write_tmtc_buffer_all(unsigned char *Target);
+void write_tmtc_buffer_master(void);
+void write_tmtc_buffer_slave(void);
+
+/// parse_tmtc_data_end ///
+
+/// parse_science_data ///
+
 int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize);
 int is_sd_header(unsigned char *Target);
 void parse_science_packet(unsigned char *Buffer, size_t MaxLocation);
@@ -231,14 +237,7 @@ void parse_sd_header(unsigned char *Target);
 static void write_sd_header(uint8_t SequenceCount);
 void free_got_first_sd_header();
 
-/// parse tmtc data ///
-int is_tmtc_header(unsigned char *Target);
-int is_tmtc_tail(unsigned char *Targrt);
-void parse_tmtc_packet(unsigned char *Target);
-void parse_utc_time_tmtc(unsigned char *Target);
-void write_tmtc_buffer_all(unsigned char *Target);
-void write_tmtc_buffer_master(void);
-void write_tmtc_buffer_slave(void);
+/// parse_science_data_end ///
 
 //* function_end *//
 

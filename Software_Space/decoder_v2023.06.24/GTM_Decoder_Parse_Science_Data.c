@@ -1,12 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "GTM_Decoder_Parse_Science_Data.h"
 #include "GTM_Decoder_Function.h"
 #include "GTM_Decoder_CRC_Check.h"
+#include "GTM_Decoder_Parse_Science_Data.h"
 
-int parse_science_data(int InputFilePointer) {
+
+
+int parse_science_data(int input_file_pointer) {
     size_t actual_binary_buffer_size;
     int output_file_pointer;
     size_t sd_header_location;
@@ -19,14 +17,14 @@ int parse_science_data(int InputFilePointer) {
     event_buffer->pps_counter = 0;
     event_buffer->fine_counter = 0;
 
-    // moving pointer inside input_binary base on InputFilePointer
-    fseek(input_binary, InputFilePointer, SEEK_SET);
+    // moving pointer inside input_binary base on input_file_pointer
+    fseek(input_binary, input_file_pointer, SEEK_SET);
 
     // recording how many bytes in binary_buffer
     actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, input_binary);
     
-    // updating file pointer by InputFilePointer and actual_binary_buffer_size
-    output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
+    // updating file pointer by input_file_pointer and actual_binary_buffer_size
+    output_file_pointer = input_file_pointer + (int)actual_binary_buffer_size;
 
     // skip (actual_binary_buffer_size == 0) to avoid error in find_next_sd_header()
     if ((int)actual_binary_buffer_size == 0) {
@@ -35,7 +33,7 @@ int parse_science_data(int InputFilePointer) {
     else {
         ///// ↓↓↓ need checking!!!
         // finding first SD header
-        sd_header_location = find_next_sd_header(binary_buffer, -SD_HEADER_SIZE, actual_binary_buffer_size);
+        sd_header_location = find_next_sd_header(binary_buffer, -SCIENCE_HEADER_SIZE, actual_binary_buffer_size);
         if (sd_header_location != 0) {
             log_message("Binary file doesn't start with science data header, first science data header is at byte %zu", (size_t)ftell(input_binary) - actual_binary_buffer_size + sd_header_location);
             
@@ -51,7 +49,7 @@ int parse_science_data(int InputFilePointer) {
         log_message("load new chunk");
 
         // leaving when encountering below weird conditions
-        if (actual_binary_buffer_size <= SD_HEADER_SIZE) {
+        if (actual_binary_buffer_size <= SCIENCE_HEADER_SIZE) {
             break;
         }
         if (!is_sd_header(binary_buffer)) {
@@ -82,15 +80,15 @@ int parse_science_data(int InputFilePointer) {
                 }
                 else {
                     // it's the last buffer but can't find next packet
-                    if (old_sd_header_location + SD_HEADER_SIZE + SCIENCE_DATA_SIZE < actual_binary_buffer_size) {
+                    if (old_sd_header_location + SCIENCE_HEADER_SIZE + SCIENCE_DATA_SIZE < actual_binary_buffer_size) {
                         log_message("Can't find next sd header while this isn't the last packet, discard data after");
                         break;
                     }
                     // it's the last buffer and this is the last packet
                     else {
                         parse_sd_header(binary_buffer + old_sd_header_location);
-                        // parse_science_packet(binary_buffer + old_sd_header_location + SD_HEADER_SIZE, actual_binary_buffer_size - old_sd_header_location - SD_HEADER_SIZE);
-                        parse_science_packet(binary_buffer + old_sd_header_location + SD_HEADER_SIZE, SCIENCE_DATA_SIZE);
+                        // parse_science_packet(binary_buffer + old_sd_header_location + SCIENCE_HEADER_SIZE, actual_binary_buffer_size - old_sd_header_location - SCIENCE_HEADER_SIZE);
+                        parse_science_packet(binary_buffer + old_sd_header_location + SCIENCE_HEADER_SIZE, SCIENCE_DATA_SIZE);
                         full++;
                         break;
                     }
@@ -99,23 +97,23 @@ int parse_science_data(int InputFilePointer) {
 
             // parse and check the sequence count
             parse_sd_header(binary_buffer + old_sd_header_location);
-            if (sd_header_location - old_sd_header_location == SCIENCE_DATA_SIZE + SD_HEADER_SIZE) {
+            if (sd_header_location - old_sd_header_location == SCIENCE_DATA_SIZE + SCIENCE_HEADER_SIZE) {
                 // check CRC byte
                 memcpy(&CRC_next_packet, binary_buffer + sd_header_location + 2, 1);
-                CRC_calculate = calc_CRC_8_ATM_rev(binary_buffer + old_sd_header_location, SCIENCE_DATA_SIZE + SD_HEADER_SIZE);
+                CRC_calculate = calc_CRC_8_ATM_rev(binary_buffer + old_sd_header_location, SCIENCE_DATA_SIZE + SCIENCE_HEADER_SIZE);
                 if (CRC_next_packet != CRC_calculate) {
                     log_message("Wrong CRC, calculate value: %02X, value from next packet: %02X", CRC_calculate, CRC_next_packet);
                     continuous_packet = 0;
                 }
 
-                parse_science_packet(binary_buffer + old_sd_header_location + SD_HEADER_SIZE, SCIENCE_DATA_SIZE);
+                parse_science_packet(binary_buffer + old_sd_header_location + SCIENCE_HEADER_SIZE, SCIENCE_DATA_SIZE);
                 full++;
             }
             else {
                 // packet smaller than expected
-                if (sd_header_location - old_sd_header_location < SCIENCE_DATA_SIZE + SD_HEADER_SIZE) {
+                if (sd_header_location - old_sd_header_location < SCIENCE_DATA_SIZE + SCIENCE_HEADER_SIZE) {
                     log_message("Packet size %zu bytes smaller than expected", sd_header_location - old_sd_header_location);
-                    parse_science_packet(binary_buffer + old_sd_header_location + SD_HEADER_SIZE, sd_header_location - old_sd_header_location - SD_HEADER_SIZE);
+                    parse_science_packet(binary_buffer + old_sd_header_location + SCIENCE_HEADER_SIZE, sd_header_location - old_sd_header_location - SCIENCE_HEADER_SIZE);
                 }
                 // if packet larger than expected, don't parse the packet
                 else {
@@ -126,12 +124,6 @@ int parse_science_data(int InputFilePointer) {
             }
         }
         break;
-        // if (actual_binary_buffer_size < max_binary_buffer_size) {
-        //     break;
-        // }
-        // // offset position indicator of input file stream based on previous sd header position
-        // fseek(input_binary, old_sd_header_location - actual_binary_buffer_size, SEEK_CUR);
-        // actual_binary_buffer_size = read_from_file(binary_buffer, input_binary, max_binary_buffer_size);
     }
     log_message("packet summary: full = %zu, broken = %zu", full, broken);
     
