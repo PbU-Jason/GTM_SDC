@@ -1,8 +1,8 @@
 #ifndef GTM_DECODER_FUNCTION_H
 #define GTM_DECODER_FUNCTION_H
 
-#include <stdio.h>
-#include <stdint.h>
+#include <stdio.h>  // for size_t, File, printf, fopen, ..., etc
+#include <stdint.h> // for uint8_t, uint16_t & uint32_t
 
 #define NSPO_DATA_SIZE 1127 // total size of a NSPO packet
 #define NSPO_HEADER_SIZE 16 // spacewire RMAP HEAD + CRC
@@ -132,26 +132,22 @@ typedef struct Science {
     double   energy;
 } Science;
 
-// global variables
+
+
+//* declare_global_variable *//
+
+/// main ///
+
 extern int decode_mode;
-extern int extract_mode;
 extern int export_mode;
-// extern int hit_mode;
-// extern int gain_mode;
-extern FILE *bin_infile;
-extern FILE *raw_extract_outfile;
-extern FILE *raw_outfile;
-extern FILE *raw_sync_outfile;
-extern FILE *raw_adc_only_outfile;
-extern FILE *pipeline_outfile;
-extern FILE *pipeline_sync_outfile;
-extern FILE *tmtc_master_outfile;
-extern FILE *tmtc_slave_outfile;
 
-extern size_t max_binary_buffer_size; // 1GB
+/// main_end ///
+
+/// create_all_buffer ///
+
+extern size_t max_binary_buffer_size;
+
 extern unsigned char *binary_buffer;
-
-extern unsigned char *sync_data_buffer;
 extern unsigned char *sync_data_buffer_master;
 extern unsigned char *sync_data_buffer_slave;
 
@@ -161,6 +157,19 @@ extern Attitude *position_buffer;
 extern Attitude *pre_position;
 extern Science *event_buffer;
 extern TMTC *tmtc_buffer;
+
+/// create_all_buffer_end ///
+
+/// open_all_file ///
+
+extern FILE *input_binary;
+
+extern FILE *raw_output_file; 
+extern FILE *tmtc_master_output_file;
+extern FILE *tmtc_slave_output_file;
+extern FILE *science_pipeline_output_file;
+
+/// open_all_file_end ///
 
 extern int sync_data_buffer_counter;
 extern int sync_data_buffer_master_counter;
@@ -173,17 +182,25 @@ extern int got_first_sync_data_master;
 extern int got_first_sync_data_slave;
 
 extern int continuous_packet;
-// end
+
+//* declare_global_variable_end *//
+
+
+
+//* functions *//
 
 /// main ///
+
 void check_endianness();
-void log_error(const char *Format, ...);
-void log_message(const char *Format, ...);
-char *str_append(char *Prefix, char *Postfix);
-void create_all_buffer(void);
-void destroy_all_buffer(void);
-void open_all_file(char *InputFilePath, char *OutFilePath);
-void close_all_file(void);
+void log_error(const char *sentence, ...);
+void create_all_buffer();
+void open_all_file(char *input_file_path);
+void log_message(const char *sentence, ...);
+char *str_append(char *pre_fix, char *post_fix);
+void close_all_file();
+void destroy_all_buffer();
+
+/// main_end ///
 
 /// extract science data ///
 size_t read_from_file(unsigned char *TargetBuffer, FILE *FileStream, size_t MaxSize);
@@ -222,5 +239,7 @@ void parse_utc_time_tmtc(unsigned char *Target);
 void write_tmtc_buffer_all(unsigned char *Target);
 void write_tmtc_buffer_master(void);
 void write_tmtc_buffer_slave(void);
+
+//* function_end *//
 
 #endif

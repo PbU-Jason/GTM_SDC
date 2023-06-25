@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "string.h": "c",
+        "stdint.h": "c",
+        "stdarg.h": "c",
+        "gtm_decoder_parse_science_data.h": "c",
+        "gtm_decoder_parse_tmtc_data.h": "c"
+    }
+}

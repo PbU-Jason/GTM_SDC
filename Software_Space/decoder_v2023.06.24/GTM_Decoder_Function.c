@@ -1,34 +1,28 @@
-#include <stdint.h> // for uint
-#include <stdarg.h> // for va_list
-#include <stdio.h> // for printf
+#include "GTM_Decoder_Function.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include <stdarg.h> // for va_list, va_start(), va_arg() & va_end()
+#include <stdlib.h> // for exit & malloc (also has size_t)
+#include <string.h> // for strlen, memcpy, strcat & memcmp (also has size_t)
+
 #include <time.h>
 #include <math.h>
 
-#include "GTM_Decoder_Function.h"
 
-// global variables
+
+//* define_global_variable *//
+
+/// main ///
+
 int decode_mode  = 0;
-int extract_mode = 0;
 int export_mode  = 0;
 
-FILE *bin_infile            = NULL;
+/// main_end ///
 
-FILE *raw_extract_outfile   = NULL;
-FILE *raw_outfile           = NULL; // SD and TMTC shared
-FILE *raw_sync_outfile      = NULL;
-FILE *raw_adc_only_outfile  = NULL; // temporarily used for realtime plotting
-FILE *pipeline_outfile      = NULL;
-FILE *pipeline_sync_outfile = NULL;
-FILE *tmtc_master_outfile   = NULL;
-FILE *tmtc_slave_outfile    = NULL;
+/// create_all_buffer ///
 
-size_t max_binary_buffer_size   = 1174405120; // 1GB
-unsigned char *binary_buffer    = NULL;
+size_t max_binary_buffer_size = 1174405120; // 1 GB
 
-unsigned char *sync_data_buffer        = NULL;
+unsigned char *binary_buffer           =  NULL;
 unsigned char *sync_data_buffer_master = NULL;
 unsigned char *sync_data_buffer_slave  = NULL;
 
@@ -37,9 +31,21 @@ Time *time_start          = NULL;
 Attitude *position_buffer = NULL;
 Attitude *pre_position    = NULL;
 Science *event_buffer     = NULL;
-TMTC *tmtc_buffer;
+TMTC *tmtc_buffer         = NULL;
 
-int sync_data_buffer_counter        = 0;
+/// create_all_buffer_end ///
+
+/// open_all_file ///
+
+FILE *input_binary = NULL;
+
+FILE *raw_output_file               = NULL; // tmtc and science shared
+FILE *tmtc_master_output_file       = NULL;
+FILE *tmtc_slave_output_file        = NULL;
+FILE *science_pipeline_output_file  = NULL;
+
+/// open_all_file_end ///
+
 int sync_data_buffer_master_counter = 0;
 int sync_data_buffer_slave_counter  = 0;
 int missing_sync_data               = 0;
@@ -50,28 +56,34 @@ int got_first_sync_data_master      = 0;
 int got_first_sync_data_slave       = 0;
 
 int continuous_packet        = 1;
-// end
 
-// local variables
+//* define_global_variable_end *//
+
+
+
+//* local_variable *//
+
 char tmtc_header_all[] = "Bytes 0;Bytes 1;Bytes 2;Bytes 3;Bytes 4;Bytes 5;Bytes 6;Bytes 7;Bytes 8;Bytes 9;Bytes 10;Bytes 11;Bytes 12;Bytes 13;Bytes 14;Bytes 15;Bytes 16;Bytes 17;Bytes 18;Bytes 19;Bytes 20;Bytes 21;Bytes 22;Bytes 23;Bytes 24;Bytes 25;Bytes 26;Bytes 27;Bytes 28;Bytes 29;Bytes 30;Bytes 31;Bytes 32;Bytes 33;Bytes 34;Bytes 35;Bytes 36;Bytes 37;Bytes 38;Bytes 39;Bytes 40;Bytes 41;Bytes 42;Bytes 43;Bytes 44;Bytes 45;Bytes 46;Bytes 47;Bytes 48;Bytes 49;Bytes 50;Bytes 51;Bytes 52;Bytes 53;Bytes 54;Bytes 55;Bytes 56;Bytes 57;Bytes 58;Bytes 59;Bytes 60;Bytes 61;Bytes 62;Bytes 63;Bytes 64;Bytes 65;Bytes 66;Bytes 67;Bytes 68;Bytes 69;Bytes 70;Bytes 71;Bytes 72;Bytes 73;Bytes 74;Bytes 75;Bytes 76;Bytes 77;Bytes 78;Bytes 79;Bytes 80;Bytes 81;Bytes 82;Bytes 83;Bytes 84;Bytes 85;Bytes 86;Bytes 87;Bytes 88;Bytes 89;Bytes 90;Bytes 91;Bytes 92;Bytes 93;Bytes 94;Bytes 95;Bytes 96;Bytes 97;Bytes 98;Bytes 99;Bytes 100;Bytes 101;Bytes 102;Bytes 103;Bytes 104;Bytes 105;Bytes 106;Bytes 107;Bytes 108;Bytes 109;Bytes 110;Bytes 111;Bytes 112;Bytes 113;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;Bytes 119;Bytes 120;Bytes 121;Bytes 122;Bytes 123;Bytes 124;Bytes 125;Bytes 126;Bytes 127\n";
 char tmtc_header_master[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
 char tmtc_header_slave[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;Input Current Value;Input Voltage Value;Current Monitor Chip (U22) Temperature;HV Input Current Value;HV Input Voltage Value;Current Monitor Chip (U21) Temperature;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
-char raw_sync_header[] = "gtm module;PPS counts;CMD-SAD sequence number;UTC day;UTC hour;UTC minute;UTC sec;UTC subsec;x position;y position;z position;x velocity;y velocity;z velocity;S/C Quaternion 1;S/C Quaternion 2;S/C Quaternion 3;S/C Quaternion 4\n";
-// char raw_adc_only_header[] = "Module;CITIROC;Channel;Gain;ADC\n";
-char raw_adc_only_header[] = "Module;PPS;FineTime;CITIROC;Channel;Gain;ADC\n";
+// char raw_sync_header[] = "gtm module;PPS counts;CMD-SAD sequence number;UTC day;UTC hour;UTC minute;UTC sec;UTC subsec;x position;y position;z position;x velocity;y velocity;z velocity;S/C Quaternion 1;S/C Quaternion 2;S/C Quaternion 3;S/C Quaternion 4\n";
+char science_pipeline_header[] = "Module;PPS;FineTime;CITIROC;Channel;Gain;ADC\n";
 int got_first_sd_header = 0;
 uint8_t sequence_count = 0;
 int got_first_time_info = 0;
-// end
 
-// functions
+//* local_variable_end *//
+
+
+
+//* function *//
 
 /// main ///
 
 // checked~
 void check_endianness() {
     unsigned char x[2] = {0x00, 0x01}; 
-    // using char array to declare string
+    // use char array to define string
     // x[2] means there are two charaters
     // x stores the address of first charater, which is x[0] (like value)
     // char array decay to char pointer, so they are differnet but similar
@@ -94,7 +106,7 @@ void check_endianness() {
 // please refer below link to see ..., va_list, va_start, vprintf and va_end
 // https://www.ibm.com/docs/en/zos/2.1.0?topic=functions-vprintf-format-print-data-stdout
 void log_error(const char *sentence, ...) {
-    // using char pointer to declare string
+    // use char pointer to define string
     // sentence stores the address of first charater, which is *sentence
     // second charater is *(sentence + 1)
     // const make string unchangeable
@@ -102,103 +114,178 @@ void log_error(const char *sentence, ...) {
     va_list args;
 
     va_start(args, sentence);
-    printf("Error: ");
-    vprintf(sentence, args);
-    printf("\n");
+    printf("Error: "); vprintf(sentence, args); printf("\n");
     va_end(args);
-    exit(1); // means abnormal exit
+    exit(1); // abnormal exit
+}
+
+// to be optimized!
+void create_all_buffer() {
+
+    // dynamically allocate a single large block of memory with the specified size
+    binary_buffer = (unsigned char *)malloc(max_binary_buffer_size);
+    sync_data_buffer_master = (unsigned char *)malloc(SYNC_DATA_SIZE);
+    sync_data_buffer_slave = (unsigned char *)malloc(SYNC_DATA_SIZE);
+
+    time_buffer = (Time *)malloc(sizeof(Time));
+    time_start = (Time *)malloc(sizeof(Time));
+    position_buffer = (Attitude *)malloc(sizeof(Attitude));
+    pre_position = (Attitude *)malloc(sizeof(Attitude));
+    event_buffer = (Science *)malloc(sizeof(Science));
+    tmtc_buffer = (TMTC *)malloc(sizeof(TMTC));
+
+    // initialize value
+    time_buffer->pps_counter = 0;
+    time_buffer->fine_counter = 0;
 }
 
 // checked~
+void open_all_file(char *input_file_path) {
+    char *raw_output_path = NULL; // tmtc and science shared
+    char *tmtc_master_output_path = NULL;
+    char *tmtc_slave_output_path = NULL;
+    char *science_pipeline_output_path = NULL;
+    
+    // open input file
+    input_binary = fopen(input_file_path, "rb");
+    log_message("Successfully load input file");
+
+    // open output file
+    switch (decode_mode) {
+
+        // decode tmtc data
+        case 1:
+            // tmtc with master + slave
+            raw_output_path = str_append(input_file_path, "_tmtc_all.csv");
+            raw_output_file = fopen(raw_output_path, "a");
+            if (ftell(raw_output_file) == 0) {
+                fputs(tmtc_header_all, raw_output_file);
+            }
+            free(raw_output_path);
+
+            // tmtc only with master
+            tmtc_master_output_path = str_append(input_file_path, "_tmtc_master.csv");
+            tmtc_master_output_file = fopen(tmtc_master_output_path, "a");
+            if (ftell(tmtc_master_output_file) == 0) {
+                fputs(tmtc_header_master, tmtc_master_output_file);
+            }
+            free(tmtc_master_output_path);
+
+            // tmtc only with slave
+            tmtc_slave_output_path = str_append(input_file_path, "_tmtc_slave.csv");
+            tmtc_slave_output_file = fopen(tmtc_slave_output_path, "a");
+            if (ftell(tmtc_slave_output_file) == 0) {
+                fputs(tmtc_header_slave, tmtc_slave_output_file);
+            }
+            free(tmtc_slave_output_path);
+            break;
+
+        // decode science data
+        case 2:
+            if (export_mode == 1) {
+                raw_output_path = str_append(input_file_path, "_science_raw.txt");
+                raw_output_file = fopen(raw_output_path, "a");
+                free(raw_output_path);
+            }
+            else if (export_mode == 2) {
+                science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
+                science_pipeline_output_file = fopen(science_pipeline_output_path, "a");
+                if (ftell(science_pipeline_output_file) == 0) {
+                    fputs(science_pipeline_header, science_pipeline_output_file);
+                }
+                free(science_pipeline_output_path);
+            }
+            else if (export_mode == 3) {
+                raw_output_path = str_append(input_file_path, "_science_raw.txt");
+                raw_output_file = fopen(raw_output_path, "a");
+                free(raw_output_path);
+
+                science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
+                science_pipeline_output_file = fopen(science_pipeline_output_path, "a");
+                if (ftell(science_pipeline_output_file) == 0) {
+                    fputs(science_pipeline_header, science_pipeline_output_file);
+                }
+                free(science_pipeline_output_path);
+            }
+            else{
+                log_error("Unknown export mode!");
+            }
+            break;
+        
+        default:
+            log_error("Unknown decode mode!");
+            break;
+        }
+}
+
+// checked~
+// similar with log_error, but no exit
 void log_message(const char *sentence, ...) {
     va_list args;
 
     va_start(args, sentence);
-    printf("Message: ");
-    vprintf(sentence, args);
-    printf("\n");
+    printf("Message: "); vprintf(sentence, args); printf("\n");
+    va_end(args);
 }
 
-char *str_append(char *Prefix, char *Postfix) {
+// checked~
+char *str_append(char *pre_fix, char *post_fix) {
     char *new;
     size_t size_prefix, size_postfix;
 
-    size_prefix = strlen(Prefix);
-    size_postfix = strlen(Postfix);
-    new = (char *)malloc((size_prefix + size_postfix + 1) * sizeof(char));
+    size_prefix = strlen(pre_fix); // not count \0
+    size_postfix = strlen(post_fix);
+    new = (char *)malloc((size_prefix + size_postfix + 1) * sizeof(char)); // +1 to keep \0 place
 
-    if (!new) {
-        log_error("fail to create new str buffer in str_append");
-    }
-    memcpy(new, Prefix, size_prefix + 1);
-    strcat(new, Postfix);
+    memcpy(new, pre_fix, size_prefix + 1); // again, +1 to keep \0 place
+    strcat(new, post_fix); // automatically repalce \0 of pre_fix and add \0 after post_fix
     
     return new;
 }
 
-// allocate all global buffer
-void create_all_buffer(void) {
-    binary_buffer = (unsigned char *)malloc(max_binary_buffer_size);
-    if (!binary_buffer) {
-        log_error("fail to create binary buffer");
-    }
+// checked~
+void close_all_file() {
 
-    sync_data_buffer = (unsigned char *)malloc(SYNC_DATA_SIZE);
-    if (!sync_data_buffer) {
-        log_error("fail to create sync data buffer");
-    }
-    sync_data_buffer_master = (unsigned char *)malloc(SYNC_DATA_SIZE);
-    if (!sync_data_buffer_master) {
-        log_error("fail to create sync_data_buffer_master");
-    }
-    sync_data_buffer_slave = (unsigned char *)malloc(SYNC_DATA_SIZE);
-    if (!sync_data_buffer_slave) {
-        log_error("fail to create sync_data_buffer_slave");
-    }
+    // close input file
+    fclose(input_binary);
 
-    time_buffer = (Time *)malloc(sizeof(Time));
-    if (!time_buffer) {
-        log_error("faile to create time buffer");
-    }
-    // initialize value
-    time_buffer->pps_counter = 0;
-    time_buffer->fine_counter = 0;
+    // close output file
+    switch (decode_mode) {
+        
+        // decode tmtc data
+        case 1:
+            fclose(raw_output_file);
+            fclose(tmtc_master_output_file);
+            fclose(tmtc_slave_output_file);
+            break;
+        
+        // decode science data
+        case 2:
+            if (export_mode == 1) {
+                fclose(raw_output_file);
+            }
+            else if (export_mode == 2) {
+                fclose(science_pipeline_output_file);
+            }
+            else if (export_mode == 3) {
+                fclose(raw_output_file);
+                fclose(science_pipeline_output_file);
+            }
+            else {
+                log_error("Unknown export mode!");
+            }
+            break;
 
-    time_start = (Time *)malloc(sizeof(Time));
-    if (!time_start) {
-        log_error("fail to create time start buffer");
+        default:
+            log_error("Unknown decode mode!");
+            break;
     }
-
-    position_buffer = (Attitude *)malloc(sizeof(Attitude));
-    if (!position_buffer) {
-        log_error("faile to create position buffer");
-    }
-
-    pre_position = (Attitude *)malloc(sizeof(Attitude));
-    if (!pre_position) {
-        log_error("fail to create pre position buffer");
-    }
-
-    event_buffer = (Science *)malloc(sizeof(Science));
-    if (!event_buffer) {
-        log_error("fail to create event buffer");
-    }
-
-    tmtc_buffer = (TMTC *)malloc(sizeof(TMTC));
-    if (!tmtc_buffer) {
-        log_error("fail to create tmtc buffer");
-    }
-
-    // // initialize 3 bytes parametes to prevent weird non-zero byte
-    // tmtc_buffer->fine_counter = 0;
-    // tmtc_buffer->citiroc1_livetime = 0;
-    // tmtc_buffer->citiroc2_livetime = 0;
+    log_message("close all file");
 }
 
-void destroy_all_buffer(void) {
+// checked~, but wait create_all_buffer
+void destroy_all_buffer() {
     free(binary_buffer);
-
-    free(sync_data_buffer);
     free(sync_data_buffer_master);
     free(sync_data_buffer_slave);
 
@@ -210,208 +297,7 @@ void destroy_all_buffer(void) {
     free(tmtc_buffer);
 }
 
-void open_all_file(char *InputFilePath, char *OutFilePath) {
-    char *raw_extract_outpath = NULL;
-    char *raw_outpath = NULL;
-    char *raw_sync_outpath = NULL;
-    char *raw_adc_only_outpath = NULL;
-    char *pipeline_outpath = NULL;
-    char *pipeline_sync_outpath = NULL;
-    char *tmtc_master_outpath = NULL;
-    char *tmtc_slave_outpath = NULL;
-
-    // create input file
-    bin_infile = fopen(InputFilePath, "rb");
-    if (!bin_infile) {
-        log_error("binary file not found");
-    }
-    log_message("finish loading bin file");
-
-    // create output file
-    switch (decode_mode) {
-        case 1:
-            if (extract_mode) {
-                raw_extract_outpath = str_append(OutFilePath, "_extracted.bin");
-                raw_extract_outfile = fopen(raw_extract_outpath, "ab");
-                if (!raw_extract_outfile) {
-                    log_error("can't open extract output file");
-                }
-                free(raw_extract_outpath);
-            }
-            else{
-                if (export_mode == 1) {
-                    raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-                    raw_outfile = fopen(raw_outpath, "a");
-                    if (!raw_outfile) {
-                        log_error("can't open raw output file");
-                    }
-                    free(raw_outpath);
-
-                    raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-                    raw_sync_outfile = fopen(raw_sync_outpath, "a");
-                    if (!raw_sync_outfile) {
-                        log_error("can't open raw sync output file");
-                    }
-                    if (ftell(raw_sync_outfile) == 0) {
-                        fputs(raw_sync_header, raw_sync_outfile);
-                    }
-                    free(raw_sync_outpath);
-
-                    raw_adc_only_outpath = str_append(OutFilePath, "_science_raw_adc_only.csv");
-                    raw_adc_only_outfile = fopen(raw_adc_only_outpath, "a");
-                    if (!raw_adc_only_outfile) {
-                        log_error("can't open raw adc only output file");
-                    }
-                    if (ftell(raw_adc_only_outfile) == 0) {
-                        fputs(raw_adc_only_header, raw_adc_only_outfile);
-                    }
-                    free(raw_adc_only_outpath);
-                }
-                else if (export_mode == 2) {
-                    pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-                    pipeline_outfile = fopen(pipeline_outpath, "a");
-                    if (!pipeline_outfile) {
-                        log_error("can't open pipeline output file");
-                    }
-                    free(pipeline_outpath);
-
-                    pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "a");
-                    if (!pipeline_sync_outfile) {
-                        log_error("can't open pipeline sync output file");
-                    }
-                    free(pipeline_sync_outpath);
-                }
-                else if (export_mode == 3) {
-                    raw_outpath = str_append(OutFilePath, "_science_raw.txt");
-                    raw_outfile = fopen(raw_outpath, "a");
-                    if (!raw_outfile) {
-                        log_error("can't open raw output file");
-                    }
-                    free(raw_outpath);
-
-                    raw_sync_outpath = str_append(OutFilePath, "_science_raw_sync.csv");
-                    raw_sync_outfile = fopen(raw_sync_outpath, "a");
-                    if (!raw_sync_outfile) {
-                        log_error("can't open raw sync output file");
-                    }
-                    if (ftell(raw_sync_outfile) == 0) {
-                        fputs(raw_sync_header, raw_sync_outfile);
-                    }
-                    free(raw_sync_outpath);
-
-                    raw_adc_only_outpath = str_append(OutFilePath, "_science_raw_adc_only.csv");
-                    raw_adc_only_outfile = fopen(raw_adc_only_outpath, "a");
-                    if (!raw_adc_only_outfile) {
-                        log_error("can't open raw adc only output file");
-                    }
-                    if (ftell(raw_adc_only_outfile) == 0) {
-                        fputs(raw_adc_only_header, raw_adc_only_outfile);
-                    }
-                    free(raw_adc_only_outpath);
-
-                    pipeline_outpath = str_append(OutFilePath, "_science_pipeline.txt");
-                    pipeline_outfile = fopen(pipeline_outpath, "a");
-                    if (!pipeline_outfile) {
-                        log_error("can't open pipeline output file");
-                    }
-                    free(pipeline_outpath);
-
-                    pipeline_sync_outpath = str_append(OutFilePath, "_science_pipeline_sync.txt");
-                    pipeline_sync_outfile = fopen(pipeline_sync_outpath, "a");
-                    if (!pipeline_sync_outfile) {
-                        log_error("can't open pipeline sync output file");
-                    }
-                    free(pipeline_sync_outpath);
-                }
-                else{
-                    log_error("unknown export mode");
-                }
-            }
-            break;
-        case 2:
-            // output tmtc with master + slave
-            raw_outpath = str_append(OutFilePath, "_tmtc_whole_output.csv");
-            raw_outfile = fopen(raw_outpath, "a");
-            if (!raw_outfile) {
-                log_error("can't open raw output file");
-            }
-            if (ftell(raw_outfile) == 0) {
-                fputs(tmtc_header_all, raw_outfile);
-            }
-            free(raw_outpath);
-
-            // output tmtc only with master
-            tmtc_master_outpath = str_append(OutFilePath, "_tmtc_master.csv");
-            tmtc_master_outfile = fopen(tmtc_master_outpath, "a");
-            if (!tmtc_master_outfile) {
-                log_error("can't open tmtc master output file");
-            }
-            if (ftell(tmtc_master_outfile) == 0) {
-                fputs(tmtc_header_master, tmtc_master_outfile);
-            }
-            free(tmtc_master_outpath);
-
-            // output tmtc only with slave
-            tmtc_slave_outpath = str_append(OutFilePath, "_tmtc_slave.csv");
-            tmtc_slave_outfile = fopen(tmtc_slave_outpath, "a");
-            if (!tmtc_slave_outfile) {
-                log_error("can't open tmtc slave output file");
-            }
-            if (ftell(tmtc_slave_outfile) == 0) {
-                fputs(tmtc_header_slave, tmtc_slave_outfile);
-            }
-            free(tmtc_slave_outpath);
-            break;
-        default:
-            log_error("unknown decode mode");
-            break;
-        }
-}
-
-void close_all_file(void) {
-    // close input file
-    fclose(bin_infile);
-
-    // close output file
-    switch (decode_mode) {
-        case 1:
-            if (extract_mode) {
-                fclose(raw_extract_outfile);
-            }
-            else{
-                if (export_mode == 1) {
-                    fclose(raw_outfile);
-                    fclose(raw_sync_outfile);
-                    fclose(raw_adc_only_outfile);
-                }
-                else if (export_mode == 2) {
-                    fclose(pipeline_outfile);
-                    fclose(pipeline_sync_outfile);
-                }
-                else if (export_mode == 3) {
-                    fclose(raw_outfile);
-                    fclose(raw_sync_outfile);
-                    fclose(raw_adc_only_outfile);
-                    fclose(pipeline_outfile);
-                    fclose(pipeline_sync_outfile);
-                }
-                else {
-                    log_error("unknown export mode");
-                }
-            }
-            break;
-        case 2:
-            fclose(raw_outfile);
-            fclose(tmtc_master_outfile);
-            fclose(tmtc_slave_outfile);
-            break;
-        default:
-            log_error("unknown decode mode");
-            break;
-    }
-    log_message("close all file");
-}
+/// main_end ///
 
 /// extract science data ///
 
@@ -492,48 +378,6 @@ int is_sd_header(unsigned char *Target) {
         return 0;
     }
 }
-
-// void parse_science_packet(unsigned char *Buffer, size_t MaxLocation) {
-//     int i;
-//     unsigned char *current_location;
-
-//     // parse data based on word (3 bytes)
-//     for (i = 0; i < MaxLocation / 3; ++i) {
-//         current_location = Buffer + 3 * i;
-
-//         // always look for sync data header
-//         if (is_sync_header(current_location)) {
-//             missing_sync_data = 1;
-//             sync_data_buffer_counter = 0;
-//             memcpy(sync_data_buffer, current_location, 3);
-//             continue;
-//         }
-
-//         if (missing_sync_data) {
-//             sync_data_buffer_counter += 3;
-//             memcpy(&sync_data_buffer[sync_data_buffer_counter], current_location, 3);
-//             // the tail of the sync data
-//             if (sync_data_buffer_counter == 42) {
-//                 if (is_sync_tail(sync_data_buffer + 42)) {
-//                     missing_sync_data = 0;
-//                     got_first_sync_data = 1;
-//                     sync_data_buffer_counter += 3;
-
-//                     // log_message("update sync data");
-//                     parse_sync_data(sync_data_buffer);
-//                 }
-//                 // if the tail is missing, keep finding the next sync data header
-//                 else {
-//                     missing_sync_data = 1;
-//                     sync_data_buffer_counter = 0;
-//                 }
-//             }
-//         }
-//         else if (got_first_sync_data) {
-//             parse_event_data(current_location);
-//         }
-//     }
-// }
 
 // sync data is 3 * 15 bytes, which may be splitted by master/slave switch
 // need to deal with sync data by separating it to master and slave cases
@@ -1284,4 +1128,4 @@ void write_tmtc_buffer_slave(void) {
     fprintf(tmtc_slave_outfile, ";%X%X\n", tmtc_buffer->tail[0], tmtc_buffer->tail[1]); // tail
 }
 
-// end
+//* function_end *//

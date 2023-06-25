@@ -20,11 +20,11 @@ int extract_science_data(int InputFilePointer) {
         log_error("fail to create NSPO data buffer");
     }
 
-    // moving pointer inside bin_infile base on InputFilePointer
-    fseek(bin_infile, InputFilePointer, SEEK_SET);
+    // moving pointer inside input_binary base on InputFilePointer
+    fseek(input_binary, InputFilePointer, SEEK_SET);
 
     // recording how many bytes in binary_buffer
-    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, bin_infile);
+    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, input_binary);
 
     // updating file pointer by InputFilePointer and actual_binary_buffer_size
     output_file_pointer = InputFilePointer + (int)actual_binary_buffer_size;
