@@ -4,130 +4,157 @@
 #include <stdio.h>  // for size_t, File, printf, fopen, ..., etc
 #include <stdint.h> // for uint8_t, uint16_t & uint32_t
 
+// refer to GICD
+
+#define TMTC_PACKET_HEADER_SIZE 6
+#define TMTC_PACKET_ID_SIZE 2
+#define TMTC_PACKET_SEQUENCE_CONTROL_SIZE 2
+#define TMTC_PACKET_LENGTH_SIZE 2
+
+#define TMTC_PACKET_DATA_FIELD_SIZE 138
+#define TMTC_DATA_FIELD_HEADER_SIZE 10
+#define TMTC_SOURCE_DATA_SIZE 128
+
+#define SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE 4
+
+#define SCIENCE_TRANSFER_FRAME_SIZE 1115
+#define SCIENCE_PRIMARY_HEADER_SIZE 6
+#define SCIENCE_TRANSFER_FRAME_DATA_FIELD_SIZE 1105
+#define SCIENCE_TRANSFER_FRAME_TRAILER_SIZE 4
+
+#define SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE 160
+
+// refer to ICD
+
 #define TMTC_DATA_SIZE 128
+
 #define SCIENCE_HEADER_SIZE 6
 #define SCIENCE_DATA_SIZE 1104
-#define SCIENCE_SYNC_SIZE 45
+
+#define SCIENCE_DATA_SYNC_SIZE 45
+#define SCIENCE_EVENT_TIME_SIZE 3
+#define SCIENCE_EVENT_ADC_SIZE 3
 
 
 
-typedef struct Time {
-    // from UTC
+//* define_public_type_for_global_buffer *//
+
+// tmtc and science shared
+typedef struct UTC {
     uint16_t year;
-    uint8_t  month;
-    uint8_t  mday; // this is the day in the month
-    uint16_t day; // this is the day from 1/1 of the year
+    uint16_t day_of_month;
     uint8_t  hour;
     uint8_t  minute;
-    uint8_t  sec;
-    uint8_t  sub_sec; // msec
-
-    // from sync and event time
-
-    // ???
-    uint32_t pps_counter; // it's our own pps counter
-    uint32_t pps_counter_base;
-
-    // for master and slave
-    uint32_t fine_counter; // 0.24 usec
-    uint32_t fine_counter_master;
-    uint32_t fine_counter_slave;
-} Time;
-
-typedef enum Module {
-    MASTER,
-    SLAVE
-} Module;
-
-typedef struct Attitude {
-    uint32_t x;
-    uint32_t y;
-    uint32_t z;
-    uint32_t x_velocity;
-    uint32_t y_velocity;
-    uint32_t z_velocity;
-    uint16_t quaternion1;
-    uint16_t quaternion2;
-    uint16_t quaternion3;
-    uint16_t quaternion4;
-} Attitude;
+    uint8_t  second;
+    uint8_t  subsecond;
+} UTC;
 
 typedef struct TMTC {
     unsigned char head[2];
-    unsigned char tail[2];
-    uint8_t       gtm_id;
+    uint8_t       gtm_id; // 0x02 = master; 0x05 = slave
     uint16_t      packet_counter;
     uint8_t       data_length_msb;
-    uint8_t       data_length;
-    int           gtm_id_in_pps_counter;
+    uint8_t       data_length_120_byte;
+
+    // have defined UTC
+
+    int           gtm_id_in_pps_counter; // 0 = master; 1 = slave
     uint16_t      pps_counter;
-    unsigned char fine_counter[3];
-    int8_t        board_temp1;
-    int8_t        board_temp2;
-    unsigned char citiroc1_temp[2];
-    unsigned char citiroc2_temp[2];
-    unsigned char citiroc1_livetime_busy[3];
-    unsigned char citiroc2_livetime_busy[3];
-    uint8_t       citiroc1_hit[32];
-    uint8_t       citiroc2_hit[32];
-    uint16_t      citiroc1_trigger;
-    uint16_t      citiroc2_trigger;
+    unsigned char fine_time_counter[3];
+    int8_t        board_temp_1;
+    int8_t        board_temp_2;
+    unsigned char citiroc_1_temp[2];
+    unsigned char citiroc_2_temp[2];
+    unsigned char citiroc_1_livetime_busy[3];
+    unsigned char citiroc_2_livetime_busy[3];
+    uint8_t       citiroc_1_hit[32];
+    uint8_t       citiroc_2_hit[32];
+    uint16_t      citiroc_1_trigger_counter;
+    uint16_t      citiroc_2_trigger_counter;
     uint8_t       counter_period;
-    uint8_t       hv_dac1;
-    uint8_t       hv_dac2;
+    uint8_t       hv_dac_1;
+    uint8_t       hv_dac_2;
 
     // for master
-    uint8_t  spw_a_error_count;
-    uint8_t  spw_a_last_receive;
-    uint8_t  spw_b_error_count;
-    uint8_t  spw_b_last_receive;
-    uint16_t spw_a_status;
-    uint16_t spw_b_status;
+    uint8_t       spw_a_error_count;
+    uint8_t       spw_a_last_recv_byte;
+    uint8_t       spw_b_error_count;
+    uint8_t       spw_b_last_recv_byte;
+    uint16_t      spw_a_status;
+    uint16_t      spw_b_status;
 
     // for slave
-    uint8_t  input_i;
-    uint8_t  input_v;
-    uint8_t  input_i_v;
-    int8_t   i_monitor_u22_temp;
-    uint8_t  hv_input_i;
-    uint8_t  hv_input_v;
-    uint8_t  hv_input_i_v;
-    int8_t   i_monitor_u21_temp;
+    uint8_t       input_i;
+    uint8_t       input_v;
+    uint8_t       input_i_v;
+    int8_t        i_monitor_u22_temp;
+    uint8_t       hv_input_i;
+    uint8_t       hv_input_v;
+    uint8_t       hv_input_i_v;
+    int8_t        i_monitor_u21_temp;
 
-    uint8_t       recv_checksum;
-    uint8_t       calc_checksum;
-    uint8_t       recv_num;
+    uint8_t       cmd_recv_checksum;
+    uint8_t       cmd_calc_checksum;
+    uint8_t       cmd_recv_number;
     uint8_t       tmtc_empty[5];
-    unsigned char citiroc1_livetime_buffer_busy[3];
-    unsigned char citiroc2_livetime_buffer_busy[3];
+    unsigned char citiroc_1_livetime_buffer_busy[3]; // should be lifetime?
+    unsigned char citiroc_2_livetime_buffer_busy[3];
     uint8_t       checksum;
+    unsigned char tail[2];
 } TMTC;
 
 typedef struct Science {
-    uint8_t  if_hit;
-    Module   gtm_module;
-
-    // for master and slave
-    uint16_t pps_counter;
-    uint16_t pps_counter_master;
-    uint16_t pps_counter_slave;
-
-    // need checking
-    uint8_t  cmd_seq_num; // CMD-SAD sequence number
-
-    uint8_t  event_time_buffer_id;
     
-    // for master and slave
-    uint32_t fine_counter;
-    uint32_t fine_counter_master;
-    uint32_t fine_counter_slave;
+    /// sync_data ///
 
-    uint8_t  citiroc_id;
-    uint8_t  channel_id;
-    uint8_t  energy_filter;
-    int16_t  adc_value;
-    double   energy;
+    unsigned char sync_header[1];
+    int           sync_gtm_id; // 0 = master; 1 = slave
+
+    // to keep correct time tag when data switch
+    uint16_t      sync_pps_counter_master;
+    uint16_t      sync_pps_counter_slave;
+
+    uint8_t       sync_cmd_sequence_number;
+
+    // have defined UTC
+
+    uint32_t      sync_x;
+    uint32_t      sync_y;
+    uint32_t      sync_z;
+    uint32_t      sync_v_x;
+    uint32_t      sync_v_y;
+    uint32_t      sync_v_z;
+    uint16_t      sync_quaternion_1;
+    uint16_t      sync_quaternion_2;
+    uint16_t      sync_quaternion_3;
+    uint16_t      sync_quaternion_4;
+    unsigned char sync_tail[3];
+
+    /// sync_data_end ///
+
+    /// event_time_data ///
+
+    uint8_t       event_time_buffer_id;
+
+    // to keep correct time tag when data switch
+    uint32_t      event_time_fine_time_counter_master;
+    uint32_t      event_time_fine_time_counter_slave;
+
+    /// event_time_data_end ///
+    
+    /// event_adc_data ///
+
+    int           event_adc_gtm_id; // 0 = master; 1 = slave
+    uint8_t       event_adc_citiroc_id; // 0 = A = 1; 1 = B = 2
+    uint8_t       event_adc_channel_id;
+    uint8_t       event_adc_gain; // 0 = low; 1 = high
+    int16_t       event_adc_adc_value;
+
+    /// event_adc_data_end ///
+
 } Science;
+
+//* define_public_type_for_global_buffer_end *//
 
 
 

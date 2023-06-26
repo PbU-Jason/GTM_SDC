@@ -125,6 +125,11 @@ void log_error(const char *sentence, ...) {
 void create_all_buffer() {
 
     // dynamically allocate a single large block of memory with the specified size
+    
+
+
+
+
     binary_buffer = (unsigned char *)malloc(max_binary_buffer_size);
     sync_data_buffer_master = (unsigned char *)malloc(SCIENCE_SYNC_SIZE);
     sync_data_buffer_slave = (unsigned char *)malloc(SCIENCE_SYNC_SIZE);
@@ -340,7 +345,7 @@ void parse_tmtc_packet(unsigned char *Target) {
 
     // data length
     memcpy(&(tmtc_buffer->data_length_msb), Target + 5, 1);
-    memcpy(&(tmtc_buffer->data_length), Target + 6, 1);
+    memcpy(&(tmtc_buffer->data_length_120_byte), Target + 6, 1);
 
     // UTC
     parse_utc_time_tmtc(Target + 7);
@@ -351,57 +356,57 @@ void parse_tmtc_packet(unsigned char *Target) {
     memcpy(&(tmtc_buffer->pps_counter), Target + 15, 2);
     big2little_endian(&(tmtc_buffer->pps_counter), 2);
     // fine counter
-    memcpy(&(tmtc_buffer->fine_counter), Target + 17, 3); // (fine_counter[0] << 16) | (fine_counter[1] << 8) | fine_counter[2] to recover
+    memcpy(&(tmtc_buffer->fine_time_counter), Target + 17, 3); // (fine_counter[0] << 16) | (fine_counter[1] << 8) | fine_counter[2] to recover
 
     // board temp (int8_t)
-    memcpy(&(tmtc_buffer->board_temp1), Target + 20, 1);
-    memcpy(&(tmtc_buffer->board_temp2), Target + 21, 1);
+    memcpy(&(tmtc_buffer->board_temp_1), Target + 20, 1);
+    memcpy(&(tmtc_buffer->board_temp_2), Target + 21, 1);
 
     // citiroc temp (definition in ICD is Little-Endian!)
     if ((*(Target + 24) & 0x80) == 0x80) {
-        tmtc_buffer->citiroc1_temp[0] = 0xC0 | ((*(Target + 24) & 0x7E) >> 1);
+        tmtc_buffer->citiroc_1_temp[0] = 0xC0 | ((*(Target + 24) & 0x7E) >> 1);
     }
     else {
-        tmtc_buffer->citiroc1_temp[0] = 0x00 | ((*(Target + 24) & 0x7E) >> 1);
+        tmtc_buffer->citiroc_1_temp[0] = 0x00 | ((*(Target + 24) & 0x7E) >> 1);
     }
-    memcpy(&(tmtc_buffer->citiroc1_temp[1]), Target + 22, 1);
+    memcpy(&(tmtc_buffer->citiroc_1_temp[1]), Target + 22, 1);
 
     if ((*(Target + 25) & 0x80) == 0x80) {
-        tmtc_buffer->citiroc2_temp[0] = 0xC0 | ((*(Target + 25) & 0x7E) >> 1);
+        tmtc_buffer->citiroc_2_temp[0] = 0xC0 | ((*(Target + 25) & 0x7E) >> 1);
     }
     else {
-        tmtc_buffer->citiroc2_temp[0] = 0x00 | ((*(Target + 25) & 0x7E) >> 1);
+        tmtc_buffer->citiroc_2_temp[0] = 0x00 | ((*(Target + 25) & 0x7E) >> 1);
     }
-    memcpy(&(tmtc_buffer->citiroc2_temp[1]), Target + 23, 1);
+    memcpy(&(tmtc_buffer->citiroc_2_temp[1]), Target + 23, 1);
 
     // citiroc livetime // see fine counter
-    memcpy(&(tmtc_buffer->citiroc1_livetime_busy), Target + 26, 3); 
-    memcpy(&(tmtc_buffer->citiroc2_livetime_busy), Target + 29, 3);
+    memcpy(&(tmtc_buffer->citiroc_1_livetime_busy), Target + 26, 3); 
+    memcpy(&(tmtc_buffer->citiroc_2_livetime_busy), Target + 29, 3);
     // citiroc hit
     for (i = 0; i < 32; ++i) {
-        memcpy(&(tmtc_buffer->citiroc1_hit[i]), Target + 32 + i, 1);
-        memcpy(&(tmtc_buffer->citiroc2_hit[i]), Target + 64 + i, 1);
+        memcpy(&(tmtc_buffer->citiroc_1_hit[i]), Target + 32 + i, 1);
+        memcpy(&(tmtc_buffer->citiroc_2_hit[i]), Target + 64 + i, 1);
     }
     // citiroc trigger
-    memcpy(&(tmtc_buffer->citiroc1_trigger), Target + 96, 2);
-    big2little_endian(&(tmtc_buffer->citiroc1_trigger), 2);
-    memcpy(&(tmtc_buffer->citiroc2_trigger), Target + 98, 2);
-    big2little_endian(&(tmtc_buffer->citiroc2_trigger), 2);
+    memcpy(&(tmtc_buffer->citiroc_1_trigger_counter), Target + 96, 2);
+    big2little_endian(&(tmtc_buffer->citiroc_1_trigger_counter), 2);
+    memcpy(&(tmtc_buffer->citiroc_2_trigger_counter), Target + 98, 2);
+    big2little_endian(&(tmtc_buffer->citiroc_2_trigger_counter), 2);
 
     // counter period
     memcpy(&(tmtc_buffer->counter_period), Target + 100, 1);
 
     // hv dac
-    memcpy(&(tmtc_buffer->hv_dac1), Target + 101, 1);
-    memcpy(&(tmtc_buffer->hv_dac2), Target + 102, 1);
+    memcpy(&(tmtc_buffer->hv_dac_1), Target + 101, 1);
+    memcpy(&(tmtc_buffer->hv_dac_2), Target + 102, 1);
 
     if (j == 0) {
         // for master
         // spw stuff
         memcpy(&(tmtc_buffer->spw_a_error_count), Target + 103, 1);
-        memcpy(&(tmtc_buffer->spw_a_last_receive), Target + 104, 1);
+        memcpy(&(tmtc_buffer->spw_a_last_recv_byte), Target + 104, 1);
         memcpy(&(tmtc_buffer->spw_b_error_count), Target + 105, 1);
-        memcpy(&(tmtc_buffer->spw_b_last_receive), Target + 106, 1);
+        memcpy(&(tmtc_buffer->spw_b_last_recv_byte), Target + 106, 1);
         memcpy(&(tmtc_buffer->spw_a_status), Target + 107, 2);
         big2little_endian(&(tmtc_buffer->spw_a_status), 2);
         memcpy(&(tmtc_buffer->spw_b_status), Target + 109, 2);
@@ -424,17 +429,17 @@ void parse_tmtc_packet(unsigned char *Target) {
     }
 
     // checksum
-    memcpy(&(tmtc_buffer->recv_checksum), Target + 111, 1);
-    memcpy(&(tmtc_buffer->calc_checksum), Target + 112, 1);
+    memcpy(&(tmtc_buffer->cmd_recv_checksum), Target + 111, 1);
+    memcpy(&(tmtc_buffer->cmd_calc_checksum), Target + 112, 1);
     // recv num
-    memcpy(&(tmtc_buffer->recv_num), Target + 113, 1);
+    memcpy(&(tmtc_buffer->cmd_recv_number), Target + 113, 1);
 
     // tmtc empty
     memcpy(&(tmtc_buffer->tmtc_empty), Target + 114, 5);
 
     // citiroc livetime // see fine counter
-    memcpy(&(tmtc_buffer->citiroc1_livetime_buffer_busy), Target + 119, 3); 
-    memcpy(&(tmtc_buffer->citiroc2_livetime_buffer_busy), Target + 122, 3);
+    memcpy(&(tmtc_buffer->citiroc_1_livetime_buffer_busy), Target + 119, 3); 
+    memcpy(&(tmtc_buffer->citiroc_2_livetime_buffer_busy), Target + 122, 3);
 
     // checksum
     memcpy(&(tmtc_buffer->checksum), Target + 125, 1);
@@ -497,15 +502,15 @@ void write_tmtc_buffer_master(void) {
     int16_t citiroc2_temp = 0;
 
     // recover 3 bytes
-    fine_counter = (tmtc_buffer->fine_counter[0] << 16) | (tmtc_buffer->fine_counter[1] << 8) | tmtc_buffer->fine_counter[2];
-    citiroc1_livetime_busy = (tmtc_buffer->citiroc1_livetime_busy[0] << 16) | (tmtc_buffer->citiroc1_livetime_busy[1] << 8) | tmtc_buffer->citiroc1_livetime_busy[2];
-    citiroc2_livetime_busy = (tmtc_buffer->citiroc2_livetime_busy[0] << 16) | (tmtc_buffer->citiroc2_livetime_busy[1] << 8) | tmtc_buffer->citiroc2_livetime_busy[2];
-    citiroc1_livetime_buffer_busy = (tmtc_buffer->citiroc1_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc1_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc1_livetime_buffer_busy[2];
-    citiroc2_livetime_buffer_busy = (tmtc_buffer->citiroc2_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc2_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc2_livetime_buffer_busy[2];
+    fine_counter = (tmtc_buffer->fine_time_counter[0] << 16) | (tmtc_buffer->fine_time_counter[1] << 8) | tmtc_buffer->fine_time_counter[2];
+    citiroc1_livetime_busy = (tmtc_buffer->citiroc_1_livetime_busy[0] << 16) | (tmtc_buffer->citiroc_1_livetime_busy[1] << 8) | tmtc_buffer->citiroc_1_livetime_busy[2];
+    citiroc2_livetime_busy = (tmtc_buffer->citiroc_2_livetime_busy[0] << 16) | (tmtc_buffer->citiroc_2_livetime_busy[1] << 8) | tmtc_buffer->citiroc_2_livetime_busy[2];
+    citiroc1_livetime_buffer_busy = (tmtc_buffer->citiroc_1_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc_1_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc_1_livetime_buffer_busy[2];
+    citiroc2_livetime_buffer_busy = (tmtc_buffer->citiroc_2_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc_2_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc_2_livetime_buffer_busy[2];
 
     // recover 2 bytes, consider sign (don't need to transfer Endian)
-    citiroc1_temp = (tmtc_buffer->citiroc1_temp[0] << 8) |  tmtc_buffer->citiroc1_temp[1];
-    citiroc2_temp = (tmtc_buffer->citiroc2_temp[0] << 8) |  tmtc_buffer->citiroc2_temp[1];
+    citiroc1_temp = (tmtc_buffer->citiroc_1_temp[0] << 8) |  tmtc_buffer->citiroc_1_temp[1];
+    citiroc2_temp = (tmtc_buffer->citiroc_2_temp[0] << 8) |  tmtc_buffer->citiroc_2_temp[1];
 
     fprintf(tmtc_master_output_file, "%X%X", tmtc_buffer->head[0], tmtc_buffer->head[1]); // head
     fprintf(tmtc_master_output_file, \
@@ -513,23 +518,23 @@ void write_tmtc_buffer_master(void) {
     %u;%u;%u;%u;%u;%u; \
     %i;%u;%i; \
     %i;%i;%i;%i;%i;%i", \
-    tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length, \
+    tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length_120_byte, \
     time_buffer->year, time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec, time_buffer->sub_sec, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_counter, \
-    tmtc_buffer->board_temp1, tmtc_buffer->board_temp2, citiroc1_temp, citiroc2_temp, citiroc1_livetime_busy, citiroc2_livetime_busy);    
+    tmtc_buffer->board_temp_1, tmtc_buffer->board_temp_2, citiroc1_temp, citiroc2_temp, citiroc1_livetime_busy, citiroc2_livetime_busy);    
     for (i = 0; i < 32; ++i) {
-        fprintf(tmtc_master_output_file, ";%u", tmtc_buffer->citiroc1_hit[i]);
+        fprintf(tmtc_master_output_file, ";%u", tmtc_buffer->citiroc_1_hit[i]);
     }
     for (i = 0; i < 32; ++i) {
-        fprintf(tmtc_master_output_file, ";%u", tmtc_buffer->citiroc2_hit[i]);
+        fprintf(tmtc_master_output_file, ";%u", tmtc_buffer->citiroc_2_hit[i]);
     }
     fprintf(tmtc_master_output_file, \
     ";%u;%u;%u;%u;%u;\
     %X;%X;%X;%X;%X;%X;\
     %u;%u;%u", \
-    tmtc_buffer->citiroc1_trigger, tmtc_buffer->citiroc2_trigger, tmtc_buffer->counter_period, tmtc_buffer->hv_dac1, tmtc_buffer->hv_dac2, \
-    tmtc_buffer->spw_a_error_count, tmtc_buffer->spw_a_last_receive, tmtc_buffer->spw_b_error_count, tmtc_buffer->spw_b_last_receive, tmtc_buffer->spw_a_status, tmtc_buffer->spw_b_status, \
-    tmtc_buffer->recv_checksum, tmtc_buffer->calc_checksum, tmtc_buffer->recv_num);
+    tmtc_buffer->citiroc_1_trigger_counter, tmtc_buffer->citiroc_2_trigger_counter, tmtc_buffer->counter_period, tmtc_buffer->hv_dac_1, tmtc_buffer->hv_dac_2, \
+    tmtc_buffer->spw_a_error_count, tmtc_buffer->spw_a_last_recv_byte, tmtc_buffer->spw_b_error_count, tmtc_buffer->spw_b_last_recv_byte, tmtc_buffer->spw_a_status, tmtc_buffer->spw_b_status, \
+    tmtc_buffer->cmd_recv_checksum, tmtc_buffer->cmd_calc_checksum, tmtc_buffer->cmd_recv_number);
     for (i = 0; i < 5; ++i) {
         fprintf(tmtc_master_output_file, ";%u", tmtc_buffer->tmtc_empty[i]);
     }
@@ -554,15 +559,15 @@ void write_tmtc_buffer_slave(void) {
     uint16_t hv_input_v = 0;
 
     // recover 3 bytes
-    fine_counter = (tmtc_buffer->fine_counter[0] << 16) | (tmtc_buffer->fine_counter[1] << 8) | tmtc_buffer->fine_counter[2];
-    citiroc1_livetime_busy = (tmtc_buffer->citiroc1_livetime_busy[0] << 16) | (tmtc_buffer->citiroc1_livetime_busy[1] << 8) | tmtc_buffer->citiroc1_livetime_busy[2];
-    citiroc2_livetime_busy = (tmtc_buffer->citiroc2_livetime_busy[0] << 16) | (tmtc_buffer->citiroc2_livetime_busy[1] << 8) | tmtc_buffer->citiroc2_livetime_busy[2];
-    citiroc1_livetime_buffer_busy = (tmtc_buffer->citiroc1_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc1_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc1_livetime_buffer_busy[2];
-    citiroc2_livetime_buffer_busy = (tmtc_buffer->citiroc2_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc2_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc2_livetime_buffer_busy[2];
+    fine_counter = (tmtc_buffer->fine_time_counter[0] << 16) | (tmtc_buffer->fine_time_counter[1] << 8) | tmtc_buffer->fine_time_counter[2];
+    citiroc1_livetime_busy = (tmtc_buffer->citiroc_1_livetime_busy[0] << 16) | (tmtc_buffer->citiroc_1_livetime_busy[1] << 8) | tmtc_buffer->citiroc_1_livetime_busy[2];
+    citiroc2_livetime_busy = (tmtc_buffer->citiroc_2_livetime_busy[0] << 16) | (tmtc_buffer->citiroc_2_livetime_busy[1] << 8) | tmtc_buffer->citiroc_2_livetime_busy[2];
+    citiroc1_livetime_buffer_busy = (tmtc_buffer->citiroc_1_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc_1_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc_1_livetime_buffer_busy[2];
+    citiroc2_livetime_buffer_busy = (tmtc_buffer->citiroc_2_livetime_buffer_busy[0] << 16) | (tmtc_buffer->citiroc_2_livetime_buffer_busy[1] << 8) | tmtc_buffer->citiroc_2_livetime_buffer_busy[2];
 
     // recover 2 bytes, consider sign (don't need to transfer Endian)
-    citiroc1_temp = (tmtc_buffer->citiroc1_temp[1] << 8) |  tmtc_buffer->citiroc1_temp[0];
-    citiroc2_temp = (tmtc_buffer->citiroc2_temp[1] << 8) |  tmtc_buffer->citiroc2_temp[0];
+    citiroc1_temp = (tmtc_buffer->citiroc_1_temp[1] << 8) |  tmtc_buffer->citiroc_1_temp[0];
+    citiroc2_temp = (tmtc_buffer->citiroc_2_temp[1] << 8) |  tmtc_buffer->citiroc_2_temp[0];
 
     // recover 2 bytes, unsign
     input_v = ( ((tmtc_buffer->input_i >> 4) << 8) | ((tmtc_buffer->input_i << 4) | (tmtc_buffer->input_i_v >> 4)) );
@@ -576,23 +581,23 @@ void write_tmtc_buffer_slave(void) {
     %u;%u;%u;%u;%u;%u; \
     %i;%u;%i; \
     %i;%i;%i;%i;%i;%i", \
-    tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length, \
+    tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length_120_byte, \
     time_buffer->year, time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec, time_buffer->sub_sec, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_counter, \
-    tmtc_buffer->board_temp1, tmtc_buffer->board_temp2, citiroc1_temp, citiroc2_temp, citiroc1_livetime_busy, citiroc2_livetime_busy);    
+    tmtc_buffer->board_temp_1, tmtc_buffer->board_temp_2, citiroc1_temp, citiroc2_temp, citiroc1_livetime_busy, citiroc2_livetime_busy);    
     for (i = 0; i < 32; ++i) {
-        fprintf(tmtc_slave_output_file, ";%u", tmtc_buffer->citiroc1_hit[i]);
+        fprintf(tmtc_slave_output_file, ";%u", tmtc_buffer->citiroc_1_hit[i]);
     }
     for (i = 0; i < 32; ++i) {
-        fprintf(tmtc_slave_output_file, ";%u", tmtc_buffer->citiroc2_hit[i]);
+        fprintf(tmtc_slave_output_file, ";%u", tmtc_buffer->citiroc_2_hit[i]);
     }
     fprintf(tmtc_slave_output_file, \
     ";%u;%u;%u;%u;%u;\
     %u;%u;%i;%u;%u;%i;\
     %u;%u;%u", \
-    tmtc_buffer->citiroc1_trigger, tmtc_buffer->citiroc2_trigger, tmtc_buffer->counter_period, tmtc_buffer->hv_dac1, tmtc_buffer->hv_dac2, \
+    tmtc_buffer->citiroc_1_trigger_counter, tmtc_buffer->citiroc_2_trigger_counter, tmtc_buffer->counter_period, tmtc_buffer->hv_dac_1, tmtc_buffer->hv_dac_2, \
     input_v, input_i, tmtc_buffer->i_monitor_u22_temp, hv_input_v, hv_input_i, tmtc_buffer->i_monitor_u21_temp, \
-    tmtc_buffer->recv_checksum, tmtc_buffer->calc_checksum, tmtc_buffer->recv_num);    
+    tmtc_buffer->cmd_recv_checksum, tmtc_buffer->cmd_calc_checksum, tmtc_buffer->cmd_recv_number);    
     for (i = 0; i < 5; ++i) {
         fprintf(tmtc_slave_output_file, ";%u", tmtc_buffer->tmtc_empty[i]);
     }
