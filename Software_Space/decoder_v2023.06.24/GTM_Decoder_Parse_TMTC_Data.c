@@ -5,7 +5,7 @@
 
 int parse_tmtc_data(int input_file_pointer) {
     unsigned char *tmtc_data_buffer;
-    size_t actual_binary_buffer_size;
+    size_t actual_input_binary_buffer_size;
     int output_file_pointer;
     int tmtc_data_buffer_counter;
     size_t location;
@@ -16,14 +16,14 @@ int parse_tmtc_data(int input_file_pointer) {
         log_error("fail to create tmtc data buffer");
     }
 
-    // moving pointer inside input_binary base on input_file_pointer
-    fseek(input_binary, input_file_pointer, SEEK_SET);
+    // move file pointer inside input_binary_file base on input_file_pointer
+    fseek(input_binary_file, input_file_pointer, SEEK_SET);
 
-    // recording how many bytes in binary_buffer
-    actual_binary_buffer_size = fread(binary_buffer, 1, max_binary_buffer_size, input_binary);
+    // record how many bytes in input_binary_buffer
+    actual_input_binary_buffer_size = fread(input_binary_buffer, 1, max_input_binary_buffer_size, input_binary_file);
 
-    // updating file pointer by input_file_pointer and actual_binary_buffer_size
-    output_file_pointer = input_file_pointer + (int)actual_binary_buffer_size;
+    // update file pointer by input_file_pointer and actual_input_binary_buffer_size
+    output_file_pointer = input_file_pointer + (int)actual_input_binary_buffer_size;
 
     while (1) {
         log_message("load new chunk");
@@ -31,9 +31,9 @@ int parse_tmtc_data(int input_file_pointer) {
         // initializing the position of tmtc_data_buffer
         tmtc_data_buffer_counter = 0;
 
-        // parsing data in binary_buffer
-        for (location=0; location < actual_binary_buffer_size; location++) {
-            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, binary_buffer+location, 1);
+        // parsing data in input_binary_buffer
+        for (location=0; location < actual_input_binary_buffer_size; location++) {
+            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, input_binary_buffer+location, 1);
             tmtc_data_buffer_counter++;
 
             // checking TMTC header

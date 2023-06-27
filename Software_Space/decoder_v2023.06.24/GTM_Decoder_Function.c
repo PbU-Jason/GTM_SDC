@@ -12,8 +12,8 @@
 
 /// main ///
 
-int decode_mode  = 0;
-int export_mode  = 0;
+int decode_mode = 0;
+int export_mode = 0;
 
 int sync_data_buffer_master_counter = 0;
 int sync_data_buffer_slave_counter  = 0;
@@ -32,24 +32,27 @@ int continuous_packet = 1;
 
 /// create_all_buffer ///
 
-size_t max_binary_buffer_size = 1174405120; // 1 GB
+// for input binary
+size_t max_input_binary_buffer_size = 1174405120; // 1 GB
+unsigned char *input_binary_buffer  =  NULL;
 
-unsigned char *binary_buffer           =  NULL;
-unsigned char *sync_data_buffer_master = NULL;
-unsigned char *sync_data_buffer_slave  = NULL;
+// for typedef struct
+UTC *utc_buffer       = NULL; // tmtc and science shared
+TMTC *tmtc_buffer     = NULL;
+Science *event_buffer = NULL;
 
-Time *time_buffer         = NULL;
-Time *time_start          = NULL;
-Attitude *position_buffer = NULL;
-Attitude *pre_position    = NULL;
-Science *event_buffer     = NULL;
-TMTC *tmtc_buffer         = NULL;
+// for other TASA added header and tail
+unsigned char *tasa_tmtc_packet_header_buffer              = NULL;
+unsigned char *tasa_science_attached_synchro_marker_buffer = NULL;
+unsigned char *tasa_science_primary_header_buffer          = NULL;
+unsigned char *tasa_science_transfer_frame_trailer_buffer  = NULL;
+unsigned char *tasa_science_reed_solomon_symbols_buffer    = NULL;
 
 /// create_all_buffer_end ///
 
 /// open_all_file ///
 
-FILE *input_binary = NULL;
+FILE *input_binary_file = NULL;
 
 FILE *raw_output_file               = NULL; // tmtc and science shared
 FILE *tmtc_master_output_file       = NULL;
@@ -67,7 +70,6 @@ FILE *science_pipeline_output_file  = NULL;
 char tmtc_header_all[] = "Bytes 0;Bytes 1;Bytes 2;Bytes 3;Bytes 4;Bytes 5;Bytes 6;Bytes 7;Bytes 8;Bytes 9;Bytes 10;Bytes 11;Bytes 12;Bytes 13;Bytes 14;Bytes 15;Bytes 16;Bytes 17;Bytes 18;Bytes 19;Bytes 20;Bytes 21;Bytes 22;Bytes 23;Bytes 24;Bytes 25;Bytes 26;Bytes 27;Bytes 28;Bytes 29;Bytes 30;Bytes 31;Bytes 32;Bytes 33;Bytes 34;Bytes 35;Bytes 36;Bytes 37;Bytes 38;Bytes 39;Bytes 40;Bytes 41;Bytes 42;Bytes 43;Bytes 44;Bytes 45;Bytes 46;Bytes 47;Bytes 48;Bytes 49;Bytes 50;Bytes 51;Bytes 52;Bytes 53;Bytes 54;Bytes 55;Bytes 56;Bytes 57;Bytes 58;Bytes 59;Bytes 60;Bytes 61;Bytes 62;Bytes 63;Bytes 64;Bytes 65;Bytes 66;Bytes 67;Bytes 68;Bytes 69;Bytes 70;Bytes 71;Bytes 72;Bytes 73;Bytes 74;Bytes 75;Bytes 76;Bytes 77;Bytes 78;Bytes 79;Bytes 80;Bytes 81;Bytes 82;Bytes 83;Bytes 84;Bytes 85;Bytes 86;Bytes 87;Bytes 88;Bytes 89;Bytes 90;Bytes 91;Bytes 92;Bytes 93;Bytes 94;Bytes 95;Bytes 96;Bytes 97;Bytes 98;Bytes 99;Bytes 100;Bytes 101;Bytes 102;Bytes 103;Bytes 104;Bytes 105;Bytes 106;Bytes 107;Bytes 108;Bytes 109;Bytes 110;Bytes 111;Bytes 112;Bytes 113;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;Bytes 119;Bytes 120;Bytes 121;Bytes 122;Bytes 123;Bytes 124;Bytes 125;Bytes 126;Bytes 127\n";
 char tmtc_header_master[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
 char tmtc_header_slave[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;Input Current Value;Input Voltage Value;Current Monitor Chip (U22) Temperature;HV Input Current Value;HV Input Voltage Value;Current Monitor Chip (U21) Temperature;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
-// char raw_sync_header[] = "gtm module;PPS counts;CMD-SAD sequence number;UTC day;UTC hour;UTC minute;UTC sec;UTC subsec;x position;y position;z position;x velocity;y velocity;z velocity;S/C Quaternion 1;S/C Quaternion 2;S/C Quaternion 3;S/C Quaternion 4\n";
 char science_pipeline_header[] = "Module;PPS;FineTime;CITIROC;Channel;Gain;ADC\n";
 
 int got_first_sd_header = 0;
@@ -121,29 +123,22 @@ void log_error(const char *sentence, ...) {
     exit(1); // abnormal exit
 }
 
-// to be optimized!
+// checked~
 void create_all_buffer() {
 
     // dynamically allocate a single large block of memory with the specified size
+
+    input_binary_buffer = (unsigned char *)malloc(max_input_binary_buffer_size);
     
-
-
-
-
-    binary_buffer = (unsigned char *)malloc(max_binary_buffer_size);
-    sync_data_buffer_master = (unsigned char *)malloc(SCIENCE_SYNC_SIZE);
-    sync_data_buffer_slave = (unsigned char *)malloc(SCIENCE_SYNC_SIZE);
-
-    time_buffer = (Time *)malloc(sizeof(Time));
-    time_start = (Time *)malloc(sizeof(Time));
-    position_buffer = (Attitude *)malloc(sizeof(Attitude));
-    pre_position = (Attitude *)malloc(sizeof(Attitude));
-    event_buffer = (Science *)malloc(sizeof(Science));
+    utc_buffer = (UTC *)malloc(sizeof(UTC));
     tmtc_buffer = (TMTC *)malloc(sizeof(TMTC));
+    event_buffer = (Science *)malloc(sizeof(Science));
 
-    // initialize value
-    time_buffer->pps_counter = 0;
-    time_buffer->fine_counter = 0;
+    tasa_tmtc_packet_header_buffer = (unsigned char *)malloc(TMTC_PACKET_HEADER_SIZE);
+    tasa_science_attached_synchro_marker_buffer = (unsigned char *)malloc(SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE);
+    tasa_science_primary_header_buffer = (unsigned char *)malloc(SCIENCE_PRIMARY_HEADER_SIZE);
+    tasa_science_transfer_frame_trailer_buffer = (unsigned char *)malloc(SCIENCE_TRANSFER_FRAME_TRAILER_SIZE);
+    tasa_science_reed_solomon_symbols_buffer = (unsigned char *)malloc(SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE);
 }
 
 // checked~
@@ -154,7 +149,7 @@ void open_all_file(char *input_file_path) {
     char *science_pipeline_output_path = NULL;
     
     // open input file
-    input_binary = fopen(input_file_path, "rb");
+    input_binary_file = fopen(input_file_path, "rb");
     log_message("Successfully load input file");
 
     // open output file
@@ -254,7 +249,7 @@ char *str_append(char *pre_fix, char *post_fix) {
 void close_all_file() {
 
     // close input file
-    fclose(input_binary);
+    fclose(input_binary_file);
 
     // close output file
     switch (decode_mode) {
@@ -290,18 +285,19 @@ void close_all_file() {
     log_message("close all file");
 }
 
-// checked~, but wait create_all_buffer
+// checked~
 void destroy_all_buffer() {
-    free(binary_buffer);
-    free(sync_data_buffer_master);
-    free(sync_data_buffer_slave);
+    free(input_binary_buffer);
 
-    free(time_buffer);
-    free(time_start);
-    free(position_buffer);
-    free(pre_position);
-    free(event_buffer);
+    free(utc_buffer);
     free(tmtc_buffer);
+    free(event_buffer);
+
+    free(tasa_tmtc_packet_header_buffer);
+    free(tasa_science_attached_synchro_marker_buffer);
+    free(tasa_science_primary_header_buffer);
+    free(tasa_science_transfer_frame_trailer_buffer);
+    free(tasa_science_reed_solomon_symbols_buffer);
 }
 
 /// main_end ///

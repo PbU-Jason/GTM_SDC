@@ -32,8 +32,8 @@
 #define SCIENCE_DATA_SIZE 1104
 
 #define SCIENCE_DATA_SYNC_SIZE 45
-#define SCIENCE_EVENT_TIME_SIZE 3
-#define SCIENCE_EVENT_ADC_SIZE 3
+#define SCIENCE_DATA_EVENT_TIME_SIZE 3
+#define SCIENCE_DATA_EVENT_ADC_SIZE 3
 
 
 
@@ -180,26 +180,27 @@ extern int continuous_packet;
 
 /// parse_science_data_end ///
 
-/// create_all_buffer ///
+// for input binary
+extern size_t max_input_binary_buffer_size
+extern unsigned char *input_binary_buffer
 
-extern size_t max_binary_buffer_size;
+// for typedef struct
+extern UTC *utc_buffer
+extern TMTC *tmtc_buffer
+extern Science *event_buffer
 
-extern unsigned char *binary_buffer;
-extern unsigned char *sync_data_buffer_master;
-extern unsigned char *sync_data_buffer_slave;
-
-extern Time *time_buffer;
-extern Time *time_start;
-extern Attitude *position_buffer;
-extern Attitude *pre_position;
-extern Science *event_buffer;
-extern TMTC *tmtc_buffer;
+// for other TASA added header and tail
+extern unsigned char *tasa_tmtc_packet_header_buffer
+extern unsigned char *tasa_science_attached_synchro_marker_buffer
+extern unsigned char *tasa_science_primary_header_buffer
+extern unsigned char *tasa_science_transfer_frame_trailer_buffer
+extern unsigned char *tasa_science_reed_solomon_symbols_buffer
 
 /// create_all_buffer_end ///
 
 /// open_all_file ///
 
-extern FILE *input_binary;
+extern FILE *input_binary_file;
 
 extern FILE *raw_output_file; 
 extern FILE *tmtc_master_output_file;
