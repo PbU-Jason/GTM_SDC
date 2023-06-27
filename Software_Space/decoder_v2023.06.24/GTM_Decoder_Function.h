@@ -42,7 +42,7 @@
 // tmtc and science shared
 typedef struct UTC {
     uint16_t year;
-    uint16_t day_of_month;
+    uint16_t day_of_year;
     uint8_t  hour;
     uint8_t  minute;
     uint8_t  second;
@@ -50,6 +50,10 @@ typedef struct UTC {
 } UTC;
 
 typedef struct TMTC {
+
+    // sequence count from TASA
+    uint16_t source_sequence_count;
+
     unsigned char head[2];
     uint8_t       gtm_id; // 0x02 = master; 0x05 = slave
     uint16_t      packet_counter;
@@ -181,20 +185,20 @@ extern int continuous_packet;
 /// parse_science_data_end ///
 
 // for input binary
-extern size_t max_input_binary_buffer_size
-extern unsigned char *input_binary_buffer
+extern size_t max_input_binary_buffer_size;
+extern unsigned char *input_binary_buffer;
 
 // for typedef struct
-extern UTC *utc_buffer
-extern TMTC *tmtc_buffer
-extern Science *event_buffer
+extern UTC *utc_buffer;
+extern TMTC *tmtc_buffer;
+extern Science *event_buffer;
 
 // for other TASA added header and tail
-extern unsigned char *tasa_tmtc_packet_header_buffer
-extern unsigned char *tasa_science_attached_synchro_marker_buffer
-extern unsigned char *tasa_science_primary_header_buffer
-extern unsigned char *tasa_science_transfer_frame_trailer_buffer
-extern unsigned char *tasa_science_reed_solomon_symbols_buffer
+extern unsigned char *tasa_tmtc_packet_header_buffer;
+extern unsigned char *tasa_science_attached_synchro_marker_buffer;
+extern unsigned char *tasa_science_primary_header_buffer;
+extern unsigned char *tasa_science_transfer_frame_trailer_buffer;
+extern unsigned char *tasa_science_reed_solomon_symbols_buffer;
 
 /// create_all_buffer_end ///
 
@@ -230,38 +234,39 @@ void destroy_all_buffer();
 
 /// parse_tmtc_data ///
 
-int is_tmtc_header(unsigned char *Target);
-int is_tmtc_tail(unsigned char *Targrt);
-void parse_tmtc_packet(unsigned char *Target);
-void parse_utc_time_tmtc(unsigned char *Target);
-void write_tmtc_buffer_all(unsigned char *Target);
-void write_tmtc_buffer_master(void);
-void write_tmtc_buffer_slave(void);
+int is_tmtc_gicd_header(unsigned char *target);
+int is_tmtc_icd_head(unsigned char *target);
+int is_tmtc_icd_tail(unsigned char *Targrt);
+void write_tmtc_raw_all(unsigned char *target);
+void parse_tmtc_packet(unsigned char *target);
+void simple_big2little_endian(void *target, size_t reverse_size);
+void parse_tmtc_utc(unsigned char *target);
+void write_tmtc_buffer_master_and_slave();
 
 /// parse_tmtc_data_end ///
 
 /// parse_science_data ///
 
 int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize);
-int is_sd_header(unsigned char *Target);
+int is_sd_header(unsigned char *target);
 void parse_science_packet(unsigned char *Buffer, size_t MaxLocation);
-static int is_sync_header(unsigned char *Target);
-static int is_sync_tail(unsigned char *Target);
-static void parse_sync_data(unsigned char *Target);
-void big2little_endian(void *Target, size_t TargetSize);
-void parse_utc_time_sync(unsigned char *Target);
-void parse_position(unsigned char *Target);
+static int is_sync_header(unsigned char *target);
+static int is_sync_tail(unsigned char *target);
+static void parse_sync_data(unsigned char *target);
+void big2little_endian(void *target, size_t targetSize);
+void parse_utc_time_sync(unsigned char *target);
+void parse_position(unsigned char *target);
 int compare_UTC(Time *Time1, Time *Time2);
 static void write_sync_data(void);
 void get_month_and_mday(void);
 double find_time_delta(Time *TimeStart, Time *TimeEnd);
 double calc_sec(Time *Time);
-static void parse_event_data(unsigned char *Target);
+static void parse_event_data(unsigned char *target);
 static void write_event_time(void);
-static void parse_event_adc(unsigned char *Target);
-void left_shift_mem(unsigned char *Target, size_t TargetSize, uint8_t Bits);
+static void parse_event_adc(unsigned char *target);
+void left_shift_mem(unsigned char *target, size_t targetSize, uint8_t Bits);
 static void write_event_buffer(void);
-void parse_sd_header(unsigned char *Target);
+void parse_sd_header(unsigned char *target);
 static void write_sd_header(uint8_t SequenceCount);
 void free_got_first_sd_header();
 

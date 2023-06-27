@@ -4,67 +4,75 @@
 
 
 int parse_tmtc_data(int input_file_pointer) {
-    unsigned char *tmtc_data_buffer;
-    size_t actual_input_binary_buffer_size;
+    size_t input_binary_buffer_size;
     int output_file_pointer;
-    int tmtc_data_buffer_counter;
-    size_t location;
 
-    // dynamic memory allocation for each 128 bytes TMTC data
-    tmtc_data_buffer = (unsigned char *)malloc(TMTC_DATA_SIZE); // (unsigned char *) is not necessary!
-    if (!tmtc_data_buffer) { // !tmtc_data_buffer == (tmtc_data_buffer == 0) because malloc may return null (=0 in C) when exhausting address space
-        log_error("fail to create tmtc data buffer");
-    }
+    unsigned char *tmtc_144_byte_buffer; // 144 bytes is the length of a single packet from TASA
+    int tmtc_144_byte_buffer_counter = 0;
+
+    /// step_1_read_data ///
 
     // move file pointer inside input_binary_file base on input_file_pointer
     fseek(input_binary_file, input_file_pointer, SEEK_SET);
 
-    // record how many bytes in input_binary_buffer
-    actual_input_binary_buffer_size = fread(input_binary_buffer, 1, max_input_binary_buffer_size, input_binary_file);
+    // record data from input_binary_file to input_binary_buffer and also how many bytes in input_binary_buffer
+    input_binary_buffer_size = fread(input_binary_buffer, 1, max_input_binary_buffer_size, input_binary_file);
 
-    // update file pointer by input_file_pointer and actual_input_binary_buffer_size
-    output_file_pointer = input_file_pointer + (int)actual_input_binary_buffer_size;
+    // update file pointer by input_file_pointer and input_binary_buffer_size
+    output_file_pointer = input_file_pointer + (int)input_binary_buffer_size;
 
-    while (1) {
-        log_message("load new chunk");
+    /// step_1_read_data_end ///
 
-        // initializing the position of tmtc_data_buffer
-        tmtc_data_buffer_counter = 0;
+    /// step_2_parse_data ///
 
-        // parsing data in input_binary_buffer
-        for (location=0; location < actual_input_binary_buffer_size; location++) {
-            memcpy(tmtc_data_buffer+tmtc_data_buffer_counter, input_binary_buffer+location, 1);
-            tmtc_data_buffer_counter++;
+    // dynamic memory allocation for tmtc_144_byte_buffer
+    tmtc_144_byte_buffer = (unsigned char *)malloc(TMTC_PACKET_HEADER_SIZE+TMTC_PACKET_DATA_FIELD_SIZE);
 
-            // checking TMTC header
-            if (tmtc_data_buffer_counter == 2) {
-                // if anything is wrong, shifting 1 byte to re-surching TMTC header
-                if (!is_tmtc_header(tmtc_data_buffer)) { 
-                    tmtc_data_buffer[0] = tmtc_data_buffer[1];
-                    tmtc_data_buffer_counter = 1;
-                }
-            }
+    // parse data in input_binary_buffer
+    for (size_t i = 0; i < input_binary_buffer_size; i++) {
 
-            // TMTC data (all 128 bytes data are loaded into tmtc_data_buffer)
-            if (tmtc_data_buffer_counter == TMTC_DATA_SIZE) {
-                // checking TMTC tail
-                // if anything is wrong, giving up this 128 bytes
-                if (!is_tmtc_tail(tmtc_data_buffer + TMTC_DATA_SIZE - 2)) {
-                    log_message("tmtc tail missing!!");
-                }
-                // if all data is healthy, parsing data base on ICD
-                else { 
-                    parse_tmtc_packet(tmtc_data_buffer);
-                }
-                tmtc_data_buffer_counter = 0;
+        // copy memory from input_binary_buffer to tmtc_144_byte_buffer
+        memcpy(tmtc_144_byte_buffer+tmtc_144_byte_buffer_counter, input_binary_buffer+i, 1);
+        tmtc_144_byte_buffer_counter++;
+
+        // check tmtc header from TASA
+        if (tmtc_144_byte_buffer_counter == TMTC_PACKET_HEADER_SIZE) {
+            if (!is_tmtc_gicd_header(tmtc_144_byte_buffer)) { 
+                log_error("Please check tmtc header defined by GICD!");
             }
         }
-        break;
+
+        // parse tmtc data (all 144 bytes data are loaded into tmtc_144_byte_buffer)
+        if (tmtc_144_byte_buffer_counter == TMTC_PACKET_HEADER_SIZE+TMTC_PACKET_DATA_FIELD_SIZE) {
+
+            // check 128 bytes tmtc head
+            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->head)) {
+                if (!is_tmtc_icd_head(tmtc_144_byte_buffer)) { 
+                    log_error("Please check tmtc head defined by ICD!");
+                }
+            }
+
+            // check 128 bytes tmtc tail
+            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->tail)) {
+                if (!is_tmtc_icd_tail(tmtc_144_byte_buffer)) { 
+                    log_error("Please check tmtc tail defined by ICD!");
+                }
+            }
+
+            // if all data is healthy, parse it out
+            write_tmtc_raw_all(tmtc_144_byte_buffer); // print each byte for checking
+            parse_tmtc_packet(tmtc_144_byte_buffer);
+
+            // reset tmtc_144_byte_buffer_counter
+            tmtc_144_byte_buffer_counter = 0;
+        }
     }
 
-    // releaseing dynamic memory allocation for each 128 bytes TMTC data
-    free(tmtc_data_buffer);
+    // release dynamic memory allocation for tmtc_144_byte_buffer
+    free(tmtc_144_byte_buffer);
 
-    // returning new file pointer to main funciton
+    /// step_2_parse_data_end ///
+    
+    // return updated file pointer to main funciton
     return output_file_pointer;
 }
