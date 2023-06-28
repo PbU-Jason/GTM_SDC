@@ -46,14 +46,14 @@ int parse_tmtc_data(int input_file_pointer) {
         if (tmtc_144_byte_buffer_counter == TMTC_PACKET_HEADER_SIZE+TMTC_PACKET_DATA_FIELD_SIZE) {
 
             // check 128 bytes tmtc head
-            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->head)) {
+            if (tmtc_144_byte_buffer_counter == 2) {
                 if (!is_tmtc_icd_head(tmtc_144_byte_buffer)) { 
                     log_error("Please check tmtc head defined by ICD!");
                 }
             }
 
             // check 128 bytes tmtc tail
-            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->tail)) {
+            if (tmtc_144_byte_buffer_counter == 2) {
                 if (!is_tmtc_icd_tail(tmtc_144_byte_buffer)) { 
                     log_error("Please check tmtc tail defined by ICD!");
                 }

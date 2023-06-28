@@ -18,10 +18,6 @@ int parse_science_data(int input_file_pointer, char *input_file_path) {
 
     unsigned char *scienc_1110_byte_buffer; // 1110 bytes = the length of a single packet real science data
     int science_1110_byte_buffer_counter = 0;
-    size_t sd_header_location;
-    size_t old_sd_header_location;
-    size_t full = 0;
-    size_t broken = 0;
 
     char *science_extract_output_path;
     FILE *science_extract_output_file;

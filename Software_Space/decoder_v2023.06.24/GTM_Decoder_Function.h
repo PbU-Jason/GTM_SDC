@@ -108,6 +108,9 @@ typedef struct TMTC {
 } TMTC;
 
 typedef struct Science {
+
+    // gtm id following head
+    int gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
     
     /// sync_data ///
 
@@ -166,23 +169,10 @@ typedef struct Science {
 
 /// main ///
 
-extern int decode_mode;
+extern int decode_mode; // inverse concept is static
 extern int export_mode;
 
-extern int sync_data_buffer_master_counter;
-extern int sync_data_buffer_slave_counter; 
-extern int missing_sync_data_master;
-extern int missing_sync_data_slave;
-extern int got_first_sync_data_master;
-extern int got_first_sync_data_slave;
-
 /// main_end ///
-
-/// parse_science_data ///
-
-extern int continuous_packet;
-
-/// parse_science_data_end ///
 
 /// create_basic_buffer ///
 
@@ -190,21 +180,11 @@ extern int continuous_packet;
 extern size_t max_input_binary_buffer_size;
 extern unsigned char *input_binary_buffer;
 
-// for typedef struct
-extern UTC *utc_buffer;
-extern TMTC *tmtc_buffer;
-extern Science *event_buffer;
-
 /// create_basic_buffer_end ///
 
 /// open_all_file ///
 
 extern FILE *input_binary_file;
-
-extern FILE *raw_output_file; 
-extern FILE *tmtc_master_output_file;
-extern FILE *tmtc_slave_output_file;
-extern FILE *science_pipeline_output_file;
 
 /// open_all_file_end ///
 
@@ -218,7 +198,7 @@ extern FILE *science_pipeline_output_file;
 
 void check_endianness();
 void log_error(const char *sentence, ...);
-void initailize_global_variable();
+void initailize_variable();
 void create_basic_buffer();
 void open_all_file(char *input_file_path);
 void log_message(const char *sentence, ...);
@@ -243,13 +223,12 @@ void write_tmtc_buffer_master_and_slave();
 
 /// parse_science_data ///
 
-int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize);
-int is_sd_header(unsigned char *target);
-void parse_science_packet(unsigned char *Buffer, size_t MaxLocation);
-static int is_sync_header(unsigned char *target);
-static int is_sync_tail(unsigned char *target);
-static void parse_sync_data(unsigned char *target);
-void big2little_endian(void *target, size_t targetSize);
+int is_science_gicd_marker(unsigned char *target);
+int is_science_icd_head(unsigned char *target);
+void parse_science_packet(unsigned char *target);
+int is_sync_header(unsigned char *target);
+int is_sync_tail(unsigned char *target);
+void parse_sync_data(unsigned char *target);
 void parse_utc_time_sync(unsigned char *target);
 void parse_position(unsigned char *target);
 int compare_UTC(Time *Time1, Time *Time2);
@@ -261,7 +240,7 @@ static void parse_event_data(unsigned char *target);
 static void write_event_time(void);
 static void parse_event_adc(unsigned char *target);
 void left_shift_mem(unsigned char *target, size_t targetSize, uint8_t Bits);
-static void write_event_buffer(void);
+static void write_science_buffer(void);
 void parse_sd_header(unsigned char *target);
 static void write_sd_header(uint8_t SequenceCount);
 void free_got_first_sd_header();

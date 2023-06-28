@@ -12,7 +12,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
     int new_file_pointer;
     
     check_endianness();
-    initailize_global_variable();
+    initailize_sync_data_flag(); // for continuously decode
     create_basic_buffer();
     open_all_file(file_name);
 
@@ -27,14 +27,6 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
         // decode science data
         case 2:
             log_message("Start decoding science data");
-
-            // initialize some setting about time in science data to continously decoding
-            sync_data_buffer_master_counter = 0;
-            sync_data_buffer_slave_counter  = 0;
-            missing_sync_data_master        = 0;
-            missing_sync_data_slave         = 0;
-            got_first_sync_data_master      = 0;
-            got_first_sync_data_slave       = 0;
             new_file_pointer = parse_science_data(initail_file_pointer, file_name);
             
             break;
