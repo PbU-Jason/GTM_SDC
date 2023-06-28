@@ -24,12 +24,6 @@ int got_first_sync_data_slave       = 0;
 
 /// main_end ///
 
-/// parse_science_data ///
-
-int continuous_packet = 1;
-
-/// parse_science_data_end ///
-
 /// create_basic_buffer ///
 
 // for input binary
@@ -116,6 +110,32 @@ void log_error(const char *sentence, ...) {
     exit(1); // abnormal exit
 }
 
+void initailize_global_variable() {
+    int decode_mode = 0;
+    int export_mode = 0;
+
+    int sync_data_buffer_master_counter = 0;
+    int sync_data_buffer_slave_counter  = 0;
+    int missing_sync_data_master        = 0;
+    int missing_sync_data_slave         = 0; 
+    int got_first_sync_data_master      = 0;
+    int got_first_sync_data_slave       = 0;
+
+    size_t max_input_binary_buffer_size = 1174405120;
+    unsigned char *input_binary_buffer  = NULL;
+
+    UTC *utc_buffer       = NULL;
+    TMTC *tmtc_buffer     = NULL;
+    Science *event_buffer = NULL;
+
+    FILE *input_binary_file = NULL;
+
+    FILE *raw_output_file               = NULL;
+    FILE *tmtc_master_output_file       = NULL;
+    FILE *tmtc_slave_output_file        = NULL;
+    FILE *science_pipeline_output_file  = NULL;
+}
+
 // checked~
 void create_basic_buffer() {
 
@@ -144,7 +164,7 @@ void open_all_file(char *input_file_path) {
 
         // decode tmtc data
         case 1:
-            // tmtc with master + slave
+            // master + slave
             raw_output_path = str_append(input_file_path, "_tmtc_all.csv");
             raw_output_file = fopen(raw_output_path, "a");
             if (ftell(raw_output_file) == 0) {
@@ -152,7 +172,7 @@ void open_all_file(char *input_file_path) {
             }
             free(raw_output_path);
 
-            // tmtc only with master
+            // only master
             tmtc_master_output_path = str_append(input_file_path, "_tmtc_master.csv");
             tmtc_master_output_file = fopen(tmtc_master_output_path, "a");
             if (ftell(tmtc_master_output_file) == 0) {
@@ -160,7 +180,7 @@ void open_all_file(char *input_file_path) {
             }
             free(tmtc_master_output_path);
 
-            // tmtc only with slave
+            // only slave
             tmtc_slave_output_path = str_append(input_file_path, "_tmtc_slave.csv");
             tmtc_slave_output_file = fopen(tmtc_slave_output_path, "a");
             if (ftell(tmtc_slave_output_file) == 0) {
@@ -303,10 +323,10 @@ int is_tmtc_icd_head(unsigned char *target) {
 }
 
 // checked~
-int is_tmtc_icd_tail(unsigned char *Targrt) {
+int is_tmtc_icd_tail(unsigned char *target) {
     unsigned char ref[2] = {0xFB, 0xF2};
 
-    if (!memcmp(ref, Targrt, 2)) {
+    if (!memcmp(ref, target, 2)) {
         return 1;
     }
 
@@ -598,37 +618,19 @@ void write_tmtc_buffer_master_and_slave() {
 
 /// parse_science_data ///
 
-int find_next_sd_header(unsigned char *Buffer, size_t CurrentSdHeaderLocation, size_t ActualBufferSize) {
-    size_t location;
+int is_science_gicd_marker(unsigned char *target) {
+    unsigned char ref[SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE] = {0x1A, 0xCF, 0xFC, 0x1D};
 
-    // quick check
-    location = CurrentSdHeaderLocation + SCIENCE_HEADER_SIZE + SCIENCE_DATA_SIZE;
-    if (location <= ActualBufferSize - SCIENCE_HEADER_SIZE) {
-        if (is_sd_header(Buffer + location)) {
-            return location;
-        }
-    }
-    // remaining buffer isn't large enough to contain a science packet
-    else {
-        return -1;
+    if (!memcmp(ref, target, SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE)) {
+        return 1;
     }
 
-    // the remaining buffer is large enough but science header doesn't appear is the correct position, try to find forward from old science data header
-    for (location = CurrentSdHeaderLocation + SCIENCE_HEADER_SIZE; location <= ActualBufferSize - SCIENCE_HEADER_SIZE; location++) {
-        if (is_sd_header(Buffer + location)) {
-            return location;
-        }
-    }
-
-    // no next sd header is found
-    return -1;
+    return 0;
 }
 
-// since sd header's head has some prob in current test data, reduce some matching pattern
-int is_sd_header(unsigned char *target) {
-    static unsigned char target_copy[SCIENCE_HEADER_SIZE];
-    static unsigned char ref_master[2] = {0x88, 0x55};
-    static unsigned char ref_slave[2] = {0x88, 0xAA};
+int is_science_icd_head(unsigned char *target) {
+    unsigned char ref_master[2] = {0x88, 0x55};
+    unsigned char ref_slave[2] = {0x88, 0xAA};
 
     // mask the sequence count byte
     memcpy(target_copy, target, SCIENCE_HEADER_SIZE);

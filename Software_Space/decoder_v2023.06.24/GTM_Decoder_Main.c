@@ -12,6 +12,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
     int new_file_pointer;
     
     check_endianness();
+    initailize_global_variable();
     create_basic_buffer();
     open_all_file(file_name);
 
@@ -34,7 +35,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
             missing_sync_data_slave         = 0;
             got_first_sync_data_master      = 0;
             got_first_sync_data_slave       = 0;
-            new_file_pointer = parse_science_data(initail_file_pointer);
+            new_file_pointer = parse_science_data(initail_file_pointer, file_name);
             
             break;
     }

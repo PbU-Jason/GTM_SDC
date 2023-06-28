@@ -4,7 +4,7 @@
 #include <stdio.h>  // for size_t, File, printf, fopen, ..., etc
 #include <stdint.h> // for uint8_t, uint16_t & uint32_t
 
-// refer to GICD
+// refer to GICD (may not be used)
 
 #define TMTC_PACKET_HEADER_SIZE 6
 #define TMTC_PACKET_ID_SIZE 2
@@ -24,7 +24,7 @@
 
 #define SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE 160
 
-// refer to ICD
+// refer to ICD (may not be used)
 
 #define TMTC_DATA_SIZE 128
 
@@ -218,6 +218,7 @@ extern FILE *science_pipeline_output_file;
 
 void check_endianness();
 void log_error(const char *sentence, ...);
+void initailize_global_variable();
 void create_basic_buffer();
 void open_all_file(char *input_file_path);
 void log_message(const char *sentence, ...);
@@ -231,7 +232,7 @@ void destroy_basic_buffer();
 
 int is_tmtc_gicd_header(unsigned char *target);
 int is_tmtc_icd_head(unsigned char *target);
-int is_tmtc_icd_tail(unsigned char *Targrt);
+int is_tmtc_icd_tail(unsigned char *target);
 void write_tmtc_raw_all(unsigned char *target);
 void parse_tmtc_packet(unsigned char *target);
 void simple_big2little_endian(void *target, size_t reverse_size);
