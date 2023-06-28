@@ -12,7 +12,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
     int new_file_pointer;
     
     check_endianness();
-    create_all_buffer();
+    create_basic_buffer();
     open_all_file(file_name);
 
     switch (decode_mode) {
@@ -40,7 +40,7 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
     }
 
     close_all_file();
-    destroy_all_buffer();
+    destroy_basic_buffer();
 
     return new_file_pointer;
 }

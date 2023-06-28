@@ -184,6 +184,8 @@ extern int continuous_packet;
 
 /// parse_science_data_end ///
 
+/// create_basic_buffer ///
+
 // for input binary
 extern size_t max_input_binary_buffer_size;
 extern unsigned char *input_binary_buffer;
@@ -193,14 +195,7 @@ extern UTC *utc_buffer;
 extern TMTC *tmtc_buffer;
 extern Science *event_buffer;
 
-// for other TASA added header and tail
-extern unsigned char *tasa_tmtc_packet_header_buffer;
-extern unsigned char *tasa_science_attached_synchro_marker_buffer;
-extern unsigned char *tasa_science_primary_header_buffer;
-extern unsigned char *tasa_science_transfer_frame_trailer_buffer;
-extern unsigned char *tasa_science_reed_solomon_symbols_buffer;
-
-/// create_all_buffer_end ///
+/// create_basic_buffer_end ///
 
 /// open_all_file ///
 
@@ -223,12 +218,12 @@ extern FILE *science_pipeline_output_file;
 
 void check_endianness();
 void log_error(const char *sentence, ...);
-void create_all_buffer();
+void create_basic_buffer();
 void open_all_file(char *input_file_path);
 void log_message(const char *sentence, ...);
 char *str_append(char *pre_fix, char *post_fix);
 void close_all_file();
-void destroy_all_buffer();
+void destroy_basic_buffer();
 
 /// main_end ///
 

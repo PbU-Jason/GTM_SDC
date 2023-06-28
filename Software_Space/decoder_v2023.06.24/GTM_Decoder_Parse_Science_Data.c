@@ -6,24 +6,128 @@
 int parse_science_data(int input_file_pointer) {
     size_t input_binary_buffer_size;
     int output_file_pointer;
+
+    unsigned char *science_icd_binary_buffer; // for science data without TATS added info
+    int science_icd_binary_buffer_counter = 0;
+    unsigned char *scienc_1279_byte_buffer; // 1279 bytes is the length of a single packet from TASA
+    int science_1279_byte_buffer_counter = 0;
+
+    size_t science_icd_binary_buffer_size;
     size_t sd_header_location;
     size_t old_sd_header_location;
     size_t full = 0;
     size_t broken = 0;
-    uint8_t CRC_next_packet, CRC_calculate;
 
-    // initializing pps and finetime counter
-    event_buffer->pps_counter = 0;
-    event_buffer->fine_counter = 0;
+    /// step_1_read_data ///
 
-    // moving pointer inside input_binary base on input_file_pointer
-    fseek(input_binary, input_file_pointer, SEEK_SET);
+    // move file pointer inside input_binary_file base on input_file_pointer
+    fseek(input_binary_file, input_file_pointer, SEEK_SET);
 
-    // recording how many bytes in input_binary_buffer
-    input_binary_buffer_size = fread(input_binary_buffer, 1, max_input_binary_buffer_size, input_binary);
-    
-    // updating file pointer by input_file_pointer and input_binary_buffer_size
+    // record data from input_binary_file to input_binary_buffer and also how many bytes in input_binary_buffer
+    input_binary_buffer_size = fread(input_binary_buffer, 1, max_input_binary_buffer_size, input_binary_file);
+
+    // update file pointer by input_file_pointer and input_binary_buffer_size
     output_file_pointer = input_file_pointer + (int)input_binary_buffer_size;
+
+    /// step_1_read_data_end ///
+
+    /// step_2_extract_data ///
+
+    // create science_icd_binary_buffer independently
+    science_icd_binary_buffer = (unsigned char *)malloc(input_binary_buffer_size);
+
+    // dynamic memory allocation for scienc_1279_byte_buffer
+    scienc_1279_byte_buffer = (unsigned char *)malloc(SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE+SCIENCE_TRANSFER_FRAME_SIZE+SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE);
+
+    // extract data in input_binary_buffer
+    for (size_t i = 0; i < input_binary_buffer_size; i++) {
+
+        // copy memory of real science data from input_binary_buffer to science_1105_byte_buffer
+        memcpy(scienc_1279_byte_buffer+science_1279_byte_buffer_counter, input_binary_buffer+i, 1);
+        science_1279_byte_buffer_counter++;
+
+        // check science marker from TASA
+        if (science_1279_byte_buffer_counter == SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE) {
+            if (!is_science_gicd_marker(scienc_1279_byte_buffer)) { 
+                log_error("Please check science marker defined by GICD!");
+            }
+        }
+
+        // extract science data (all 1279 bytes data are loaded into scienc_1279_byte_buffer)
+        if (science_1279_byte_buffer_counter == SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE+SCIENCE_TRANSFER_FRAME_SIZE+SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE) {
+            memcpy(science_icd_binary_buffer+science_icd_binary_buffer_counter, \
+            scienc_1279_byte_buffer+SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE+SCIENCE_PRIMARY_HEADER_SIZE, SCIENCE_TRANSFER_FRAME_DATA_FIELD_SIZE);
+            science_icd_binary_buffer_counter+=SCIENCE_TRANSFER_FRAME_DATA_FIELD_SIZE;
+
+            // reset science_1279_byte_buffer_counter
+            science_1279_byte_buffer_counter = 0;
+        }
+    }
+
+    // release dynamic memory allocation for scienc_1279_byte_buffer
+    free(scienc_1279_byte_buffer);
+
+    /// step_2_extract_data ///
+
+    // destroy input_binary_buffer independently
+    free(input_binary_buffer);
+
+    /// step_3_parse_data ///
+
+    // parse data in input_binary_buffer
+    for (size_t i = 0; i < strlen(science_icd_binary_buffer); i++) {
+
+        // copy memory from input_binary_buffer to tmtc_144_byte_buffer
+        memcpy(tmtc_144_byte_buffer+tmtc_144_byte_buffer_counter, input_binary_buffer+i, 1);
+        tmtc_144_byte_buffer_counter++;
+
+        // check tmtc header from TASA
+        if (tmtc_144_byte_buffer_counter == TMTC_PACKET_HEADER_SIZE) {
+            if (!is_tmtc_gicd_header(tmtc_144_byte_buffer)) { 
+                log_error("Please check tmtc header defined by GICD!");
+            }
+        }
+
+        // parse tmtc data (all 144 bytes data are loaded into tmtc_144_byte_buffer)
+        if (tmtc_144_byte_buffer_counter == TMTC_PACKET_HEADER_SIZE+TMTC_PACKET_DATA_FIELD_SIZE) {
+
+            // check 128 bytes tmtc head
+            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->head)) {
+                if (!is_tmtc_icd_head(tmtc_144_byte_buffer)) { 
+                    log_error("Please check tmtc head defined by ICD!");
+                }
+            }
+
+            // check 128 bytes tmtc tail
+            if (tmtc_144_byte_buffer_counter == sizeof(tmtc_buffer->tail)) {
+                if (!is_tmtc_icd_tail(tmtc_144_byte_buffer)) { 
+                    log_error("Please check tmtc tail defined by ICD!");
+                }
+            }
+
+            // if all data is healthy, parse it out
+            write_tmtc_raw_all(tmtc_144_byte_buffer); // print each byte for checking
+            parse_tmtc_packet(tmtc_144_byte_buffer);
+
+            // reset tmtc_144_byte_buffer_counter
+            tmtc_144_byte_buffer_counter = 0;
+        }
+    }
+
+    // release dynamic memory allocation for tmtc_144_byte_buffer
+    free(tmtc_144_byte_buffer);
+
+
+
+
+
+
+
+
+
+
+
+    /// step_3_parse_data ///
 
     // skip (input_binary_buffer_size == 0) to avoid error in find_next_sd_header()
     if ((int)input_binary_buffer_size == 0) {
@@ -130,6 +234,11 @@ int parse_science_data(int input_file_pointer) {
     free_got_first_sd_header();
     ///// ↑↑↑ need checking!!!
 
-    // returning new file pointer to main funciton
+    /// step_3_parse_data_end ///
+
+    // destroy science_icd_binary_buffer independently
+    free(science_icd_binary_buffer);
+
+    // return updated file pointer to main funciton
     return output_file_pointer;
 }

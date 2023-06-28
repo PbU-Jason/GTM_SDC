@@ -73,6 +73,9 @@ int parse_tmtc_data(int input_file_pointer) {
 
     /// step_2_parse_data_end ///
     
+    // destroy input_binary_buffer independently
+    free(input_binary_buffer);
+    
     // return updated file pointer to main funciton
     return output_file_pointer;
 }

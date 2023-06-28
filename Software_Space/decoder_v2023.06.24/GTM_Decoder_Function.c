@@ -30,25 +30,18 @@ int continuous_packet = 1;
 
 /// parse_science_data_end ///
 
-/// create_all_buffer ///
+/// create_basic_buffer ///
 
 // for input binary
 size_t max_input_binary_buffer_size = 1174405120; // 1 GB
-unsigned char *input_binary_buffer  =  NULL;
+unsigned char *input_binary_buffer  = NULL; // tmtc and science shared
 
 // for typedef struct
 UTC *utc_buffer       = NULL; // tmtc and science shared
 TMTC *tmtc_buffer     = NULL;
 Science *event_buffer = NULL;
 
-// for other TASA added header and tail
-unsigned char *tasa_tmtc_packet_header_buffer              = NULL;
-unsigned char *tasa_science_attached_synchro_marker_buffer = NULL;
-unsigned char *tasa_science_primary_header_buffer          = NULL;
-unsigned char *tasa_science_transfer_frame_trailer_buffer  = NULL;
-unsigned char *tasa_science_reed_solomon_symbols_buffer    = NULL;
-
-/// create_all_buffer_end ///
+/// create_basic_buffer_end ///
 
 /// open_all_file ///
 
@@ -124,7 +117,7 @@ void log_error(const char *sentence, ...) {
 }
 
 // checked~
-void create_all_buffer() {
+void create_basic_buffer() {
 
     // dynamically allocate a single large block of memory with the specified size
 
@@ -133,12 +126,6 @@ void create_all_buffer() {
     utc_buffer = (UTC *)malloc(sizeof(UTC));
     tmtc_buffer = (TMTC *)malloc(sizeof(TMTC));
     event_buffer = (Science *)malloc(sizeof(Science));
-
-    tasa_tmtc_packet_header_buffer = (unsigned char *)malloc(TMTC_PACKET_HEADER_SIZE);
-    tasa_science_attached_synchro_marker_buffer = (unsigned char *)malloc(SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE);
-    tasa_science_primary_header_buffer = (unsigned char *)malloc(SCIENCE_PRIMARY_HEADER_SIZE);
-    tasa_science_transfer_frame_trailer_buffer = (unsigned char *)malloc(SCIENCE_TRANSFER_FRAME_TRAILER_SIZE);
-    tasa_science_reed_solomon_symbols_buffer = (unsigned char *)malloc(SCIENCE_REED_SOLOMON_CHECK_SYMBOLS_SIZE);
 }
 
 // checked~
@@ -278,18 +265,12 @@ void close_all_file() {
 }
 
 // checked~
-void destroy_all_buffer() {
-    free(input_binary_buffer);
+void destroy_basic_buffer() {
+    // destroy input_binary_buffer independently
 
     free(utc_buffer);
     free(tmtc_buffer);
     free(event_buffer);
-
-    free(tasa_tmtc_packet_header_buffer);
-    free(tasa_science_attached_synchro_marker_buffer);
-    free(tasa_science_primary_header_buffer);
-    free(tasa_science_transfer_frame_trailer_buffer);
-    free(tasa_science_reed_solomon_symbols_buffer);
 }
 
 /// main_end ///
