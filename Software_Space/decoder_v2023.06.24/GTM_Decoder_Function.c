@@ -689,7 +689,7 @@ void parse_science_packet(unsigned char *target) {
             if (!stop_find_sync_data_header_master_flag) { // look for sync data header
 
                 // if find sync data header
-                if (is_sync_header(science_data_pointer+i)) {
+                if (is_science_sync_header(science_data_pointer+i)) {
 
                     // store 3 bytes to science_sync_master_buffer
                     memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, science_data_pointer+i, 3);
@@ -704,7 +704,7 @@ void parse_science_packet(unsigned char *target) {
                 if (have_complete_sync_data_master_flag) {
 
                     // parse 3 bytes event data
-                    parse_event_data(science_data_pointer+i);
+                    parse_science_event_data(science_data_pointer+i);
                 }
             }
             else { // stop looking for sync data header
@@ -717,7 +717,7 @@ void parse_science_packet(unsigned char *target) {
                 if (science_sync_master_buffer_counter == 45) {
 
                     // check sync data tail
-                    if (!is_sync_tail(science_sync_master_buffer+42)) {
+                    if (!is_science_sync_tail(science_sync_master_buffer+42)) {
                         log_error("Please check sync header defined in ICD!");
                     }
 
@@ -739,7 +739,7 @@ void parse_science_packet(unsigned char *target) {
             if (!stop_find_sync_data_header_slave_flag) { // look for sync data header
 
                 // if find sync data header
-                if (is_sync_header(science_data_pointer+i)) {
+                if (is_science_sync_header(science_data_pointer+i)) {
 
                     // store 3 bytes to science_sync_slave_buffer
                     memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, science_data_pointer+i, 3);
@@ -767,7 +767,7 @@ void parse_science_packet(unsigned char *target) {
                 if (science_sync_slave_buffer_counter == 45) {
 
                     // check sync data tail
-                    if (!is_sync_tail(science_sync_slave_buffer+42)) {
+                    if (!is_science_sync_tail(science_sync_slave_buffer+42)) {
                         log_error("Please check sync header defined in ICD!");
                     }
 
@@ -789,12 +789,12 @@ void parse_science_packet(unsigned char *target) {
 // waiting
 void write_science_header_sequence_count() {
     if (export_mode == 1 || export_mode == 3) {
-        fprintf(raw_output_file, "sd header: %3u\n", SequenceCount);
+        fprintf(raw_output_file, "sequence count: %03u\n", science_buffer->sequence_count);
     }
 }
 
 // checked~
-int is_sync_header(unsigned char *target) {
+int is_science_sync_header(unsigned char *target) {
     unsigned char ref = 0xCA;
 
     if (!memcmp(ref, target, 1)) {
@@ -804,59 +804,47 @@ int is_sync_header(unsigned char *target) {
     return 0;
 }
 
-void parse_event_data(unsigned char *target) {
-    unsigned char buffer[4] = {0x00, 0x00, 0x00, 0x00};
+void parse_science_event_data(unsigned char *target) {
 
-    if ((*target & 0xC0) == 0x80) {
-        // event time debug info
-        memcpy(&buffer[0], target, 1);
-        buffer[0] = buffer[0] >> 2; // keep header and buffer ID
-        buffer[0] = buffer[0] & 0x0F; // keep buffer ID
+    // check event time or event adc
+    if ((*target & 0x80) == 0x80) { // event time case
+        parse_science_event_time(target);
+    }
+    else { // event adc case
+        parse_event_adc(target);
+    } 
+}
+
+void parse_science_event_time(unsigned char *target) {
+    unsigned char buffer_id_buffer[1] = {0x00};
+    unsigned char fine_time_counter_buffer[3] = {0x00, 0x00, 0x00};
+
+    // separate master and slave cases
+    if (science_buffer->gtm_module == 0) {
+        memcpy(&buffer_id_buffer[0], target, 1);
+        buffer_id_buffer[0] = (buffer_id_buffer[0] << 2) >> 4; // remove bits 23 & 22 and bits 17 & 16
         memcpy(&(science_buffer->event_time_buffer_id), &buffer[0], 1);
-
-        buffer[0] = 0x00; // reset
-        // event time data
-        memcpy(&buffer[1], target, 3);
-        buffer[1] = buffer[1] & 0x03; // mask the header & buffer ID
-        simple_big2little_endian(buffer, 4);
-
-        memcpy(&(science_buffer->fine_counter), buffer, 4);
-
-        // separate master and slave cases
-        if (science_buffer->gtm_module == 0) {
-            science_buffer->fine_counter_master = science_buffer->fine_counter;
-            if (science_buffer->fine_counter < time_buffer->fine_counter_master) {
-                log_message("fine_counter_master reset, old = %8u, new = %8u", time_buffer->fine_counter_master, science_buffer->fine_counter);
-                // got_first_sync_data = 0; // current is useless!!!
-            }
-            memcpy(&(time_buffer->fine_counter_master), buffer, 4);
+    }
+    else {
+        science_buffer->fine_counter_slave = science_buffer->fine_counter;
+        if (science_buffer->fine_counter < time_buffer->fine_counter_slave) {
+            log_message("fine_counter_slave reset, old = %8u, new = %8u", time_buffer->fine_counter_slave, science_buffer->fine_counter);
+            // got_first_sync_data = 0; // current is useless!!!
         }
-        else {
-            science_buffer->fine_counter_slave = science_buffer->fine_counter;
-            if (science_buffer->fine_counter < time_buffer->fine_counter_slave) {
-                log_message("fine_counter_slave reset, old = %8u, new = %8u", time_buffer->fine_counter_slave, science_buffer->fine_counter);
-                // got_first_sync_data = 0; // current is useless!!!
-            }
-            memcpy(&(time_buffer->fine_counter_slave), buffer, 4);
-        }
-
-        write_event_time();
-        return;
+        memcpy(&(time_buffer->fine_counter_slave), buffer, 4);
     }
 
-    if ((*target & 0xC0) == 0x40) {
-            parse_event_adc(target);
-        }
+    write_science_event_time();
 }
 
 // waiting
-void write_event_time(void) {
+void write_science_event_time() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "event time: %10u;%3u\n", science_buffer->fine_counter, science_buffer->event_time_buffer_id);
     }
 }
 
-void parse_event_adc(unsigned char *target) {
+void parse_science_event_adc(unsigned char *target) {
     unsigned char buffer[3] = {0x00, 0x00, 0x00};
     unsigned char adc_buffer[2];
     int16_t adc_temp;
@@ -882,27 +870,13 @@ void parse_event_adc(unsigned char *target) {
 
     // update_energy_from_adc();
 
-    write_science_buffer();
+    write_science_event_adc();
 
     return;
 }
 
-// shift the array n bits left, you should make sure 0<=bits<=7
-void left_shift_mem(unsigned char *target, size_t targetSize, uint8_t Bits) {
-    unsigned char current, next;
-    size_t i;
-
-    for (i = 0; i < targetSize - 1; ++i) {
-        current = target[i];
-        next = target[i + 1];
-        target[i] = (current << Bits) | (next >> (8 - Bits));
-    }
-    // shift the last element
-    target[targetSize - 1] = target[targetSize - 1] << Bits;
-}
-
 // waiting
-void write_science_buffer() {
+void write_science_event_adc() {
     static char detector_name[2][2][2][3] = {{{"PN\0", "PB\0"}, {"PT\0", "PP\0"}}, {{"NP\0", "NB\0"}, {"NT\0", "NN\0"}}};
 
     if (export_mode == 1 || export_mode == 3) {
@@ -934,7 +908,7 @@ void write_science_buffer() {
 }
 
 // checked~
-int is_sync_tail(unsigned char *target) {
+int is_science_sync_tail(unsigned char *target) {
     unsigned char ref[3] = {0xF2, 0xF5, 0xFA};
 
     if (!memcmp(ref, target, 3)) {
@@ -1038,7 +1012,7 @@ void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byt
 }
 
 // waiting
-void write_sync_data() {
+void write_science_sync_data() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "sync: %5u, %3u\n", science_buffer->pps_counter, science_buffer->cmd_seq_num);
     }

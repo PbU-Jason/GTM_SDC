@@ -172,11 +172,11 @@ typedef struct Science {
     
     // for master
     uint8_t       master_event_time_buffer_id;
-    uint32_t      master_event_time_fine_time_counter;
+    int           master_event_time_fine_time_counter;
 
     // for slave
     uint8_t       slave_event_time_buffer_id;
-    uint32_t      slave_event_time_fine_time_counter;
+    int           slave_event_time_fine_time_counter;
 
     /// event_time_data_end ///
     
