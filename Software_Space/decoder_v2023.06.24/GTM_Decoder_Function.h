@@ -39,29 +39,33 @@
 
 //* define_public_type_for_global_buffer *//
 
-// tmtc and science shared
-typedef struct UTC {
-    uint16_t year;
-    uint16_t day_of_year;
-    uint8_t  hour;
-    uint8_t  minute;
-    uint8_t  second;
-    uint8_t  subsecond;
-} UTC;
-
 typedef struct TMTC {
 
-    // sequence count from TASA
-    uint16_t source_sequence_count;
+    /// sequence_count_and_utc_from_TASA ///
 
-    unsigned char head[2];
+    uint16_t source_sequence_count;
+    uint16_t gicd_year;
+    uint16_t gicd_day_of_year;
+    uint8_t  gicd_hour;
+    uint8_t  gicd_minute;
+    uint8_t  gicd_second;
+    uint8_t  gicd_subsecond;
+
+    /// sequence_count_and_utc_from_TASA_end ///
+
+    /// 128_byte_tmtc ///
+
+    unsigned char header[2];
     uint8_t       gtm_id; // 0x02 = master; 0x05 = slave
     uint16_t      packet_counter;
     uint8_t       data_length_msb;
     uint8_t       data_length_120_byte;
-
-    // have defined UTC
-
+    uint16_t      icd_year;
+    uint16_t      icd_day_of_year;
+    uint8_t       icd_hour;
+    uint8_t       icd_minute;
+    uint8_t       icd_second;
+    uint8_t       icd_subsecond;
     int           gtm_id_in_pps_counter; // 0 = master; 1 = slave
     uint16_t      pps_counter;
     unsigned char fine_time_counter[3];
@@ -71,8 +75,8 @@ typedef struct TMTC {
     unsigned char citiroc_2_temp[2];
     unsigned char citiroc_1_livetime_busy[3];
     unsigned char citiroc_2_livetime_busy[3];
-    uint8_t       citiroc_1_hit[32];
-    uint8_t       citiroc_2_hit[32];
+    uint8_t       citiroc_1_hit_counter[32];
+    uint8_t       citiroc_2_hit_counter[32];
     uint16_t      citiroc_1_trigger_counter;
     uint16_t      citiroc_2_trigger_counter;
     uint8_t       counter_period;
@@ -105,47 +109,74 @@ typedef struct TMTC {
     unsigned char citiroc_2_livetime_buffer_busy[3];
     uint8_t       checksum;
     unsigned char tail[2];
+
+    /// 128_byte_tmtc_end ///
+
 } TMTC;
 
 typedef struct Science {
 
-    // gtm id following head
-    int gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
+    // gtm id and sequence count following head
+    int      gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
+    uint16_t sequence_count;
     
     /// sync_data ///
 
-    unsigned char sync_header[1];
-    int           sync_gtm_id; // 0 = master; 1 = slave
+    // for master
+    unsigned char master_sync_header[1];
+    int           master_sync_gtm_id; // 0 = master; 1 = slave
+    uint16_t      master_sync_pps_counts;
+    uint8_t       master_sync_cmd_sequence_number;
+    uint16_t      master_day_of_year;
+    uint8_t       master_hour;
+    uint8_t       master_minute;
+    uint8_t       master_second;
+    uint8_t       master_subsecond;
+    uint32_t      master_sync_x;
+    uint32_t      master_sync_y;
+    uint32_t      master_sync_z;
+    uint32_t      master_sync_v_x;
+    uint32_t      master_sync_v_y;
+    uint32_t      master_sync_v_z;
+    uint16_t      master_sync_quaternion_1;
+    uint16_t      master_sync_quaternion_2;
+    uint16_t      master_sync_quaternion_3;
+    uint16_t      master_sync_quaternion_4;
+    unsigned char master_sync_tail[3];
 
-    // to keep correct time tag when data switch
-    uint16_t      sync_pps_counter_master;
-    uint16_t      sync_pps_counter_slave;
-
-    uint8_t       sync_cmd_sequence_number;
-
-    // have defined UTC
-
-    uint32_t      sync_x;
-    uint32_t      sync_y;
-    uint32_t      sync_z;
-    uint32_t      sync_v_x;
-    uint32_t      sync_v_y;
-    uint32_t      sync_v_z;
-    uint16_t      sync_quaternion_1;
-    uint16_t      sync_quaternion_2;
-    uint16_t      sync_quaternion_3;
-    uint16_t      sync_quaternion_4;
-    unsigned char sync_tail[3];
+    // for slave
+    unsigned char slave_sync_header[1];
+    int           slave_sync_gtm_id;
+    uint16_t      slave_sync_pps_counts;
+    uint8_t       slave_sync_cmd_sequence_number;
+    uint16_t      slave_day_of_year;
+    uint8_t       slave_hour;
+    uint8_t       slave_minute;
+    uint8_t       slave_second;
+    uint8_t       slave_subsecond;
+    uint32_t      slave_sync_x;
+    uint32_t      slave_sync_y;
+    uint32_t      slave_sync_z;
+    uint32_t      slave_sync_v_x;
+    uint32_t      slave_sync_v_y;
+    uint32_t      slave_sync_v_z;
+    uint16_t      slave_sync_quaternion_1;
+    uint16_t      slave_sync_quaternion_2;
+    uint16_t      slave_sync_quaternion_3;
+    uint16_t      slave_sync_quaternion_4;
+    unsigned char slave_sync_tail[3];
 
     /// sync_data_end ///
 
     /// event_time_data ///
+    
+    // for master
+    uint8_t       master_event_time_buffer_id;
+    uint32_t      master_event_time_fine_time_counter;
 
-    uint8_t       event_time_buffer_id;
-
-    // to keep correct time tag when data switch
-    uint32_t      event_time_fine_time_counter_master;
-    uint32_t      event_time_fine_time_counter_slave;
+    // for slave
+    uint8_t       slave_event_time_buffer_id;
+    uint32_t      slave_event_time_fine_time_counter;
 
     /// event_time_data_end ///
     

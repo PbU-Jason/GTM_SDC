@@ -139,7 +139,6 @@ void create_basic_buffer() {
 
     input_binary_buffer = (unsigned char *)malloc(max_input_binary_buffer_size);
     
-    utc_buffer = (UTC *)malloc(sizeof(UTC));
     tmtc_buffer = (TMTC *)malloc(sizeof(TMTC));
     science_buffer = (Science *)malloc(sizeof(Science));
 }
@@ -284,7 +283,6 @@ void close_all_file() {
 void destroy_basic_buffer() {
     // destroy input_binary_buffer independently
 
-    free(utc_buffer);
     free(tmtc_buffer);
     free(science_buffer);
 }
@@ -350,13 +348,13 @@ void parse_tmtc_packet(unsigned char *target) {
     // sequence count from TASA
     *(target+TMTC_PACKET_ID_SIZE) = *(target+TMTC_PACKET_ID_SIZE) & 0x3F; // mask segmentation flag
     memcpy(tmtc_buffer->source_sequence_count, target+TMTC_PACKET_ID_SIZE, TMTC_PACKET_SEQUENCE_CONTROL_SIZE);
-    big2little_endian(&(tmtc_buffer->source_sequence_count), 2);
+    simple_big2little_endian(&(tmtc_buffer->source_sequence_count), 2);
 
-    // utc in gicd
-    parse_tmtc_utc(target+TMTC_PACKET_HEADER_SIZE);
+    // utc from TASA
+    parse_tmtc_gicd_utc(target+TMTC_PACKET_HEADER_SIZE);
 
-    // head
-    memcpy(tmtc_buffer->head, target+tmtc_16_byte_shift, 2);
+    // header
+    memcpy(tmtc_buffer->header, target+tmtc_16_byte_shift, 2);
 
     // gtm id
     gtm_id_case = (*(target+tmtc_16_byte_shift+2) == 0x02) ? 0 : 1; // 0x02 = master = 0; 0x05 = slave = 1
@@ -364,20 +362,20 @@ void parse_tmtc_packet(unsigned char *target) {
 
     // packet counter
     memcpy(&(tmtc_buffer->packet_counter), target+tmtc_16_byte_shift+3, 2);
-    big2little_endian(&(tmtc_buffer->packet_counter), 2);
+    simple_big2little_endian(&(tmtc_buffer->packet_counter), 2);
 
     // data length
     memcpy(&(tmtc_buffer->data_length_msb), target+tmtc_16_byte_shift+5, 1);
     memcpy(&(tmtc_buffer->data_length_120_byte), target+tmtc_16_byte_shift+6, 1);
 
-    // utc in icd
-    parse_tmtc_utc(target+tmtc_16_byte_shift+7);
+    // utc
+    parse_tmtc_gicd_utc(target+tmtc_16_byte_shift+7);
 
     // pps counter
     tmtc_buffer->gtm_id_in_pps_counter = ((*(target+tmtc_16_byte_shift+15) & 0x80) == 0x80) ? 1 : 0; // extract gtm id
     *(target+tmtc_16_byte_shift+15) = *(target+tmtc_16_byte_shift+15) & 0x7F; // mask gtm id
     memcpy(&(tmtc_buffer->pps_counter), target+tmtc_16_byte_shift+15, 2);
-    big2little_endian(&(tmtc_buffer->pps_counter), 2);
+    simple_big2little_endian(&(tmtc_buffer->pps_counter), 2);
 
     // fine time counter (3 bytes, deal with when writting)
     memcpy(&(tmtc_buffer->fine_time_counter), target+tmtc_16_byte_shift+17, 3);
@@ -414,14 +412,14 @@ void parse_tmtc_packet(unsigned char *target) {
     
     // citiroc hit
     for (int i = 0; i < 32; ++i) {
-        memcpy(&(tmtc_buffer->citiroc_1_hit[i]), target+tmtc_16_byte_shift+32+i, 1);
-        memcpy(&(tmtc_buffer->citiroc_2_hit[i]), target+tmtc_16_byte_shift+64+i, 1);
+        memcpy(&(tmtc_buffer->citiroc_1_hit_counter[i]), target+tmtc_16_byte_shift+32+i, 1);
+        memcpy(&(tmtc_buffer->citiroc_2_hit_counter[i]), target+tmtc_16_byte_shift+64+i, 1);
     }
     // citiroc trigger counter
     memcpy(&(tmtc_buffer->citiroc_1_trigger_counter), target+tmtc_16_byte_shift+96, 2);
-    big2little_endian(&(tmtc_buffer->citiroc_1_trigger_counter), 2);
+    simple_big2little_endian(&(tmtc_buffer->citiroc_1_trigger_counter), 2);
     memcpy(&(tmtc_buffer->citiroc_2_trigger_counter), target+tmtc_16_byte_shift+98, 2);
-    big2little_endian(&(tmtc_buffer->citiroc_2_trigger_counter), 2);
+    simple_big2little_endian(&(tmtc_buffer->citiroc_2_trigger_counter), 2);
 
     // counter period
     memcpy(&(tmtc_buffer->counter_period), target+tmtc_16_byte_shift+100, 1);
@@ -437,9 +435,9 @@ void parse_tmtc_packet(unsigned char *target) {
         memcpy(&(tmtc_buffer->spw_b_error_count), target+tmtc_16_byte_shift+105, 1);
         memcpy(&(tmtc_buffer->spw_b_last_recv_byte), target+tmtc_16_byte_shift+106, 1);
         memcpy(&(tmtc_buffer->spw_a_status), target+tmtc_16_byte_shift+107, 2);
-        big2little_endian(&(tmtc_buffer->spw_a_status), 2);
+        simple_big2little_endian(&(tmtc_buffer->spw_a_status), 2);
         memcpy(&(tmtc_buffer->spw_b_status), target+tmtc_16_byte_shift+109, 2);
-        big2little_endian(&(tmtc_buffer->spw_b_status), 2);
+        simple_big2little_endian(&(tmtc_buffer->spw_b_status), 2);
     }
     else if (gtm_id_case == 1) {
         // for slave, i & v monitor
@@ -477,7 +475,7 @@ void parse_tmtc_packet(unsigned char *target) {
     memcpy(tmtc_buffer->tail, target+tmtc_16_byte_shift+126, 2);
 
     // save tmtc_buffer
-    write_tmtc_buffer_master_and_slave();
+    write_tmtc_buffer_master_or_slave();
 }
 
 // checked~
@@ -498,31 +496,55 @@ void simple_big2little_endian(void *target, size_t reverse_size) {
 }
 
 // checked~
-void parse_tmtc_utc(unsigned char *target) {
+void parse_tmtc_gicd_utc(unsigned char *target) {
 
     // year
-    memcpy(&(utc_buffer->year), target, 2);
-    big2little_endian(&(utc_buffer->year), 2);
+    memcpy(&(tmtc_buffer->gicd_year), target, 2);
+    simple_big2little_endian(&(tmtc_buffer->gicd_year), 2);
 
     // day of year
-    memcpy(&(utc_buffer->day_of_year), target+2, 2);
-    big2little_endian(&(utc_buffer->day_of_year), 2);
+    memcpy(&(tmtc_buffer->gicd_day_of_year), target+2, 2);
+    simple_big2little_endian(&(tmtc_buffer->gicd_day_of_year), 2);
 
     // hour
-    memcpy(&(utc_buffer->hour), target+4, 1);
+    memcpy(&(tmtc_buffer->gicd_hour), target+4, 1);
 
     // minute
-    memcpy(&(utc_buffer->minute), target+5, 1);
+    memcpy(&(tmtc_buffer->gicd_minute), target+5, 1);
 
     // second
-    memcpy(&(utc_buffer->second), target+6, 1);
+    memcpy(&(tmtc_buffer->gicd_second), target+6, 1);
 
     // subsecond
-    memcpy(&(utc_buffer->subsecond), target+7, 1);
+    memcpy(&(tmtc_buffer->gicd_subsecond), target+7, 1);
 }
 
 // checked~
-void write_tmtc_buffer_master_and_slave() {
+void parse_tmtc_icd_utc(unsigned char *target) {
+
+    // year
+    memcpy(&(tmtc_buffer->icd_year), target, 2);
+    simple_big2little_endian(&(tmtc_buffer->icd_year), 2);
+
+    // day of year
+    memcpy(&(tmtc_buffer->icd_day_of_year), target+2, 2);
+    simple_big2little_endian(&(tmtc_buffer->icd_day_of_year), 2);
+
+    // hour
+    memcpy(&(tmtc_buffer->icd_hour), target+4, 1);
+
+    // minute
+    memcpy(&(tmtc_buffer->icd_minute), target+5, 1);
+
+    // second
+    memcpy(&(tmtc_buffer->icd_second), target+6, 1);
+
+    // subsecond
+    memcpy(&(tmtc_buffer->icd_subsecond), target+7, 1);
+}
+
+// checked~
+void write_tmtc_buffer_master_or_slave() {
     int gtm_id_case;
 
     int fine_time_counter;
@@ -569,7 +591,7 @@ void write_tmtc_buffer_master_and_slave() {
         hv_input_v = ( ((tmtc_buffer->hv_input_v >> 4) << 8) | ((tmtc_buffer->hv_input_v << 4) | (tmtc_buffer->hv_input_i_v & 0x0F)) );
     }
 
-    fprintf(output_file, "%X%X", tmtc_buffer->head[0], tmtc_buffer->head[1]); // head
+    fprintf(output_file, "%X%X", tmtc_buffer->header[0], tmtc_buffer->header[1]); // head
     fprintf(output_file, \
     ";%u;%u;%u;%u \
     ;%u;%u;%u;%u;%u;%u \
@@ -581,10 +603,10 @@ void write_tmtc_buffer_master_and_slave() {
     tmtc_buffer->board_temp_1, tmtc_buffer->board_temp_2, citiroc_1_temp, citiroc_2_temp, citiroc_1_livetime_busy, citiroc_2_livetime_busy);    
     
     for (int i = 0; i < 32; ++i) {
-        fprintf(output_file, ";%u", tmtc_buffer->citiroc_1_hit[i]);
+        fprintf(output_file, ";%u", tmtc_buffer->citiroc_1_hit_counter[i]);
     }
     for (int i = 0; i < 32; ++i) {
-        fprintf(output_file, ";%u", tmtc_buffer->citiroc_2_hit[i]);
+        fprintf(output_file, ";%u", tmtc_buffer->citiroc_2_hit_counter[i]);
     }
 
     fprintf(output_file, ";%u;%u;%u;%u;%u", \
@@ -643,6 +665,7 @@ int is_science_icd_head(unsigned char *target) {
     }
 }
 
+// checked~
 void parse_science_packet(unsigned char *target) {
     // 45 bytes sync data in 1104 bytes science data may be truncated since master/slave switch
     // need science_sync_master_buffer and science_sync_slave_buffer to temporarily keep sync info
@@ -656,69 +679,100 @@ void parse_science_packet(unsigned char *target) {
             // separate master and slave cases
             if (science_buffer->gtm_id == 0) { // master case
 
-                if (!stop_find_sync_data_header_master_flag) {
+                // always look for sync data header
+                if (!stop_find_sync_data_header_master_flag) { // look for sync data header
 
+                    // if find sync data header
                     if (is_sync_header(target+i)) {
+
+                        // store 3 bytes to science_sync_master_buffer
                         memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, target+i, 3);
                         science_sync_master_buffer_counter+=3;
 
+                        // stop looking for sync data header and have uncomplete sync data 
                         stop_find_sync_data_header_master_flag = 1;
                         have_complete_sync_data_master_flag = 0;
                     }
 
+                    // if no find sync data header and have complete sync data
                     if (have_complete_sync_data_master_flag) {
+
+                        // parse 3 bytes event data
                         parse_event_data(target+i);
                     }
                 }
-                else {
+                else { // stop looking for sync data header
+
+                    // store 3 bytes to science_sync_master_buffer
                     memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, target+i, 3);
                     science_sync_master_buffer_counter+=3;
 
+                    // all 45 bytes have been stored in science_sync_master_buffer
                     if (science_sync_master_buffer_counter == 45) {
 
+                        // check sync data tail
                         if (!is_sync_tail(science_sync_master_buffer+42)) {
                             log_error("Please check sync header defined in ICD!");
                         }
 
+                        // look for sync data header and have complete sync data
                         stop_find_sync_data_header_master_flag = 0;
                         have_complete_sync_data_master_flag = 1;
 
+                        // reset science_sync_master_buffer_counter
                         science_sync_master_buffer_counter = 0;
 
-                        parse_sync_data(science_sync_master_buffer);
+                        // parse 45 bytes sync data in science_sync_master_buffer
+                        parse_science_sync_data(science_sync_master_buffer);
                     }
                 }
             }
             else { // slave case
-                if (!stop_find_sync_data_header_slave_flag) {
 
+                // always look for sync data header
+                if (!stop_find_sync_data_header_slave_flag) { // look for sync data header
+
+                    // if find sync data header
                     if (is_sync_header(target+i)) {
+
+                        // store 3 bytes to science_sync_slave_buffer
                         memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, target+i, 3);
                         science_sync_slave_buffer_counter+=3;
 
+                        // stop looking for sync data header and have uncomplete sync data 
                         stop_find_sync_data_header_slave_flag = 1;
                         have_complete_sync_data_slave_flag = 0;
                     }
 
+                    // if no find sync data header and have complete sync data
                     if (have_complete_sync_data_slave_flag) {
-                        parse_event_data(target+i);
+
+                        // parse 3 bytes event data
+                        parse_science_event_data(target+i);
                     }
                 }
-                else {
+                else { // stop looking for sync data header
+
+                    // store 3 bytes to science_sync_slave_buffer
                     memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, target+i, 3);
                     science_sync_slave_buffer_counter+=3;
 
+                    // all 45 bytes have been stored in science_sync_slave_buffer
                     if (science_sync_slave_buffer_counter == 45) {
 
+                        // check sync data tail
                         if (!is_sync_tail(science_sync_slave_buffer+42)) {
                             log_error("Please check sync header defined in ICD!");
                         }
 
+                        // look for sync data header and have complete sync data
                         stop_find_sync_data_header_slave_flag = 0;
                         have_complete_sync_data_slave_flag = 1;
 
+                        // reset science_sync_slave_buffer_counter
                         science_sync_slave_buffer_counter = 0;
 
+                        // parse 45 bytes sync data in science_sync_slave_buffer
                         parse_sync_data(science_sync_slave_buffer);
                     }
                 }
@@ -727,6 +781,7 @@ void parse_science_packet(unsigned char *target) {
     }
 }
 
+// checked~
 int is_sync_header(unsigned char *target) {
     unsigned char ref = 0xCA;
 
@@ -737,6 +792,7 @@ int is_sync_header(unsigned char *target) {
     return 0;
 }
 
+// checked~
 int is_sync_tail(unsigned char *target) {
     unsigned char ref[3] = {0xF2, 0xF5, 0xFA};
 
@@ -747,147 +803,108 @@ int is_sync_tail(unsigned char *target) {
     return 0;
 }
 
+// checked~
 void parse_science_sync_data(unsigned char *target) {
-    unsigned char buffer[2];
-    Time time_before;
-
-    // time_buffer->fine_counter = 0;
-    // separate master and slave cases
-    if (science_buffer->gtm_module == 0) {
-        time_buffer->fine_counter_master = 0;
-        // pps count
-        memcpy(buffer, target + 1, 2);
-        buffer[0] = buffer[0] & 0x7F; // mask gtm module
-        big2little_endian(buffer, 2);
-        memcpy(&(science_buffer->pps_counter_master), buffer, 2);
-        science_buffer->pps_counter = science_buffer->pps_counter_master;
+    unsigned char *first_byte_pointer;
+    
+    // redefine first byte pointer base on master ot slave
+    if (science_buffer->gtm_id == 0) {
+        first_byte_pointer = &(science_buffer->master_sync_header);
     }
     else {
-        time_buffer->fine_counter_slave = 0;
-        // pps count
-        memcpy(buffer, target + 1, 2);
-        buffer[0] = buffer[0] & 0x7F; // mask gtm module
-        big2little_endian(buffer, 2);
-        memcpy(&(science_buffer->pps_counter_slave), buffer, 2);
-        science_buffer->pps_counter = science_buffer->pps_counter_slave;
+        first_byte_pointer = &(science_buffer->slave_sync_header);
     }
 
-    // need cheching!!!
-    // CMD-SAD sequence number
-    memcpy(&(science_buffer->cmd_seq_num), target + 3, 1);
-    // UTC
-    memcpy(&time_before, time_buffer, sizeof(Time));
-    parse_utc_time_sync(target + 4);
-    // log_message("day %u, hour %u, min %u, sec %f", time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec);
-    //  ECI position stuff
-    parse_position(target + 10);
+    // header
+    memcpy(first_byte_pointer, target, 1);
 
-    time_buffer->pps_counter++; // ???
-    // if UTC update, reset out own pps
-    if (!compare_UTC(&time_before, time_buffer))
-    {
-        // printf("%5u;%3u;%3u;%5u;%3u;%3u;%3u;%3u\n", time_before.year, time_before.month, time_before.mday, time_before.day, time_before.hour, time_before.minute, time_before.sec, time_before.sub_sec);
-        // printf("%5u;%3u;%3u;%5u;%3u;%3u;%3u;%3u\n", time_buffer->year, time_buffer->month, time_buffer->mday, time_buffer->day, time_buffer->hour, time_buffer->minute, time_buffer->sec, time_buffer->sub_sec);
-        // printf("\n");
-        time_buffer->pps_counter_base = time_buffer->pps_counter; // ???
-    }
+    // gtm id
+    *(first_byte_pointer+4) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
 
-    write_sync_data();
+    // pps counts
+    *(target+1) = *(target+1) & 0x7F; // mask gtm id
+    memcpy(first_byte_pointer+8, target+1, 2);
+    simple_big2little_endian(first_byte_pointer+8, 2);
+
+    // cmd sequence number
+    memcpy(first_byte_pointer+10, target+3, 1);
+
+    parse_science_sync_utc(target+4, first_byte_pointer);
+    parse_science_sync_attitude(target+10, first_byte_pointer);
+
+    // tail
+    memcpy(first_byte_pointer+49, target+42, 3);
+
+    write_science_sync_data();
 }
 
-// should be wrote later when the format is clear, it's a place holder now
-void parse_utc_time_sync(unsigned char *target) {
-    // year
-    time_buffer->year = 2022;
-    // day
-    memcpy(&(time_buffer->day), target, 2);
-    big2little_endian(&(time_buffer->day), 2);
+// checked~
+void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
+    unsigned char *first_byte_pointer_in_sync_utc;
+
+    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+11;
+    // unsigned char [1] = 4 bytes
+    // int = 4 bytes
+
+    // day of year
+    memcpy(first_byte_pointer_in_sync_utc, target, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_utc, 2);
+
     // hour
-    memcpy(&(time_buffer->hour), target + 2, 1);
+    memcpy(first_byte_pointer_in_sync_utc+2, target+2, 1);
+
     // minute
-    memcpy(&(time_buffer->minute), target + 3, 1);
-    // sec
-    memcpy(&(time_buffer->sec), target + 4, 1);
-    // sub sec (ms)
-    memcpy(&(time_buffer->sub_sec), target + 5, 1);
+    memcpy(first_byte_pointer_in_sync_utc+23, target+3, 1);
 
-    return;
+    // second
+    memcpy(first_byte_pointer_in_sync_utc+4, target+4, 1);
+
+    // subsecond
+    memcpy(first_byte_pointer_in_sync_utc+5, target+5, 1);
 }
 
-void parse_position(unsigned char *target) {
-    memcpy(&(position_buffer->x), target, 4);
-    memcpy(&(position_buffer->y), target + 4, 4);
-    memcpy(&(position_buffer->z), target + 8, 4);
-    memcpy(&(position_buffer->x_velocity), target + 12, 4);
-    memcpy(&(position_buffer->y_velocity), target + 16, 4);
-    memcpy(&(position_buffer->z_velocity), target + 20, 4);
-    memcpy(&(position_buffer->quaternion1), target + 24, 2);
-    memcpy(&(position_buffer->quaternion2), target + 26, 2);
-    memcpy(&(position_buffer->quaternion3), target + 28, 2);
-    memcpy(&(position_buffer->quaternion4), target + 30, 2);
+// checked~
+void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
+    unsigned char *first_byte_pointer_in_sync_attitude;
+
+    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+17;
+
+    // x, y & z position
+    memcpy(first_byte_pointer_in_sync_attitude, target, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+4, target+4, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+4, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+8, target+8, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+8, 4);
+
+    // x, y & z velocity
+    memcpy(first_byte_pointer_in_sync_attitude+12, target+12, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+12, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+16, target+16, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+16, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+20, target+20, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+20, 4);
+
+    // quaternion
+    memcpy(first_byte_pointer_in_sync_attitude+24, target+24, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+24, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+26, target+26, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+6, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+28, target+28, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+28, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+30, target+30, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+30, 2);
 }
 
-int compare_UTC(Time *Time1, Time *Time2) {
-    return (Time1->year == Time2->year && Time1->month == Time2->month && Time1->mday == Time2->mday && Time1->day == Time2->day && Time1->hour == Time2->hour && Time1->minute == Time2->minute && Time1->sec == Time2->sec && Time1->sub_sec == Time2->sub_sec);
-}
-
-static void write_sync_data(void) {
+// waiting
+void write_sync_data() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "sync: %5u, %3u\n", science_buffer->pps_counter, science_buffer->cmd_seq_num);
     }
 }
 
-void get_month_and_mday(void) {
-    struct tm time_old, *time_new = NULL;
-    time_t loctime;
-
-    time_old.tm_sec = 0;
-    time_old.tm_min = 0;
-    time_old.tm_hour = 0;
-    time_old.tm_mday = (int)time_buffer->day;
-    time_old.tm_mon = 1;
-    time_old.tm_year = (int)time_buffer->year - 1900; // tm struct start from 1900
-    time_old.tm_wday = 0;
-    time_old.tm_yday = 0;
-    time_old.tm_isdst = 0;
-
-    loctime = mktime(&time_old);
-    time_new = localtime(&loctime);
-    if (!time_new)
-    {
-        log_error("NULL time_new in get_month_and_mday");
-    }
-    time_buffer->month = (uint8_t)time_new->tm_mon;
-    time_buffer->mday = (uint8_t)time_new->tm_mday;
-}
-
-double find_time_delta(Time *TimeStart, Time *TimeEnd) {
-    double del_sec = 0;
-    del_sec += (TimeEnd->year - TimeStart->year) * 31536000;
-    del_sec += (TimeEnd->day - TimeStart->day) * 86400;
-    del_sec += (TimeEnd->hour - TimeStart->hour) * 3600;
-    del_sec += (TimeEnd->minute - TimeStart->minute) * 60;
-    del_sec += (calc_sec(TimeEnd) - calc_sec(TimeStart));
-
-    return del_sec;
-}
-
-double calc_sec(Time *Time) {
-    double total_sec;
-
-    total_sec = (double)Time->sec + ((double)Time->sub_sec) * 0.001 + (double)(Time->pps_counter - Time->pps_counter_base) + ((double)Time->fine_counter) * 0.24 * 0.000001;
-
-    // deal with pps counter reset
-    if (Time->pps_counter_base > Time->pps_counter) {
-        total_sec += pow(2, 15);
-    }
-
-    return total_sec;
-}
-
-///// parse science event data /////
-
-static void parse_event_data(unsigned char *target) {
+// 
+void parse_event_data(unsigned char *target) {
     unsigned char buffer[4] = {0x00, 0x00, 0x00, 0x00};
 
     if ((*target & 0xC0) == 0x80) {
@@ -901,7 +918,7 @@ static void parse_event_data(unsigned char *target) {
         // event time data
         memcpy(&buffer[1], target, 3);
         buffer[1] = buffer[1] & 0x03; // mask the header & buffer ID
-        big2little_endian(buffer, 4);
+        simple_big2little_endian(buffer, 4);
 
         memcpy(&(science_buffer->fine_counter), buffer, 4);
 
@@ -932,13 +949,14 @@ static void parse_event_data(unsigned char *target) {
         }
 }
 
-static void write_event_time(void) {
+// waiting
+void write_event_time(void) {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "event time: %10u;%3u\n", science_buffer->fine_counter, science_buffer->event_time_buffer_id);
     }
 }
 
-static void parse_event_adc(unsigned char *target) {
+void parse_event_adc(unsigned char *target) {
     unsigned char buffer[3] = {0x00, 0x00, 0x00};
     unsigned char adc_buffer[2];
     int16_t adc_temp;
@@ -983,7 +1001,8 @@ void left_shift_mem(unsigned char *target, size_t targetSize, uint8_t Bits) {
     target[targetSize - 1] = target[targetSize - 1] << Bits;
 }
 
-static void write_science_buffer(void) {
+// waiting
+void write_science_buffer() {
     static char detector_name[2][2][2][3] = {{{"PN\0", "PB\0"}, {"PT\0", "PP\0"}}, {{"NP\0", "NB\0"}, {"NT\0", "NN\0"}}};
 
     if (export_mode == 1 || export_mode == 3) {
@@ -1013,8 +1032,6 @@ static void write_science_buffer(void) {
         }
     }
 }
-
-/// back to parse science data ///
 
 void parse_sd_header(unsigned char *target) {
     // static int got_first_sd_header = 0;
@@ -1054,14 +1071,11 @@ void parse_sd_header(unsigned char *target) {
     sequence_count = new_sequence_count;
 }
 
+// waiting
 static void write_sd_header(uint8_t SequenceCount) {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "sd header: %3u\n", SequenceCount);
     }
-}
-
-void free_got_first_sd_header() {
-    got_first_sd_header = 0;
 }
 
 /// parse_science_data_end ///
