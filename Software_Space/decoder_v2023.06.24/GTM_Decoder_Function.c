@@ -670,114 +670,126 @@ void parse_science_packet(unsigned char *target) {
     // 45 bytes sync data in 1104 bytes science data may be truncated since master/slave switch
     // need science_sync_master_buffer and science_sync_slave_buffer to temporarily keep sync info
 
+    unsigned char *science_data_pointer;
+
+    // record sequence count in header
+    memcpy(&(science_buffer->sequence_count), target+3, 1);
+    write_science_header_sequence_count();
+
+    // moave 6 bytes to skip SCIENCE_HEADER_SIZE
+    science_data_pointer = target+SCIENCE_HEADER_SIZE;
+
     // move buffer pointer 3 bytes each time
-    for (int i = 0; i < (SCIENCE_HEADER_SIZE+SCIENCE_DATA_SIZE)/3; i++) {
-        
-        // ignore SCIENCE_HEADER_SIZE
-        if (i >= (SCIENCE_HEADER_SIZE)/3) {
+    for (int i = 0; i < SCIENCE_DATA_SIZE/3; i++) {
 
-            // separate master and slave cases
-            if (science_buffer->gtm_id == 0) { // master case
+        // separate master and slave cases
+        if (science_buffer->gtm_id == 0) { // master case
 
-                // always look for sync data header
-                if (!stop_find_sync_data_header_master_flag) { // look for sync data header
+            // always look for sync data header
+            if (!stop_find_sync_data_header_master_flag) { // look for sync data header
 
-                    // if find sync data header
-                    if (is_sync_header(target+i)) {
-
-                        // store 3 bytes to science_sync_master_buffer
-                        memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, target+i, 3);
-                        science_sync_master_buffer_counter+=3;
-
-                        // stop looking for sync data header and have uncomplete sync data 
-                        stop_find_sync_data_header_master_flag = 1;
-                        have_complete_sync_data_master_flag = 0;
-                    }
-
-                    // if no find sync data header and have complete sync data
-                    if (have_complete_sync_data_master_flag) {
-
-                        // parse 3 bytes event data
-                        parse_event_data(target+i);
-                    }
-                }
-                else { // stop looking for sync data header
+                // if find sync data header
+                if (is_sync_header(science_data_pointer+i)) {
 
                     // store 3 bytes to science_sync_master_buffer
-                    memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, target+i, 3);
+                    memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, science_data_pointer+i, 3);
                     science_sync_master_buffer_counter+=3;
 
-                    // all 45 bytes have been stored in science_sync_master_buffer
-                    if (science_sync_master_buffer_counter == 45) {
+                    // stop looking for sync data header and have uncomplete sync data 
+                    stop_find_sync_data_header_master_flag = 1;
+                    have_complete_sync_data_master_flag = 0;
+                }
 
-                        // check sync data tail
-                        if (!is_sync_tail(science_sync_master_buffer+42)) {
-                            log_error("Please check sync header defined in ICD!");
-                        }
+                // if no find sync data header and have complete sync data
+                if (have_complete_sync_data_master_flag) {
 
-                        // look for sync data header and have complete sync data
-                        stop_find_sync_data_header_master_flag = 0;
-                        have_complete_sync_data_master_flag = 1;
-
-                        // reset science_sync_master_buffer_counter
-                        science_sync_master_buffer_counter = 0;
-
-                        // parse 45 bytes sync data in science_sync_master_buffer
-                        parse_science_sync_data(science_sync_master_buffer);
-                    }
+                    // parse 3 bytes event data
+                    parse_event_data(science_data_pointer+i);
                 }
             }
-            else { // slave case
+            else { // stop looking for sync data header
 
-                // always look for sync data header
-                if (!stop_find_sync_data_header_slave_flag) { // look for sync data header
+                // store 3 bytes to science_sync_master_buffer
+                memcpy(science_sync_master_buffer+science_sync_master_buffer_counter, science_data_pointer+i, 3);
+                science_sync_master_buffer_counter+=3;
 
-                    // if find sync data header
-                    if (is_sync_header(target+i)) {
+                // all 45 bytes have been stored in science_sync_master_buffer
+                if (science_sync_master_buffer_counter == 45) {
 
-                        // store 3 bytes to science_sync_slave_buffer
-                        memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, target+i, 3);
-                        science_sync_slave_buffer_counter+=3;
-
-                        // stop looking for sync data header and have uncomplete sync data 
-                        stop_find_sync_data_header_slave_flag = 1;
-                        have_complete_sync_data_slave_flag = 0;
+                    // check sync data tail
+                    if (!is_sync_tail(science_sync_master_buffer+42)) {
+                        log_error("Please check sync header defined in ICD!");
                     }
 
-                    // if no find sync data header and have complete sync data
-                    if (have_complete_sync_data_slave_flag) {
+                    // look for sync data header and have complete sync data
+                    stop_find_sync_data_header_master_flag = 0;
+                    have_complete_sync_data_master_flag = 1;
 
-                        // parse 3 bytes event data
-                        parse_science_event_data(target+i);
-                    }
-                }
-                else { // stop looking for sync data header
+                    // reset science_sync_master_buffer_counter
+                    science_sync_master_buffer_counter = 0;
 
-                    // store 3 bytes to science_sync_slave_buffer
-                    memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, target+i, 3);
-                    science_sync_slave_buffer_counter+=3;
-
-                    // all 45 bytes have been stored in science_sync_slave_buffer
-                    if (science_sync_slave_buffer_counter == 45) {
-
-                        // check sync data tail
-                        if (!is_sync_tail(science_sync_slave_buffer+42)) {
-                            log_error("Please check sync header defined in ICD!");
-                        }
-
-                        // look for sync data header and have complete sync data
-                        stop_find_sync_data_header_slave_flag = 0;
-                        have_complete_sync_data_slave_flag = 1;
-
-                        // reset science_sync_slave_buffer_counter
-                        science_sync_slave_buffer_counter = 0;
-
-                        // parse 45 bytes sync data in science_sync_slave_buffer
-                        parse_sync_data(science_sync_slave_buffer);
-                    }
+                    // parse 45 bytes sync data in science_sync_master_buffer
+                    parse_science_sync_data(science_sync_master_buffer);
                 }
             }
         }
+        else { // slave case
+
+            // always look for sync data header
+            if (!stop_find_sync_data_header_slave_flag) { // look for sync data header
+
+                // if find sync data header
+                if (is_sync_header(science_data_pointer+i)) {
+
+                    // store 3 bytes to science_sync_slave_buffer
+                    memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, science_data_pointer+i, 3);
+                    science_sync_slave_buffer_counter+=3;
+
+                    // stop looking for sync data header and have uncomplete sync data 
+                    stop_find_sync_data_header_slave_flag = 1;
+                    have_complete_sync_data_slave_flag = 0;
+                }
+
+                // if no find sync data header and have complete sync data
+                if (have_complete_sync_data_slave_flag) {
+
+                    // parse 3 bytes event data
+                    parse_science_event_data(science_data_pointer+i);
+                }
+            }
+            else { // stop looking for sync data header
+
+                // store 3 bytes to science_sync_slave_buffer
+                memcpy(science_sync_slave_buffer+science_sync_slave_buffer_counter, science_data_pointer+i, 3);
+                science_sync_slave_buffer_counter+=3;
+
+                // all 45 bytes have been stored in science_sync_slave_buffer
+                if (science_sync_slave_buffer_counter == 45) {
+
+                    // check sync data tail
+                    if (!is_sync_tail(science_sync_slave_buffer+42)) {
+                        log_error("Please check sync header defined in ICD!");
+                    }
+
+                    // look for sync data header and have complete sync data
+                    stop_find_sync_data_header_slave_flag = 0;
+                    have_complete_sync_data_slave_flag = 1;
+
+                    // reset science_sync_slave_buffer_counter
+                    science_sync_slave_buffer_counter = 0;
+
+                    // parse 45 bytes sync data in science_sync_slave_buffer
+                    parse_sync_data(science_sync_slave_buffer);
+                }
+            }
+        }
+    }
+}
+
+// waiting
+void write_science_header_sequence_count() {
+    if (export_mode == 1 || export_mode == 3) {
+        fprintf(raw_output_file, "sd header: %3u\n", SequenceCount);
     }
 }
 
@@ -792,118 +804,6 @@ int is_sync_header(unsigned char *target) {
     return 0;
 }
 
-// checked~
-int is_sync_tail(unsigned char *target) {
-    unsigned char ref[3] = {0xF2, 0xF5, 0xFA};
-
-    if (!memcmp(ref, target, 3)) {
-        return 1;
-    }
-
-    return 0;
-}
-
-// checked~
-void parse_science_sync_data(unsigned char *target) {
-    unsigned char *first_byte_pointer;
-    
-    // redefine first byte pointer base on master ot slave
-    if (science_buffer->gtm_id == 0) {
-        first_byte_pointer = &(science_buffer->master_sync_header);
-    }
-    else {
-        first_byte_pointer = &(science_buffer->slave_sync_header);
-    }
-
-    // header
-    memcpy(first_byte_pointer, target, 1);
-
-    // gtm id
-    *(first_byte_pointer+4) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
-
-    // pps counts
-    *(target+1) = *(target+1) & 0x7F; // mask gtm id
-    memcpy(first_byte_pointer+8, target+1, 2);
-    simple_big2little_endian(first_byte_pointer+8, 2);
-
-    // cmd sequence number
-    memcpy(first_byte_pointer+10, target+3, 1);
-
-    parse_science_sync_utc(target+4, first_byte_pointer);
-    parse_science_sync_attitude(target+10, first_byte_pointer);
-
-    // tail
-    memcpy(first_byte_pointer+49, target+42, 3);
-
-    write_science_sync_data();
-}
-
-// checked~
-void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
-    unsigned char *first_byte_pointer_in_sync_utc;
-
-    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+11;
-    // unsigned char [1] = 4 bytes
-    // int = 4 bytes
-
-    // day of year
-    memcpy(first_byte_pointer_in_sync_utc, target, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_utc, 2);
-
-    // hour
-    memcpy(first_byte_pointer_in_sync_utc+2, target+2, 1);
-
-    // minute
-    memcpy(first_byte_pointer_in_sync_utc+23, target+3, 1);
-
-    // second
-    memcpy(first_byte_pointer_in_sync_utc+4, target+4, 1);
-
-    // subsecond
-    memcpy(first_byte_pointer_in_sync_utc+5, target+5, 1);
-}
-
-// checked~
-void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
-    unsigned char *first_byte_pointer_in_sync_attitude;
-
-    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+17;
-
-    // x, y & z position
-    memcpy(first_byte_pointer_in_sync_attitude, target, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+4, target+4, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+4, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+8, target+8, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+8, 4);
-
-    // x, y & z velocity
-    memcpy(first_byte_pointer_in_sync_attitude+12, target+12, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+12, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+16, target+16, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+16, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+20, target+20, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+20, 4);
-
-    // quaternion
-    memcpy(first_byte_pointer_in_sync_attitude+24, target+24, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+24, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+26, target+26, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+6, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+28, target+28, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+28, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+30, target+30, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+30, 2);
-}
-
-// waiting
-void write_sync_data() {
-    if (export_mode == 1 || export_mode == 3) {
-        fprintf(raw_output_file, "sync: %5u, %3u\n", science_buffer->pps_counter, science_buffer->cmd_seq_num);
-    }
-}
-
-// 
 void parse_event_data(unsigned char *target) {
     unsigned char buffer[4] = {0x00, 0x00, 0x00, 0x00};
 
@@ -1033,48 +933,114 @@ void write_science_buffer() {
     }
 }
 
-void parse_sd_header(unsigned char *target) {
-    // static int got_first_sd_header = 0;
-    unsigned char new_gtm_module = 0x00;
-    uint8_t new_sequence_count;
+// checked~
+int is_sync_tail(unsigned char *target) {
+    unsigned char ref[3] = {0xF2, 0xF5, 0xFA};
 
-    memcpy(&new_gtm_module, target + 1, 1);
-    if (new_gtm_module == 0x55) {
-        science_buffer->gtm_module = 0;
+    if (!memcmp(ref, target, 3)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+// checked~
+void parse_science_sync_data(unsigned char *target) {
+    unsigned char *first_byte_pointer;
+    
+    // redefine first byte pointer base on master ot slave
+    if (science_buffer->gtm_id == 0) {
+        first_byte_pointer = &(science_buffer->master_sync_header);
     }
     else {
-        science_buffer->gtm_module = 1;
+        first_byte_pointer = &(science_buffer->slave_sync_header);
     }
 
-    // parse sequence count and check packet continuity
-    memcpy(&new_sequence_count, target + 3, 1);
+    // header
+    memcpy(first_byte_pointer, target, 1);
 
-    write_sd_header(new_sequence_count);
+    // gtm id
+    *(first_byte_pointer+4) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
 
-    if (!got_first_sd_header) {
-        sequence_count = new_sequence_count;
-        got_first_sd_header = 1;
-        return;
-    }
-    // make sure the sequence count is continuous
-    if (sequence_count == 255) {
-        continuous_packet = (new_sequence_count == 0);
-    }
-    else {
-        continuous_packet = (new_sequence_count == sequence_count + 1);
-    }
+    // pps counts
+    *(target+1) = *(target+1) & 0x7F; // mask gtm id
+    memcpy(first_byte_pointer+8, target+1, 2);
+    simple_big2little_endian(first_byte_pointer+8, 2);
 
-    if (!continuous_packet) {
-        log_message("sequence count not continuous, old sequence count = %i, new seqence count= %i", sequence_count, new_sequence_count);
-    }
+    // cmd sequence number
+    memcpy(first_byte_pointer+10, target+3, 1);
 
-    sequence_count = new_sequence_count;
+    parse_science_sync_utc(target+4, first_byte_pointer);
+    parse_science_sync_attitude(target+10, first_byte_pointer);
+
+    // tail
+    memcpy(first_byte_pointer+49, target+42, 3);
+
+    write_science_sync_data();
+}
+
+// checked~
+void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
+    unsigned char *first_byte_pointer_in_sync_utc;
+
+    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+11;
+    // unsigned char [1] = 4 bytes
+    // int = 4 bytes
+
+    // day of year
+    memcpy(first_byte_pointer_in_sync_utc, target, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_utc, 2);
+
+    // hour
+    memcpy(first_byte_pointer_in_sync_utc+2, target+2, 1);
+
+    // minute
+    memcpy(first_byte_pointer_in_sync_utc+23, target+3, 1);
+
+    // second
+    memcpy(first_byte_pointer_in_sync_utc+4, target+4, 1);
+
+    // subsecond
+    memcpy(first_byte_pointer_in_sync_utc+5, target+5, 1);
+}
+
+// checked~
+void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
+    unsigned char *first_byte_pointer_in_sync_attitude;
+
+    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+17;
+
+    // x, y & z position
+    memcpy(first_byte_pointer_in_sync_attitude, target, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+4, target+4, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+4, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+8, target+8, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+8, 4);
+
+    // x, y & z velocity
+    memcpy(first_byte_pointer_in_sync_attitude+12, target+12, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+12, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+16, target+16, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+16, 4);
+    memcpy(first_byte_pointer_in_sync_attitude+20, target+20, 4);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+20, 4);
+
+    // quaternion
+    memcpy(first_byte_pointer_in_sync_attitude+24, target+24, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+24, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+26, target+26, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+6, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+28, target+28, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+28, 2);
+    memcpy(first_byte_pointer_in_sync_attitude+30, target+30, 2);
+    simple_big2little_endian(first_byte_pointer_in_sync_attitude+30, 2);
 }
 
 // waiting
-static void write_sd_header(uint8_t SequenceCount) {
+void write_sync_data() {
     if (export_mode == 1 || export_mode == 3) {
-        fprintf(raw_output_file, "sd header: %3u\n", SequenceCount);
+        fprintf(raw_output_file, "sync: %5u, %3u\n", science_buffer->pps_counter, science_buffer->cmd_seq_num);
     }
 }
 
