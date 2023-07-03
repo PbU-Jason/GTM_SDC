@@ -66,7 +66,7 @@ typedef struct TMTC {
     uint8_t       icd_minute;
     uint8_t       icd_second;
     uint8_t       icd_subsecond;
-    int           gtm_id_in_pps_counter; // 0 = master; 1 = slave
+    uint8_t       gtm_id_in_pps_counter; // 0 = master; 1 = slave
     uint16_t      pps_counter;
     unsigned char fine_time_counter[3];
     int8_t        board_temp_1;
@@ -117,21 +117,21 @@ typedef struct TMTC {
 typedef struct Science {
 
     // gtm id and sequence count following head
-    int      gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
-    uint16_t sequence_count;
+    uint8_t gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
+    uint8_t sequence_count;
     
     /// sync_data ///
 
     // for master
     unsigned char master_sync_header[1];
-    int           master_sync_gtm_id; // 0 = master; 1 = slave
+    uint8_t       master_sync_gtm_id; // 0 = master; 1 = slave
     uint16_t      master_sync_pps_counts;
     uint8_t       master_sync_cmd_sequence_number;
-    uint16_t      master_day_of_year;
-    uint8_t       master_hour;
-    uint8_t       master_minute;
-    uint8_t       master_second;
-    uint8_t       master_subsecond;
+    uint16_t      master_sync_day_of_year;
+    uint8_t       master_sync_hour;
+    uint8_t       master_sync_minute;
+    uint8_t       master_sync_second;
+    uint8_t       master_sync_subsecond;
     uint32_t      master_sync_x;
     uint32_t      master_sync_y;
     uint32_t      master_sync_z;
@@ -146,14 +146,14 @@ typedef struct Science {
 
     // for slave
     unsigned char slave_sync_header[1];
-    int           slave_sync_gtm_id;
+    uint8_t       slave_sync_gtm_id;
     uint16_t      slave_sync_pps_counts;
     uint8_t       slave_sync_cmd_sequence_number;
-    uint16_t      slave_day_of_year;
-    uint8_t       slave_hour;
-    uint8_t       slave_minute;
-    uint8_t       slave_second;
-    uint8_t       slave_subsecond;
+    uint16_t      slave_sync_day_of_year;
+    uint8_t       slave_sync_hour;
+    uint8_t       slave_sync_minute;
+    uint8_t       slave_sync_second;
+    uint8_t       slave_sync_subsecond;
     uint32_t      slave_sync_x;
     uint32_t      slave_sync_y;
     uint32_t      slave_sync_z;
@@ -182,7 +182,8 @@ typedef struct Science {
     
     /// event_adc_data ///
 
-    int           event_adc_gtm_id; // 0 = master; 1 = slave
+    uint8_t       event_adc_hit_flag; // 0 = no hit; 1 = hit (should always hit!)
+    uint8_t       event_adc_gtm_id; // 0 = master; 1 = slave
     uint8_t       event_adc_citiroc_id; // 0 = A = 1; 1 = B = 2
     uint8_t       event_adc_channel_id;
     uint8_t       event_adc_gain; // 0 = low; 1 = high
@@ -257,24 +258,19 @@ void write_tmtc_buffer_master_and_slave();
 int is_science_gicd_marker(unsigned char *target);
 int is_science_icd_head(unsigned char *target);
 void parse_science_packet(unsigned char *target);
-int is_sync_header(unsigned char *target);
-int is_sync_tail(unsigned char *target);
-void parse_sync_data(unsigned char *target);
-void parse_utc_time_sync(unsigned char *target);
-void parse_position(unsigned char *target);
-int compare_UTC(Time *Time1, Time *Time2);
-static void write_sync_data(void);
-void get_month_and_mday(void);
-double find_time_delta(Time *TimeStart, Time *TimeEnd);
-double calc_sec(Time *Time);
-static void parse_event_data(unsigned char *target);
-static void write_event_time(void);
-static void parse_event_adc(unsigned char *target);
-void left_shift_mem(unsigned char *target, size_t targetSize, uint8_t Bits);
-static void write_science_buffer(void);
-void parse_sd_header(unsigned char *target);
-static void write_sd_header(uint8_t SequenceCount);
-void free_got_first_sd_header();
+void write_science_packet_beginning();
+int is_science_sync_header(unsigned char *target);
+void parse_science_event_data(unsigned char *target);
+void parse_science_event_time(unsigned char *target);
+void write_science_event_time();
+void parse_science_event_adc(unsigned char *target);
+void write_science_event_adc();
+void export_science_pipeline_output();
+int is_science_sync_tail(unsigned char *target);
+void parse_science_sync_data(unsigned char *target);
+void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data);
+void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data);
+void write_science_sync_data();
 
 /// parse_science_data_end ///
 

@@ -28,12 +28,11 @@ int decoder(char *file_name, int decode_mode, int export_mode, int initail_file_
         case 2:
             log_message("Start decoding science data");
             new_file_pointer = parse_science_data(initail_file_pointer, file_name);
-            
             break;
     }
 
     close_all_file();
-    destroy_basic_buffer();
+    destroy_basic_buffer(); // destroy input_binary_buffer independently due to science_icd_binary_buffer
 
     return new_file_pointer;
 }
