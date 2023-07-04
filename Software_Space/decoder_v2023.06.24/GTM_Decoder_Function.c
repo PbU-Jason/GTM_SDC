@@ -1,10 +1,9 @@
 #include "GTM_Decoder_Function.h"
 
 #include <stdarg.h> // for va_list, va_start(), va_arg() & va_end()
-#include <stdlib.h> // for exit & malloc (also has size_t)
-#include <string.h> // for strlen, memcpy, strcat & memcmp (also has size_t)
-#include <time.h>   // for mktime & localtime (also has size_t)
-#include <math.h>   // for pow
+
+// #include <time.h>   // for mktime & localtime (also has size_t)
+// #include <math.h>   // for pow
 
 
 
@@ -319,8 +318,8 @@ void write_tmtc_raw_all(unsigned char *target) {
 
     for (size_t i = 0; i < 144; i++) {
         memcpy(byte_buffer, target+i, 1);
-        fprintf(raw_output_file, "%d;", byte_buffer[0]);
-        if (i == 144) {
+        fprintf(raw_output_file, "%u;", byte_buffer[0]);
+        if (i == 143) {
             fprintf(raw_output_file, "\n");
         }
     }
@@ -331,7 +330,7 @@ void parse_tmtc_packet(unsigned char *target) {
 
     // sequence count from TASA
     *(target+TMTC_PACKET_ID_SIZE) = *(target+TMTC_PACKET_ID_SIZE) & 0x3F; // mask segmentation flag
-    memcpy(tmtc_buffer->source_sequence_count, target+TMTC_PACKET_ID_SIZE, TMTC_PACKET_SEQUENCE_CONTROL_SIZE);
+    memcpy(&(tmtc_buffer->source_sequence_count), target+TMTC_PACKET_ID_SIZE, TMTC_PACKET_SEQUENCE_CONTROL_SIZE);
     simple_big2little_endian(&(tmtc_buffer->source_sequence_count), 2);
 
     // utc from TASA
@@ -351,8 +350,8 @@ void parse_tmtc_packet(unsigned char *target) {
     memcpy(&(tmtc_buffer->data_length_msb), target+tmtc_16_byte_shift+5, 1);
     memcpy(&(tmtc_buffer->data_length_120_byte), target+tmtc_16_byte_shift+6, 1);
 
-    // utc
-    parse_tmtc_gicd_utc(target+tmtc_16_byte_shift+7);
+    // utc in 128 bytes
+    parse_tmtc_icd_utc(target+tmtc_16_byte_shift+7);
 
     // pps counter
     tmtc_buffer->gtm_id_in_pps_counter = ((*(target+tmtc_16_byte_shift+15) & 0x80) == 0x80) ? 1 : 0; // extract gtm id
@@ -579,7 +578,7 @@ void write_tmtc_buffer_master_or_slave() {
     ;%u;%u;%d \
     ;%d;%d;%d;%d;%d;%d", \
     tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length_120_byte, \
-    tmtc_buffer->gicd_year, tmtc_buffer->gicd_day_of_year, tmtc_buffer->gicd_hour, tmtc_buffer->gicd_minute, tmtc_buffer->gicd_second, tmtc_buffer->gicd_second, \
+    tmtc_buffer->icd_year, tmtc_buffer->icd_day_of_year, tmtc_buffer->icd_hour, tmtc_buffer->icd_minute, tmtc_buffer->icd_second, tmtc_buffer->icd_second, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_time_counter, \
     tmtc_buffer->board_temp_1, tmtc_buffer->board_temp_2, citiroc_1_temp, citiroc_2_temp, citiroc_1_livetime_busy, citiroc_2_livetime_busy);    
     
@@ -650,8 +649,10 @@ void parse_science_packet(unsigned char *target) {
 
     unsigned char *science_data_pointer;
 
-    // record gtm id and sequence count at beginning
+    // record previous crc8 and sequence count at beginning
+    memcpy(&(science_buffer->previous_crc8), target+2, 1);
     memcpy(&(science_buffer->sequence_count), target+3, 1);
+
     write_science_packet_beginning();
 
     // moave 6 bytes to skip SCIENCE_HEADER_SIZE
@@ -751,7 +752,7 @@ void parse_science_packet(unsigned char *target) {
                     // reset science_sync_slave_buffer_counter
                     science_sync_slave_buffer_counter = 0;
 
-                    parse_sync_data(science_sync_slave_buffer);
+                    parse_science_sync_data(science_sync_slave_buffer);
                 }
             }
         }
@@ -760,12 +761,12 @@ void parse_science_packet(unsigned char *target) {
 
 void write_science_packet_beginning() {
     if (export_mode == 1 || export_mode == 3) {
-        fprintf(raw_output_file, "science beginning: %1d; %3u\n", science_buffer->gtm_id, science_buffer->sequence_count);
+        fprintf(raw_output_file, "science beginning: %1u; %3u; %3u\n", science_buffer->gtm_id, science_buffer->previous_crc8, science_buffer->sequence_count);
     }
 }
 
 int is_science_sync_header(unsigned char *target) {
-    unsigned char ref = 0xCA;
+    unsigned char ref[1] = {0xCA};
 
     if (!memcmp(ref, target, 1)) {
         return 1;
@@ -800,7 +801,7 @@ void parse_science_event_time(unsigned char *target) {
         // for fine time counter
         memcpy(fine_time_counter_buffer, target, 3);
         fine_time_counter_buffer[0] = (fine_time_counter_buffer[0] & 0x03); // remove bits 23 to 18
-        science_buffer->master_event_time_fine_time_counter = fine_time_counter_buffer[0] << 16 | fine_time_counter_buffer[1] << 8 | fine_time_counter_buffer[3];
+        science_buffer->master_event_time_fine_time_counter = fine_time_counter_buffer[0] << 16 | fine_time_counter_buffer[1] << 8 | fine_time_counter_buffer[2];
     }
     else { // for slave
 
@@ -812,7 +813,7 @@ void parse_science_event_time(unsigned char *target) {
         // for fine time counter
         memcpy(fine_time_counter_buffer, target, 3);
         fine_time_counter_buffer[0] = (fine_time_counter_buffer[0] & 0x03); // remove bits 23 to 18
-        science_buffer->slave_event_time_fine_time_counter = fine_time_counter_buffer[0] << 16 | fine_time_counter_buffer[1] << 8 | fine_time_counter_buffer[3];
+        science_buffer->slave_event_time_fine_time_counter = fine_time_counter_buffer[0] << 16 | fine_time_counter_buffer[1] << 8 | fine_time_counter_buffer[2];
 
     }
 
@@ -935,10 +936,10 @@ void parse_science_sync_data(unsigned char *target) {
     
     // redefine first byte pointer base on master ot slave
     if (science_buffer->gtm_id == 0) { // master
-        first_byte_pointer = &(science_buffer->master_sync_header);
+        first_byte_pointer = (unsigned char *)&(science_buffer->master_sync_header);
     }
     else { // slave
-        first_byte_pointer = &(science_buffer->slave_sync_header);
+        first_byte_pointer = (unsigned char *)&(science_buffer->slave_sync_header);
     }
 
     // header

@@ -2,6 +2,9 @@
 #define GTM_DECODER_FUNCTION_H
 
 #include <stdio.h>  // for size_t, File, printf, fopen, ..., etc
+#include <stdlib.h> // for exit & malloc (also has size_t)
+#include <string.h> // for strlen, memcpy, strcat & memcmp (also has size_t)
+
 #include <stdint.h> // for uint8_t, uint16_t & uint32_t
 
 // refer to GICD (may not be used)
@@ -231,7 +234,7 @@ extern FILE *input_binary_file;
 
 void check_endianness();
 void log_error(const char *sentence, ...);
-void initailize_variable();
+void initailize_sync_data_flag();
 void create_basic_buffer();
 void open_all_file(char *input_file_path);
 void log_message(const char *sentence, ...);
@@ -249,8 +252,9 @@ int is_tmtc_icd_tail(unsigned char *target);
 void write_tmtc_raw_all(unsigned char *target);
 void parse_tmtc_packet(unsigned char *target);
 void simple_big2little_endian(void *target, size_t reverse_size);
-void parse_tmtc_utc(unsigned char *target);
-void write_tmtc_buffer_master_and_slave();
+void parse_tmtc_gicd_utc(unsigned char *target);
+void parse_tmtc_icd_utc(unsigned char *target);
+void write_tmtc_buffer_master_or_slave();
 
 /// parse_tmtc_data_end ///
 

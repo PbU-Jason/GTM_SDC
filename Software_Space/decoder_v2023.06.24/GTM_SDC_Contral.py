@@ -415,10 +415,10 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         if self.Monitor_Modes == 0:
 
             # for pure TMTC and SD decoding (only need one file pointer)
-            if ((self.Decode_Modes == 2) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 1):
+            if ((self.Decode_Modes == 2) and (self.Extract_Selection == 1)) or (self.Decode_Modes == 1): # temp self.Extract_Selection wrong
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
 
-                    self.Initailize_Output_Files(Input_Decoder_Filename)
+                    # self.Initailize_Output_Files(Input_Decoder_Filename)
 
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer)
@@ -440,7 +440,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             QtTest.QTest.qWait(self.Update_Rate_ms)
             
             # for SD (with header and tail) decoding ( need two file pointers)
-            if (self.Decode_Modes == 2) and (self.Extract_Selection == 1):
+            if (self.Decode_Modes == 2) and (self.Extract_Selection == 0): # temp self.Extract_Selection wrong
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)

@@ -21,7 +21,7 @@ def C_Decoder(FileName, DecodeMode, ExportMode, InitailFilePointer):
     c_function = CDLL(so_file)
 
     c_function.decoder.restype = c_int
-    
+
     new_file_pointer = c_function.decoder(
         c_char_p(bytes(FileName, 'utf-8')),
         c_int(DecodeMode),
