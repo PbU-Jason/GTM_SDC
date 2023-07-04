@@ -52,10 +52,10 @@ FILE *tmtc_master_output_file      = NULL;
 FILE *tmtc_slave_output_file       = NULL;
 FILE *science_pipeline_output_file = NULL;
 
-char tmtc_csv_header_all[] = "Bytes 0;Bytes 1;Bytes 2;Bytes 3;Bytes 4;Bytes 5;Bytes 6;Bytes 7;Bytes 8;Bytes 9;Bytes 10;Bytes 11;Bytes 12;Bytes 13;Bytes 14;Bytes 15;Bytes 16;Bytes 17;Bytes 18;Bytes 19;Bytes 20;Bytes 21;Bytes 22;Bytes 23;Bytes 24;Bytes 25;Bytes 26;Bytes 27;Bytes 28;Bytes 29;Bytes 30;Bytes 31;Bytes 32;Bytes 33;Bytes 34;Bytes 35;Bytes 36;Bytes 37;Bytes 38;Bytes 39;Bytes 40;Bytes 41;Bytes 42;Bytes 43;Bytes 44;Bytes 45;Bytes 46;Bytes 47;Bytes 48;Bytes 49;Bytes 50;Bytes 51;Bytes 52;Bytes 53;Bytes 54;Bytes 55;Bytes 56;Bytes 57;Bytes 58;Bytes 59;Bytes 60;Bytes 61;Bytes 62;Bytes 63;Bytes 64;Bytes 65;Bytes 66;Bytes 67;Bytes 68;Bytes 69;Bytes 70;Bytes 71;Bytes 72;Bytes 73;Bytes 74;Bytes 75;Bytes 76;Bytes 77;Bytes 78;Bytes 79;Bytes 80;Bytes 81;Bytes 82;Bytes 83;Bytes 84;Bytes 85;Bytes 86;Bytes 87;Bytes 88;Bytes 89;Bytes 90;Bytes 91;Bytes 92;Bytes 93;Bytes 94;Bytes 95;Bytes 96;Bytes 97;Bytes 98;Bytes 99;Bytes 100;Bytes 101;Bytes 102;Bytes 103;Bytes 104;Bytes 105;Bytes 106;Bytes 107;Bytes 108;Bytes 109;Bytes 110;Bytes 111;Bytes 112;Bytes 113;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;Bytes 119;Bytes 120;Bytes 121;Bytes 122;Bytes 123;Bytes 124;Bytes 125;Bytes 126;Bytes 127\n";
-char tmtc_csv_header_master[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
-char tmtc_csv_header_slave[] = "Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;UTC Year;UTC Day;UTC Hour;UTC Minute;UTC Second;UTC Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;Input Current Value;Input Voltage Value;Current Monitor Chip (U22) Temperature;HV Input Current Value;HV Input Voltage Value;Current Monitor Chip (U21) Temperature;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
-char science_csv_pipeline_header[] = "GTM_ID;Day;Hour;Minute;Second;Subsecond;X;Y;Z;Vx;Vy;Vz;Q1;Q2;Q3;Q4;PPS;FineTime;CITIROC;Channel;Gain;ADC\n";
+char tmtc_csv_column_name_all[] = "Pre-Byte 0;Pre-Byte 1;Pre-Byte 2;Pre-Byte 3;Pre-Byte 4;Pre-Byte 5;Pre-Byte 6;Pre-Byte 7;Pre-Byte 8;Pre-Byte 9;Pre-Byte 10;Pre-Byte 11;Pre-Byte 12;Pre-Byte 13;Pre-Byte 14;Pre-Byte 15;Byte 0;Byte 1;Byte 2;Byte 3;Byte 4;Byte 5;Byte 6;Byte 7;Byte 8;Byte 9;Byte 10;Byte 11;Byte 12;Byte 13;Byte 14;Byte 15;Byte 16;Byte 17;Byte 18;Byte 19;Byte 20;Byte 21;Byte 22;Byte 23;Byte 24;Byte 25;Byte 26;Byte 27;Byte 28;Byte 29;Byte 30;Byte 31;Byte 32;Byte 33;Byte 34;Byte 35;Byte 36;Byte 37;Byte 38;Byte 39;Byte 40;Byte 41;Byte 42;Byte 43;Byte 44;Byte 45;Byte 46;Byte 47;Byte 48;Byte 49;Byte 50;Byte 51;Byte 52;Byte 53;Byte 54;Byte 55;Byte 56;Byte 57;Byte 58;Byte 59;Byte 60;Byte 61;Byte 62;Byte 63;Byte 64;Byte 65;Byte 66;Byte 67;Byte 68;Byte 69;Byte 70;Byte 71;Byte 72;Byte 73;Byte 74;Byte 75;Byte 76;Byte 77;Byte 78;Byte 79;Byte 80;Byte 81;Byte 82;Byte 83;Byte 84;Byte 85;Byte 86;Byte 87;Byte 88;Byte 89;Byte 90;Byte 91;Byte 92;Byte 93;Byte 94;Byte 95;Byte 96;Byte 97;Byte 98;Byte 99;Byte 100;Byte 101;Byte 102;Byte 103;Byte 104;Byte 105;Byte 106;Byte 107;Byte 108;Byte 109;Byte 110;Byte 111;Byte 112;Byte 113;Byte 114;Byte 115;Byte 116;Byte 117;Byte 118;Byte 119;Byte 120;Byte 121;Byte 122;Byte 123;Byte 124;Byte 125;Byte 126;Byte 127\n";
+char tmtc_csv_column_name_master[] = "Source Sequence Count;GICD Year;GICD Day;GICD Hour;GICD Minute;GICD Second;GICD Subsecond;Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;ICD Year;ICD Day;ICD Hour;ICD Minute;ICD Second;ICD Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
+char tmtc_csv_column_name_slave[] = "Source Sequence Count;GICD Year;GICD Day;GICD Hour;GICD Minute;GICD Second;GICD Subsecond;Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;ICD Year;ICD Day;ICD Hour;ICD Minute;ICD Second;ICD Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;Input Current Value;Input Voltage Value;Current Monitor Chip (U22) Temperature;HV Input Current Value;HV Input Voltage Value;Current Monitor Chip (U21) Temperature;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
+char science_csv_pipeline_column_name[] = "GTM ID;Day of Year;Hour;Minute;Second;Subsecond;X;Y;Z;Vx;Vy;Vz;Q1;Q2;Q3;Q4;PPS;Fine Time;CITIROC;Channel;Gain;ADC\n";
 
 /// open_all_file_end ///
 
@@ -81,7 +81,6 @@ int have_complete_sync_data_slave_flag  = 0;
 
 /// main ///
 
-// checked~
 void check_endianness() {
     unsigned char x[2] = {0x00, 0x01}; 
     // use char array to define string
@@ -102,7 +101,6 @@ void check_endianness() {
     }
 }
 
-// checked~
 // not necessary, just see how to write printf in the user's own way
 // please refer below link to see ..., va_list, va_start, vprintf and va_end
 // https://www.ibm.com/docs/en/zos/2.1.0?topic=functions-vprintf-format-print-data-stdout
@@ -120,7 +118,6 @@ void log_error(const char *sentence, ...) {
     exit(1); // abnormal exit
 }
 
-// checked~
 void initailize_sync_data_flag() { // for continuously decode
     int sync_data_buffer_master_counter = 0;
     int sync_data_buffer_slave_counter  = 0;
@@ -131,7 +128,6 @@ void initailize_sync_data_flag() { // for continuously decode
     int sync_data_truncation_slave_flag     = 0;
 }
 
-// checked~
 void create_basic_buffer() {
 
     // dynamically allocate a single large block of memory with the specified size
@@ -142,7 +138,6 @@ void create_basic_buffer() {
     science_buffer = (Science *)malloc(sizeof(Science));
 }
 
-// checked~
 void open_all_file(char *input_file_path) {
     char *raw_output_path; // tmtc and science shared
     char *tmtc_master_output_path;
@@ -162,7 +157,7 @@ void open_all_file(char *input_file_path) {
             raw_output_path = str_append(input_file_path, "_tmtc_all.csv");
             raw_output_file = fopen(raw_output_path, "a");
             if (ftell(raw_output_file) == 0) {
-                fputs(tmtc_csv_header_all, raw_output_file);
+                fputs(tmtc_csv_column_name_all, raw_output_file);
             }
             free(raw_output_path);
 
@@ -170,7 +165,7 @@ void open_all_file(char *input_file_path) {
             tmtc_master_output_path = str_append(input_file_path, "_tmtc_master.csv");
             tmtc_master_output_file = fopen(tmtc_master_output_path, "a");
             if (ftell(tmtc_master_output_file) == 0) {
-                fputs(tmtc_csv_header_master, tmtc_master_output_file);
+                fputs(tmtc_csv_column_name_master, tmtc_master_output_file);
             }
             free(tmtc_master_output_path);
 
@@ -178,7 +173,7 @@ void open_all_file(char *input_file_path) {
             tmtc_slave_output_path = str_append(input_file_path, "_tmtc_slave.csv");
             tmtc_slave_output_file = fopen(tmtc_slave_output_path, "a");
             if (ftell(tmtc_slave_output_file) == 0) {
-                fputs(tmtc_csv_header_slave, tmtc_slave_output_file);
+                fputs(tmtc_csv_column_name_slave, tmtc_slave_output_file);
             }
             free(tmtc_slave_output_path);
             break;
@@ -194,7 +189,7 @@ void open_all_file(char *input_file_path) {
                 science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
                 science_pipeline_output_file = fopen(science_pipeline_output_path, "a");
                 if (ftell(science_pipeline_output_file) == 0) {
-                    fputs(science_csv_pipeline_header, science_pipeline_output_file);
+                    fputs(science_csv_pipeline_column_name, science_pipeline_output_file);
                 }
                 free(science_pipeline_output_path);
             }
@@ -206,7 +201,7 @@ void open_all_file(char *input_file_path) {
                 science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
                 science_pipeline_output_file = fopen(science_pipeline_output_path, "a");
                 if (ftell(science_pipeline_output_file) == 0) {
-                    fputs(science_csv_pipeline_header, science_pipeline_output_file);
+                    fputs(science_csv_pipeline_column_name, science_pipeline_output_file);
                 }
                 free(science_pipeline_output_path);
             }
@@ -221,7 +216,6 @@ void open_all_file(char *input_file_path) {
         }
 }
 
-// checked~
 // similar with log_error, but no exit
 void log_message(const char *sentence, ...) {
     va_list args;
@@ -231,22 +225,20 @@ void log_message(const char *sentence, ...) {
     va_end(args);
 }
 
-// checked~
 char *str_append(char *pre_fix, char *post_fix) {
     char *new;
     size_t size_prefix, size_postfix;
 
     size_prefix = strlen(pre_fix); // not count \0
     size_postfix = strlen(post_fix);
-    new = (char *)malloc((size_prefix + size_postfix + 1) * sizeof(char)); // +1 to keep \0 place
+    new = (char *)malloc(size_prefix+size_postfix+1); // +1 to keep \0 place
 
-    memcpy(new, pre_fix, size_prefix + 1); // again, +1 to keep \0 place
+    memcpy(new, pre_fix, size_prefix+1); // again, +1 to keep \0 place
     strcat(new, post_fix); // automatically repalce \0 of pre_fix and add \0 after post_fix
     
     return new;
 }
 
-// checked~
 void close_all_file() {
 
     // close input file
@@ -278,7 +270,6 @@ void close_all_file() {
     log_message("Close all file");
 }
 
-// checked~
 void destroy_basic_buffer() {
     // destroy input_binary_buffer independently
 
@@ -290,7 +281,6 @@ void destroy_basic_buffer() {
 
 /// parse_tmtc_data ///
 
-// checked~
 int is_tmtc_gicd_header(unsigned char *target) {
     unsigned char ref[2] = {0x08, 0x91};
 
@@ -304,7 +294,6 @@ int is_tmtc_gicd_header(unsigned char *target) {
     return 0; // == flase in c
 }
 
-// checked~
 int is_tmtc_icd_head(unsigned char *target) {
     unsigned char ref[2] = {0x55, 0xAA};
 
@@ -315,7 +304,6 @@ int is_tmtc_icd_head(unsigned char *target) {
     return 0;
 }
 
-// checked~
 int is_tmtc_icd_tail(unsigned char *target) {
     unsigned char ref[2] = {0xFB, 0xF2};
 
@@ -326,22 +314,19 @@ int is_tmtc_icd_tail(unsigned char *target) {
     return 0;
 }
 
-// checked~
 void write_tmtc_raw_all(unsigned char *target) { 
     unsigned char byte_buffer[1];
 
-    for (int i = 0; i < 128; i++) {
-        memcpy(&(byte_buffer[0]), target+i, 1);
+    for (size_t i = 0; i < 144; i++) {
+        memcpy(byte_buffer, target+i, 1);
         fprintf(raw_output_file, "%d;", byte_buffer[0]);
-        if (i == 127) {
+        if (i == 144) {
             fprintf(raw_output_file, "\n");
         }
     }
 }
 
-// checked~
 void parse_tmtc_packet(unsigned char *target) {
-    int gtm_id_case;
     int tmtc_16_byte_shift = TMTC_PACKET_HEADER_SIZE+TMTC_DATA_FIELD_HEADER_SIZE;
 
     // sequence count from TASA
@@ -356,8 +341,7 @@ void parse_tmtc_packet(unsigned char *target) {
     memcpy(tmtc_buffer->header, target+tmtc_16_byte_shift, 2);
 
     // gtm id
-    gtm_id_case = (*(target+tmtc_16_byte_shift+2) == 0x02) ? 0 : 1; // 0x02 = master = 0; 0x05 = slave = 1
-    memcpy(&(tmtc_buffer->gtm_id), target+tmtc_16_byte_shift+2, 1);
+    tmtc_buffer->gtm_id = (*(target+tmtc_16_byte_shift+2) == 0x02) ? 0 : 1; // 0x02 = master = 0; 0x05 = slave = 1
 
     // packet counter
     memcpy(&(tmtc_buffer->packet_counter), target+tmtc_16_byte_shift+3, 2);
@@ -398,10 +382,10 @@ void parse_tmtc_packet(unsigned char *target) {
     }
 
     memcpy(&(tmtc_buffer->citiroc_2_temp[0]), target+tmtc_16_byte_shift+23, 1);
-    if ((*(target+tmtc_16_byte_shift+25) & 0x80) == 0x80) {
+    if ((*(target+tmtc_16_byte_shift+25) & 0x80) == 0x80) { // negtive case
         tmtc_buffer->citiroc_2_temp[1] = 0xC0 | ((*(target+tmtc_16_byte_shift+25) & 0x7E) >> 1);
     }
-    else {
+    else { // positive case
         tmtc_buffer->citiroc_2_temp[1] = 0x00 | ((*(target+tmtc_16_byte_shift+25) & 0x7E) >> 1);
     }
 
@@ -427,7 +411,7 @@ void parse_tmtc_packet(unsigned char *target) {
     memcpy(&(tmtc_buffer->hv_dac_1), target+tmtc_16_byte_shift+101, 1);
     memcpy(&(tmtc_buffer->hv_dac_2), target+tmtc_16_byte_shift+102, 1);
 
-    if (gtm_id_case == 0) {
+    if (tmtc_buffer->gtm_id == 0) {
         // for master, spw
         memcpy(&(tmtc_buffer->spw_a_error_count), target+tmtc_16_byte_shift+103, 1);
         memcpy(&(tmtc_buffer->spw_a_last_recv_byte), target+tmtc_16_byte_shift+104, 1);
@@ -438,7 +422,7 @@ void parse_tmtc_packet(unsigned char *target) {
         memcpy(&(tmtc_buffer->spw_b_status), target+tmtc_16_byte_shift+109, 2);
         simple_big2little_endian(&(tmtc_buffer->spw_b_status), 2);
     }
-    else if (gtm_id_case == 1) {
+    else if (tmtc_buffer->gtm_id == 1) {
         // for slave, i & v monitor
         memcpy(&(tmtc_buffer->input_i), target+tmtc_16_byte_shift+103, 1);
         memcpy(&(tmtc_buffer->input_v), target+tmtc_16_byte_shift+104, 1);
@@ -473,11 +457,9 @@ void parse_tmtc_packet(unsigned char *target) {
     // tail
     memcpy(tmtc_buffer->tail, target+tmtc_16_byte_shift+126, 2);
 
-    // save tmtc_buffer
     write_tmtc_buffer_master_or_slave();
 }
 
-// checked~
 void simple_big2little_endian(void *target, size_t reverse_size) {
     unsigned char *reverse_buffer;
 
@@ -485,7 +467,7 @@ void simple_big2little_endian(void *target, size_t reverse_size) {
 
     // reversely copy data from target to reverse_buffer
     for (size_t i = 0; i < reverse_size; i++) {
-        reverse_buffer[i] = ((unsigned char *)target)[(reverse_size-1) - i];
+        reverse_buffer[i] = ((unsigned char *)target)[(reverse_size-1)-i];
     }
 
     // update target by reverse_buffer
@@ -494,7 +476,6 @@ void simple_big2little_endian(void *target, size_t reverse_size) {
     free(reverse_buffer);
 }
 
-// checked~
 void parse_tmtc_gicd_utc(unsigned char *target) {
 
     // year
@@ -518,7 +499,6 @@ void parse_tmtc_gicd_utc(unsigned char *target) {
     memcpy(&(tmtc_buffer->gicd_subsecond), target+7, 1);
 }
 
-// checked~
 void parse_tmtc_icd_utc(unsigned char *target) {
 
     // year
@@ -544,8 +524,6 @@ void parse_tmtc_icd_utc(unsigned char *target) {
 
 // checked~
 void write_tmtc_buffer_master_or_slave() {
-    int gtm_id_case;
-
     int fine_time_counter;
     int citiroc_1_livetime_busy;
     int citiroc_2_livetime_busy;
@@ -562,9 +540,6 @@ void write_tmtc_buffer_master_or_slave() {
     uint16_t hv_input_i;
     uint16_t hv_input_v;
 
-    // gtm id
-    gtm_id_case = (tmtc_buffer->gtm_id == 0x02) ? 0 : 1; // 0x02 = master = 0; 0x05 = slave = 1
-
     // recover 3 bytes
     fine_time_counter = (tmtc_buffer->fine_time_counter[0] << 16) | (tmtc_buffer->fine_time_counter[1] << 8) | tmtc_buffer->fine_time_counter[2];
     citiroc_1_livetime_busy = (tmtc_buffer->citiroc_1_livetime_busy[0] << 16) | (tmtc_buffer->citiroc_1_livetime_busy[1] << 8) | tmtc_buffer->citiroc_1_livetime_busy[2];
@@ -577,7 +552,7 @@ void write_tmtc_buffer_master_or_slave() {
     citiroc_2_temp = (tmtc_buffer->citiroc_2_temp[1] << 8) |  tmtc_buffer->citiroc_2_temp[0];
 
 
-    if (gtm_id_case == 0) {
+    if (tmtc_buffer->gtm_id == 0) {
         output_file = tmtc_master_output_file;
     }
     else {
@@ -590,12 +565,19 @@ void write_tmtc_buffer_master_or_slave() {
         hv_input_v = ( ((tmtc_buffer->hv_input_v >> 4) << 8) | ((tmtc_buffer->hv_input_v << 4) | (tmtc_buffer->hv_input_i_v & 0x0F)) );
     }
 
-    fprintf(output_file, "%X%X", tmtc_buffer->header[0], tmtc_buffer->header[1]); // head
+    // fromTASA
+    fprintf(output_file, \
+    "%u;%u;%u;%u;%u;%u;%u", \
+    tmtc_buffer->source_sequence_count, tmtc_buffer->gicd_year, tmtc_buffer->gicd_day_of_year, tmtc_buffer->gicd_hour, tmtc_buffer->gicd_minute, tmtc_buffer->gicd_second, tmtc_buffer->gicd_subsecond);
+
+
+    // 128 bytes data
+    fprintf(output_file, ";%X%X", tmtc_buffer->header[0], tmtc_buffer->header[1]);
     fprintf(output_file, \
     ";%u;%u;%u;%u \
     ;%u;%u;%u;%u;%u;%u \
-    ;%i;%u;%i \
-    ;%i;%i;%i;%i;%i;%i", \
+    ;%u;%u;%d \
+    ;%d;%d;%d;%d;%d;%d", \
     tmtc_buffer->gtm_id, tmtc_buffer->packet_counter, tmtc_buffer->data_length_msb, tmtc_buffer->data_length_120_byte, \
     tmtc_buffer->gicd_year, tmtc_buffer->gicd_day_of_year, tmtc_buffer->gicd_hour, tmtc_buffer->gicd_minute, tmtc_buffer->gicd_second, tmtc_buffer->gicd_second, \
     tmtc_buffer->gtm_id_in_pps_counter, tmtc_buffer->pps_counter, fine_time_counter, \
@@ -611,12 +593,12 @@ void write_tmtc_buffer_master_or_slave() {
     fprintf(output_file, ";%u;%u;%u;%u;%u", \
     tmtc_buffer->citiroc_1_trigger_counter, tmtc_buffer->citiroc_2_trigger_counter, tmtc_buffer->counter_period, tmtc_buffer->hv_dac_1, tmtc_buffer->hv_dac_2);
 
-    if (gtm_id_case == 0) {
+    if (tmtc_buffer->gtm_id == 0) { // master
         fprintf(output_file, ";%X;%X;%X;%X;%X;%X", \
         tmtc_buffer->spw_a_error_count, tmtc_buffer->spw_a_last_recv_byte, tmtc_buffer->spw_b_error_count, tmtc_buffer->spw_b_last_recv_byte, tmtc_buffer->spw_a_status, tmtc_buffer->spw_b_status);
     }
-    else {
-        fprintf(output_file, ";%u;%u;%i;%u;%u;%i", \
+    else { // slave
+        fprintf(output_file, ";%u;%u;%d;%u;%u;%d", \
         input_v, input_i, tmtc_buffer->i_monitor_u22_temp, hv_input_v, hv_input_i, tmtc_buffer->i_monitor_u21_temp);
     }
     
@@ -627,15 +609,14 @@ void write_tmtc_buffer_master_or_slave() {
         fprintf(output_file, ";%u", tmtc_buffer->tmtc_empty[i]);
     }
 
-    fprintf(output_file, ";%i;%i;%u", citiroc_1_livetime_buffer_busy, citiroc_2_livetime_buffer_busy, tmtc_buffer->checksum);
-    fprintf(output_file, ";%X%X\n", tmtc_buffer->tail[0], tmtc_buffer->tail[1]); // tail
+    fprintf(output_file, ";%d;%d;%u", citiroc_1_livetime_buffer_busy, citiroc_2_livetime_buffer_busy, tmtc_buffer->checksum);
+    fprintf(output_file, ";%X%X\n", tmtc_buffer->tail[0], tmtc_buffer->tail[1]);
 }
 
 /// parse_tmtc_data_end ///
 
 /// parse_science_data ///
 
-// checked~
 int is_science_gicd_marker(unsigned char *target) {
     unsigned char ref[SCIENCE_ATTACHED_SYNCHRO_MARKER_SIZE] = {0x1A, 0xCF, 0xFC, 0x1D};
 
@@ -646,7 +627,6 @@ int is_science_gicd_marker(unsigned char *target) {
     return 0;
 }
 
-// checked~
 int is_science_icd_head(unsigned char *target) {
     unsigned char ref_master[2] = {0x88, 0x55};
     unsigned char ref_slave[2] = {0x88, 0xAA};
@@ -664,7 +644,6 @@ int is_science_icd_head(unsigned char *target) {
     }
 }
 
-// checked~
 void parse_science_packet(unsigned char *target) {
     // 45 bytes sync data in 1104 bytes science data may be truncated since master/slave switch
     // need science_sync_master_buffer and science_sync_slave_buffer to temporarily keep sync info
@@ -679,7 +658,7 @@ void parse_science_packet(unsigned char *target) {
     science_data_pointer = target+SCIENCE_HEADER_SIZE;
 
     // move buffer pointer 3 bytes each time
-    for (int i = 0; i < SCIENCE_DATA_SIZE/3; i++) {
+    for (size_t i = 0; i < SCIENCE_DATA_SIZE/3; i++) {
 
         // separate master and slave cases
         if (science_buffer->gtm_id == 0) { // master case
@@ -701,8 +680,6 @@ void parse_science_packet(unsigned char *target) {
 
                 // if no find sync data header and have complete sync data
                 if (have_complete_sync_data_master_flag) {
-
-                    // parse 3 bytes event data
                     parse_science_event_data(science_data_pointer+i);
                 }
             }
@@ -727,7 +704,6 @@ void parse_science_packet(unsigned char *target) {
                     // reset science_sync_master_buffer_counter
                     science_sync_master_buffer_counter = 0;
 
-                    // parse 45 bytes sync data in science_sync_master_buffer
                     parse_science_sync_data(science_sync_master_buffer);
                 }
             }
@@ -751,8 +727,6 @@ void parse_science_packet(unsigned char *target) {
 
                 // if no find sync data header and have complete sync data
                 if (have_complete_sync_data_slave_flag) {
-
-                    // parse 3 bytes event data
                     parse_science_event_data(science_data_pointer+i);
                 }
             }
@@ -777,7 +751,6 @@ void parse_science_packet(unsigned char *target) {
                     // reset science_sync_slave_buffer_counter
                     science_sync_slave_buffer_counter = 0;
 
-                    // parse 45 bytes sync data in science_sync_slave_buffer
                     parse_sync_data(science_sync_slave_buffer);
                 }
             }
@@ -785,14 +758,12 @@ void parse_science_packet(unsigned char *target) {
     }
 }
 
-// waiting
 void write_science_packet_beginning() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "science beginning: %1d; %3u\n", science_buffer->gtm_id, science_buffer->sequence_count);
     }
 }
 
-// checked~
 int is_science_sync_header(unsigned char *target) {
     unsigned char ref = 0xCA;
 
@@ -803,7 +774,6 @@ int is_science_sync_header(unsigned char *target) {
     return 0;
 }
 
-// checked~
 void parse_science_event_data(unsigned char *target) {
 
     // check event time or event adc
@@ -825,7 +795,7 @@ void parse_science_event_time(unsigned char *target) {
         // for buffer id
         memcpy(buffer_id_buffer, target, 1);
         buffer_id_buffer[0] = (buffer_id_buffer[0] << 2) >> 4; // remove bits 23 & 22 and bits 17 & 16
-        memcpy(&(science_buffer->master_event_time_buffer_id), &buffer_id_buffer[0], 1);
+        memcpy(&(science_buffer->master_event_time_buffer_id), buffer_id_buffer, 1);
 
         // for fine time counter
         memcpy(fine_time_counter_buffer, target, 3);
@@ -837,7 +807,7 @@ void parse_science_event_time(unsigned char *target) {
         // for buffer id
         memcpy(buffer_id_buffer, target, 1);
         buffer_id_buffer[0] = (buffer_id_buffer[0] << 2) >> 4; // remove bits 23 & 22 and bits 17 & 16
-        memcpy(&(science_buffer->slave_event_time_buffer_id), &buffer_id_buffer[0], 1);
+        memcpy(&(science_buffer->slave_event_time_buffer_id), buffer_id_buffer, 1);
 
         // for fine time counter
         memcpy(fine_time_counter_buffer, target, 3);
@@ -849,7 +819,6 @@ void parse_science_event_time(unsigned char *target) {
     write_science_event_time();
 }
 
-// waiting
 void write_science_event_time() {
     // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // for master
@@ -863,7 +832,6 @@ void write_science_event_time() {
         }
     }
 }
-
 
 void parse_science_event_adc(unsigned char *target) {
     unsigned char adc_buffer[3];
@@ -898,7 +866,6 @@ void parse_science_event_adc(unsigned char *target) {
     return;
 }
 
-// waiting
 void write_science_event_adc() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "event adc: \
@@ -912,20 +879,19 @@ void write_science_event_adc() {
     export_science_pipeline_output();
 }
 
-// waiting
 void export_science_pipeline_output() {
     if (export_mode == 2 || export_mode == 3) {
 
         // separate master and slave cases
         if (science_buffer->gtm_id == 0) { // master
             fprintf(science_pipeline_output_file, \
-            "%d;\
+            "%u;\
             %u;%u;%u;%u;\
             %u;%u;%u;\
             %u;%u;%u;\
             %u;%u;%u;%u;\
             %u;%d; \
-            %u;%u;%u;%u\n", \
+            %u;%u;%u;%d\n", \
             science_buffer->gtm_id, \
             science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_second, \
             science_buffer->master_sync_x, science_buffer->master_sync_y, science_buffer->master_sync_z, \
@@ -936,13 +902,13 @@ void export_science_pipeline_output() {
         }
         else { // slave
             fprintf(science_pipeline_output_file, \
-            "%d;\
+            "%u;\
             %u;%u;%u;%u;\
             %u;%u;%u;\
             %u;%u;%u;\
             %u;%u;%u;%u;\
             %u;%d; \
-            %u;%u;%u;%u\n", \
+            %u;%u;%u;%d\n", \
             science_buffer->gtm_id, \
             science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_second, \
             science_buffer->slave_sync_x, science_buffer->slave_sync_y, science_buffer->slave_sync_z, \
@@ -954,7 +920,6 @@ void export_science_pipeline_output() {
     }
 }
 
-// checked~
 int is_science_sync_tail(unsigned char *target) {
     unsigned char ref[3] = {0xF2, 0xF5, 0xFA};
 
@@ -965,15 +930,14 @@ int is_science_sync_tail(unsigned char *target) {
     return 0;
 }
 
-// checked~
 void parse_science_sync_data(unsigned char *target) {
     unsigned char *first_byte_pointer;
     
     // redefine first byte pointer base on master ot slave
-    if (science_buffer->gtm_id == 0) {
+    if (science_buffer->gtm_id == 0) { // master
         first_byte_pointer = &(science_buffer->master_sync_header);
     }
-    else {
+    else { // slave
         first_byte_pointer = &(science_buffer->slave_sync_header);
     }
 
@@ -981,32 +945,30 @@ void parse_science_sync_data(unsigned char *target) {
     memcpy(first_byte_pointer, target, 1);
 
     // gtm id
-    *(first_byte_pointer+4) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
+    *(first_byte_pointer+1) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
 
     // pps counts
     *(target+1) = *(target+1) & 0x7F; // mask gtm id
-    memcpy(first_byte_pointer+8, target+1, 2);
-    simple_big2little_endian(first_byte_pointer+8, 2);
+    memcpy(first_byte_pointer+2, target+1, 2);
+    simple_big2little_endian(first_byte_pointer+2, 2);
 
     // cmd sequence number
-    memcpy(first_byte_pointer+10, target+3, 1);
+    memcpy(first_byte_pointer+4, target+3, 1);
 
     parse_science_sync_utc(target+4, first_byte_pointer);
     parse_science_sync_attitude(target+10, first_byte_pointer);
 
     // tail
-    memcpy(first_byte_pointer+49, target+42, 3);
+    memcpy(first_byte_pointer+43, target+42, 3);
 
     write_science_sync_data();
 }
 
-// checked~
 void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
     unsigned char *first_byte_pointer_in_sync_utc;
 
-    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+11;
-    // unsigned char [1] = 4 bytes
-    // int = 4 bytes
+    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+5;
+    // unsigned char [1] = 1 byte
 
     // day of year
     memcpy(first_byte_pointer_in_sync_utc, target, 2);
@@ -1016,7 +978,7 @@ void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_poi
     memcpy(first_byte_pointer_in_sync_utc+2, target+2, 1);
 
     // minute
-    memcpy(first_byte_pointer_in_sync_utc+23, target+3, 1);
+    memcpy(first_byte_pointer_in_sync_utc+3, target+3, 1);
 
     // second
     memcpy(first_byte_pointer_in_sync_utc+4, target+4, 1);
@@ -1025,11 +987,10 @@ void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_poi
     memcpy(first_byte_pointer_in_sync_utc+5, target+5, 1);
 }
 
-// checked~
 void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
     unsigned char *first_byte_pointer_in_sync_attitude;
 
-    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+17;
+    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+11;
 
     // x, y & z position
     memcpy(first_byte_pointer_in_sync_attitude, target, 4);
@@ -1058,12 +1019,11 @@ void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byt
     simple_big2little_endian(first_byte_pointer_in_sync_attitude+30, 2);
 }
 
-// waiting
 void write_science_sync_data() {
     // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // for master
         if (export_mode == 1 || export_mode == 3) {
-            fprintf(raw_output_file, "sync beginning: %1d; %5u; %3u\n", \
+            fprintf(raw_output_file, "sync beginning: %1u; %5u; %3u\n", \
             science_buffer->master_sync_gtm_id, science_buffer->master_sync_pps_counts, science_buffer->master_sync_cmd_sequence_number);
             fprintf(raw_output_file, "sync utc: %3u; %2u; %2u; %2u; %3u\n", \
             science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_minute, science_buffer->master_sync_subsecond);
@@ -1078,7 +1038,7 @@ void write_science_sync_data() {
     }
     else { // for slave
         if (export_mode == 1 || export_mode == 3) {
-            fprintf(raw_output_file, "sync beginning: %1d; %5u; %3u\n", \
+            fprintf(raw_output_file, "sync beginning: %1u; %5u; %3u\n", \
             science_buffer->slave_sync_gtm_id, science_buffer->slave_sync_pps_counts, science_buffer->slave_sync_cmd_sequence_number);
             fprintf(raw_output_file, "sync utc: %3u; %2u; %2u; %2u; %3u\n", \
             science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_minute, science_buffer->slave_sync_subsecond);

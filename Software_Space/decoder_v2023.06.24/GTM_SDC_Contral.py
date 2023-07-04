@@ -174,7 +174,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def Sci_CheckBoxClick(self):
         if self.ui.Decode_Modes_CheckBox_Sci.isChecked():
             self.ui.Decode_Modes_CheckBox_TMTC.setChecked(False)
-            self.Decode_Modes = 1
+            self.Decode_Modes = 2
         else:
             self.Decode_Modes = 0
 
@@ -183,7 +183,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
     def TMTC_CheckBoxClick(self):
         if self.ui.Decode_Modes_CheckBox_TMTC.isChecked():
             self.ui.Decode_Modes_CheckBox_Sci.setChecked(False)
-            self.Decode_Modes = 2
+            self.Decode_Modes = 1
         else:
             self.Decode_Modes = 0
 
@@ -376,7 +376,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         self.df_sd_skip_num = 0
 
     def Initailize_Output_Files(self, Filename):
-        if (self.Decode_Modes == 1) and (self.Extract_Selection == 0):
+        if (self.Decode_Modes == 2) and (self.Extract_Selection == 0):
             if os.path.exists(Filename.replace('.bin','_science_raw.txt')):
                 os.remove(Filename.replace('.bin','_science_raw.txt'))
             if os.path.exists(Filename.replace('.bin','_science_raw_sync.csv')):
@@ -384,7 +384,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if os.path.exists(Filename.replace('.bin','_science_raw_adc_only.csv')):
                 os.remove(Filename.replace('.bin','_science_raw_adc_only.csv'))
         
-        if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+        if (self.Decode_Modes == 2) and (self.Extract_Selection == 1):
             if os.path.exists(Filename.replace('.bin','_extracted.bin')):
                 os.remove(Filename.replace('.bin','_extracted.bin'))
             if os.path.exists(Filename.replace('.bin','_extracted_science_raw.txt')):
@@ -394,7 +394,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             if os.path.exists(Filename.replace('.bin','_extracted_science_raw_adc_only.csv')):
                 os.remove(Filename.replace('.bin','_extracted_science_raw_adc_only.csv'))
 
-        if self.Decode_Modes == 2:
+        if self.Decode_Modes == 1:
             if os.path.exists(Filename.replace('.bin','_tmtc_whole_output.csv')):
                 os.remove(Filename.replace('.bin','_tmtc_whole_output.csv'))
             if os.path.exists(Filename.replace('.bin','_tmtc_master.csv')):
@@ -415,12 +415,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
         if self.Monitor_Modes == 0:
 
             # for pure TMTC and SD decoding (only need one file pointer)
-            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+            if ((self.Decode_Modes == 2) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 1):
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)
 
-                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
@@ -428,7 +428,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     continue_decode = True
                     while continue_decode:
-                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
                         print('current file pointer:', new_file_pointer)
 
                         if new_file_pointer == new_file_pointer_cache:
@@ -440,17 +440,17 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             QtTest.QTest.qWait(self.Update_Rate_ms)
             
             # for SD (with header and tail) decoding ( need two file pointers)
-            if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+            if (self.Decode_Modes == 2) and (self.Extract_Selection == 1):
                 for Input_Decoder_Filename in self.Input_Decoder_Filename:
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)
 
-                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
 
                     Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
-                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer_decode)
                     new_file_pointer_decode_cache = new_file_pointer_decode
 
@@ -458,9 +458,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     continue_decode = True
                     while continue_decode:
-                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
                         print('current file pointer:', new_file_pointer_extract)
-                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
+                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
                         print('current file pointer:', new_file_pointer_decode)
 
                         if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):
@@ -486,7 +486,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Open_PlottingWindow_TMTC()
 
             # for pure TMTC and SD decoding (only need one file pointer)
-            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+            if ((self.Decode_Modes == 2) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 1):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)
@@ -500,7 +500,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                         if self.ui.Slave_GroupBox.isChecked():
                             self.Plotting_Module_list.append('Slave')
 
-                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
@@ -520,7 +520,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     continue_decode = True
                     while continue_decode:
-                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
                         print('current file pointer:', new_file_pointer)
                         
                         if new_file_pointer == new_file_pointer_cache:
@@ -571,7 +571,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
             self.Open_PlottingWindow_SD()
 
             # for pure TMTC and SD decoding (only need one file pointer)
-            if ((self.Decode_Modes == 1) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 2):
+            if ((self.Decode_Modes == 2) and (self.Extract_Selection == 0)) or (self.Decode_Modes == 1):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)
@@ -600,7 +600,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             if self.ui.Slave_CheckBox_Sensor4.isChecked():
                                 self.Plotting_Slave_Sensor_list.append('S4')
 
-                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
 
@@ -614,7 +614,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     continue_decode = True
                     while continue_decode:
-                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
+                        new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_cache) 
                         print('current file pointer:', new_file_pointer)
 
                         if new_file_pointer == new_file_pointer_cache:
@@ -632,7 +632,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             QtWidgets.QApplication.processEvents()
             
             # for SD (with header and tail) decoding ( need two file pointers)
-            if (self.Decode_Modes == 1) and (self.Extract_Selection == 1):
+            if (self.Decode_Modes == 2) and (self.Extract_Selection == 1):
                 for file_ind, Input_Decoder_Filename in enumerate(self.Input_Decoder_Filename):
 
                     self.Initailize_Output_Files(Input_Decoder_Filename)
@@ -661,12 +661,12 @@ class MainWindow_controller(QtWidgets.QMainWindow):
                             if self.ui.Slave_CheckBox_Sensor4.isChecked():
                                 self.Plotting_Slave_Sensor_list.append('S4')
 
-                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer_extract)
                     new_file_pointer_extract_cache = new_file_pointer_extract
 
                     Input_Decoder_Filename_extracted = Input_Decoder_Filename.replace('.bin','_extracted.bin')
-                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=0) 
+                    new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
                     print('current file pointer:', new_file_pointer_decode)
                     new_file_pointer_decode_cache = new_file_pointer_decode
 
@@ -680,9 +680,9 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     continue_decode = True
                     while continue_decode:
-                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Extract_Selection, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
+                        new_file_pointer_extract = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_extract_cache) 
                         print('current file pointer:', new_file_pointer_extract)
-                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, 0, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
+                        new_file_pointer_decode = C_Decoder(Input_Decoder_Filename_extracted, self.Decode_Modes, self.Export_Modes, InitailFilePointer=new_file_pointer_decode_cache) 
                         print('current file pointer:', new_file_pointer_decode)
 
                         if (new_file_pointer_extract == new_file_pointer_extract_cache) and (new_file_pointer_decode == new_file_pointer_decode_cache):

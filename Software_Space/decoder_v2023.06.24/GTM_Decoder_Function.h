@@ -69,10 +69,10 @@ typedef struct TMTC {
     uint8_t       gtm_id_in_pps_counter; // 0 = master; 1 = slave
     uint16_t      pps_counter;
     unsigned char fine_time_counter[3];
-    int8_t        board_temp_1;
-    int8_t        board_temp_2;
-    unsigned char citiroc_1_temp[2];
-    unsigned char citiroc_2_temp[2];
+    int8_t        board_temp_1; // sign
+    int8_t        board_temp_2; // sign
+    unsigned char citiroc_1_temp[2]; // sign
+    unsigned char citiroc_2_temp[2]; // sign
     unsigned char citiroc_1_livetime_busy[3];
     unsigned char citiroc_2_livetime_busy[3];
     uint8_t       citiroc_1_hit_counter[32];
@@ -95,11 +95,11 @@ typedef struct TMTC {
     uint8_t       input_i;
     uint8_t       input_v;
     uint8_t       input_i_v;
-    int8_t        i_monitor_u22_temp;
+    int8_t        i_monitor_u22_temp; // sign
     uint8_t       hv_input_i;
     uint8_t       hv_input_v;
     uint8_t       hv_input_i_v;
-    int8_t        i_monitor_u21_temp;
+    int8_t        i_monitor_u21_temp; // sign
 
     uint8_t       cmd_recv_checksum;
     uint8_t       cmd_calc_checksum;
@@ -116,8 +116,9 @@ typedef struct TMTC {
 
 typedef struct Science {
 
-    // gtm id and sequence count following head
+    // info. following head
     uint8_t gtm_id; // 0x55 = master = 0; 0xAA = slave = 1
+    uint8_t previous_crc8;
     uint8_t sequence_count;
     
     /// sync_data ///
@@ -187,7 +188,7 @@ typedef struct Science {
     uint8_t       event_adc_citiroc_id; // 0 = A = 1; 1 = B = 2
     uint8_t       event_adc_channel_id;
     uint8_t       event_adc_gain; // 0 = low; 1 = high
-    int16_t       event_adc_adc_value;
+    int16_t       event_adc_adc_value; // sign
 
     /// event_adc_data_end ///
 

@@ -9,7 +9,7 @@ Created on Mon Jul  4 20:45:06 2022
 import platform
 from ctypes import *
 
-def C_Decoder(FileName, DecodeMode, ExtractOnOff, ExportMode, InitailFilePointer):
+def C_Decoder(FileName, DecodeMode, ExportMode, InitailFilePointer):
     if platform.system() == 'Darwin': # MacOS
         so_file = "./GTM_Decoder_Main.dylib"
     elif platform.system() == 'Linux': # Linux
@@ -25,7 +25,6 @@ def C_Decoder(FileName, DecodeMode, ExtractOnOff, ExportMode, InitailFilePointer
     new_file_pointer = c_function.decoder(
         c_char_p(bytes(FileName, 'utf-8')),
         c_int(DecodeMode),
-        c_int(ExtractOnOff), 
         c_int(ExportMode),
         c_int(InitailFilePointer)
     )
