@@ -20,13 +20,13 @@ int export_mode = 0;
 
 // for input binary
 size_t max_input_binary_buffer_size = 1174405120; // 1 GB
-unsigned char *input_binary_buffer  = NULL; // tmtc and science shared
+unsigned char *input_binary_buffer; // tmtc and science shared
 
 /// create_basic_buffer_end ///
 
 /// open_all_file ///
 
-FILE *input_binary_file = NULL;
+FILE *input_binary_file;
 
 /// open_all_file_end ///
 
@@ -39,17 +39,17 @@ FILE *input_binary_file = NULL;
 /// create_basic_buffer ///
 
 // for typedef struct
-TMTC *tmtc_buffer       = NULL;
-Science *science_buffer = NULL;
+TMTC *tmtc_buffer;
+Science *science_buffer;
 
 /// create_basic_buffer_end ///
 
 /// open_all_file ///
 
-FILE *raw_output_file              = NULL; // tmtc and science shared
-FILE *tmtc_master_output_file      = NULL;
-FILE *tmtc_slave_output_file       = NULL;
-FILE *science_pipeline_output_file = NULL;
+FILE *raw_output_file; // tmtc and science shared
+FILE *tmtc_master_output_file;
+FILE *tmtc_slave_output_file;
+FILE *science_pipeline_output_file;
 
 char tmtc_csv_column_name_all[] = "Pre-Byte 0;Pre-Byte 1;Pre-Byte 2;Pre-Byte 3;Pre-Byte 4;Pre-Byte 5;Pre-Byte 6;Pre-Byte 7;Pre-Byte 8;Pre-Byte 9;Pre-Byte 10;Pre-Byte 11;Pre-Byte 12;Pre-Byte 13;Pre-Byte 14;Pre-Byte 15;Byte 0;Byte 1;Byte 2;Byte 3;Byte 4;Byte 5;Byte 6;Byte 7;Byte 8;Byte 9;Byte 10;Byte 11;Byte 12;Byte 13;Byte 14;Byte 15;Byte 16;Byte 17;Byte 18;Byte 19;Byte 20;Byte 21;Byte 22;Byte 23;Byte 24;Byte 25;Byte 26;Byte 27;Byte 28;Byte 29;Byte 30;Byte 31;Byte 32;Byte 33;Byte 34;Byte 35;Byte 36;Byte 37;Byte 38;Byte 39;Byte 40;Byte 41;Byte 42;Byte 43;Byte 44;Byte 45;Byte 46;Byte 47;Byte 48;Byte 49;Byte 50;Byte 51;Byte 52;Byte 53;Byte 54;Byte 55;Byte 56;Byte 57;Byte 58;Byte 59;Byte 60;Byte 61;Byte 62;Byte 63;Byte 64;Byte 65;Byte 66;Byte 67;Byte 68;Byte 69;Byte 70;Byte 71;Byte 72;Byte 73;Byte 74;Byte 75;Byte 76;Byte 77;Byte 78;Byte 79;Byte 80;Byte 81;Byte 82;Byte 83;Byte 84;Byte 85;Byte 86;Byte 87;Byte 88;Byte 89;Byte 90;Byte 91;Byte 92;Byte 93;Byte 94;Byte 95;Byte 96;Byte 97;Byte 98;Byte 99;Byte 100;Byte 101;Byte 102;Byte 103;Byte 104;Byte 105;Byte 106;Byte 107;Byte 108;Byte 109;Byte 110;Byte 111;Byte 112;Byte 113;Byte 114;Byte 115;Byte 116;Byte 117;Byte 118;Byte 119;Byte 120;Byte 121;Byte 122;Byte 123;Byte 124;Byte 125;Byte 126;Byte 127\n";
 char tmtc_csv_column_name_master[] = "Source Sequence Count;GICD Year;GICD Day;GICD Hour;GICD Minute;GICD Second;GICD Subsecond;Header;GTM ID;Packet Counter;Data Length (MSB);Data Length;ICD Year;ICD Day;ICD Hour;ICD Minute;ICD Second;ICD Subsecond;GTM ID in Lastest PPS Counter;Lastest PPS Counter;Lastest Fine Time Counter Value Between 2 PPSs;Board Temperature#1;Board Temperature#2;CITIROC1 Temperature;CITIROC2 Temperature;CITIROC1 Live Time (Busy);CITIROC2 Live Time (Busy);CITIROC1 Hit Counter#0;CITIROC1 Hit Counter#1;CITIROC1 Hit Counter#2;CITIROC1 Hit Counter#3;CITIROC1 Hit Counter#4;CITIROC1 Hit Counter#5;CITIROC1 Hit Counter#6;CITIROC1 Hit Counter#7;CITIROC1 Hit Counter#8;CITIROC1 Hit Counter#9;CITIROC1 Hit Counter#10;CITIROC1 Hit Counter#11;CITIROC1 Hit Counter#12;CITIROC1 Hit Counter#13;CITIROC1 Hit Counter#14;CITIROC1 Hit Counter#15;CITIROC1 Hit Counter#16;CITIROC1 Hit Counter#17;CITIROC1 Hit Counter#18;CITIROC1 Hit Counter#19;CITIROC1 Hit Counter#20;CITIROC1 Hit Counter#21;CITIROC1 Hit Counter#22;CITIROC1 Hit Counter#23;CITIROC1 Hit Counter#24;CITIROC1 Hit Counter#25;CITIROC1 Hit Counter#26;CITIROC1 Hit Counter#27;CITIROC1 Hit Counter#28;CITIROC1 Hit Counter#29;CITIROC1 Hit Counter#30;CITIROC1 Hit Counter#31;CITIROC2 Hit Counter#0;CITIROC2 Hit Counter#1;CITIROC2 Hit Counter#2;CITIROC2 Hit Counter#3;CITIROC2 Hit Counter#4;CITIROC2 Hit Counter#5;CITIROC2 Hit Counter#6;CITIROC2 Hit Counter#7;CITIROC2 Hit Counter#8;CITIROC2 Hit Counter#9;CITIROC2 Hit Counter#10;CITIROC2 Hit Counter#11;CITIROC2 Hit Counter#12;CITIROC2 Hit Counter#13;CITIROC2 Hit Counter#14;CITIROC2 Hit Counter#15;CITIROC2 Hit Counter#16;CITIROC2 Hit Counter#17;CITIROC2 Hit Counter#18;CITIROC2 Hit Counter#19;CITIROC2 Hit Counter#20;CITIROC2 Hit Counter#21;CITIROC2 Hit Counter#22;CITIROC2 Hit Counter#23;CITIROC2 Hit Counter#24;CITIROC2 Hit Counter#25;CITIROC2 Hit Counter#26;CITIROC2 Hit Counter#27;CITIROC2 Hit Counter#28;CITIROC2 Hit Counter#29;CITIROC2 Hit Counter#30;CITIROC2 Hit Counter#31;CITIROC1 Trigger Counter;CITIROC2 Trigger Counter;Counter Period Setting;HV DAC1;HV DAC2;SPW#A Error Count;SPW#A Last Recv Byte;SPW#B Error Count;SPW#B Last Recv Byte;SPW#A Status;SPW#B Status;Recv Checksum of Last CMD;Calc Checksum of Last CMD;Number of Recv CMDs;Bytes 114;Bytes 115;Bytes 116;Bytes 117;Bytes 118;CITIROC1 Live Time (Buffer+Busy);CITIROC2 Live Time (Buffer+Busy);Checksum;Tail\n";
@@ -60,15 +60,16 @@ char science_csv_pipeline_column_name[] = "GTM ID;Day of Year;Hour;Minute;Second
 
 /// parse_science_packet ///
 
-unsigned char *science_sync_master_buffer = NULL;
-int science_sync_master_buffer_counter    = 0;
-unsigned char *science_sync_slave_buffer  = NULL;
-int science_sync_slave_buffer_counter     = 0;
+unsigned char *science_sync_master_buffer;
+int science_sync_master_buffer_counter;
+unsigned char *science_sync_slave_buffer;
+int science_sync_slave_buffer_counter;
 
-int stop_find_sync_data_header_master_flag = 0; // 0 = don't stop; 1 = stop
-int stop_find_sync_data_header_slave_flag  = 0;
-int have_complete_sync_data_master_flag = 0; // 0 = have not; 1 = have
-int have_complete_sync_data_slave_flag  = 0;
+int stop_find_sync_data_header_master_flag; // 0 = don't stop; 1 = stop
+int stop_find_sync_data_header_slave_flag;
+
+int have_complete_sync_data_master_flag; // 0 = have not; 1 = have
+int have_complete_sync_data_slave_flag;
 
 /// parse_science_packet_end ///
 
@@ -118,12 +119,11 @@ void log_error(const char *sentence, ...) {
 }
 
 void initailize_sync_data_flag() { // for continuously decode
-    int sync_data_buffer_master_counter = 0;
-    int sync_data_buffer_slave_counter  = 0;
-
-    int have_complete_sync_data_master_flag = 0; // 0 = have not; 1 = have
+    int sync_data_buffer_master_counter     = 0;
+    int sync_data_buffer_slave_counter      = 0;
+    int have_complete_sync_data_master_flag = 0;
     int have_complete_sync_data_slave_flag  = 0;
-    int sync_data_truncation_master_flag    = 0; // 0 = without truncation; 1 = without truncation
+    int sync_data_truncation_master_flag    = 0;
     int sync_data_truncation_slave_flag     = 0;
 }
 
@@ -199,8 +199,10 @@ void open_all_file(char *input_file_path) {
 
                 science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
                 science_pipeline_output_file = fopen(science_pipeline_output_path, "a");
+                log_message("ftell(science_pipeline_output_file) == %d", ftell(science_pipeline_output_file));
                 if (ftell(science_pipeline_output_file) == 0) {
                     fputs(science_csv_pipeline_column_name, science_pipeline_output_file);
+                    log_message("check 4");
                 }
                 free(science_pipeline_output_path);
             }
