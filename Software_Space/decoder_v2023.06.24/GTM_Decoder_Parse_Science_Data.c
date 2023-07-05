@@ -77,6 +77,15 @@ int parse_science_data(int input_file_pointer, char *input_file_path) {
     // destroy input_binary_buffer independently
     free(input_binary_buffer);
 
+    // // check science_icd_binary_buffer by save as file
+    // science_extract_output_path = str_append(input_file_path, "_extracted.bin");
+    // science_extract_output_file = fopen(science_extract_output_path, "ab");
+    // for (size_t i = 0; i < science_icd_binary_buffer_size; i++) {
+    //     fprintf(science_extract_output_file, "%c", science_icd_binary_buffer[i]);
+    // }
+    // free(science_extract_output_path);
+    // fclose(science_extract_output_file);
+
     /// step_3_parse_data ///
 
     // dynamic memory allocation for scienc_1110_byte_buffer
@@ -99,6 +108,8 @@ int parse_science_data(int input_file_pointer, char *input_file_path) {
         // parse science data (all 1110 bytes data are loaded into science_1110_byte_buffer_counter)
         if (science_1110_byte_buffer_counter == SCIENCE_HEADER_SIZE+SCIENCE_DATA_SIZE) {
 
+            log_message("check 1");
+
             // if all data is healthy, parse it out
             parse_science_packet(scienc_1110_byte_buffer);
 
@@ -111,15 +122,6 @@ int parse_science_data(int input_file_pointer, char *input_file_path) {
     free(scienc_1110_byte_buffer);
 
     /// step_3_parse_data_end ///
-
-    // check science_icd_binary_buffer by save as file
-    science_extract_output_path = str_append(input_file_path, "_extracted.bin");
-    science_extract_output_file = fopen(science_extract_output_path, "ab");
-    for (size_t i = 0; i < science_icd_binary_buffer_size; i++) {
-        fprintf(science_extract_output_file, "%c", science_icd_binary_buffer[i]);
-    }
-    free(science_extract_output_path);
-    fclose(science_extract_output_file);
 
     // destroy science_icd_binary_buffer independently
     free(science_icd_binary_buffer);
