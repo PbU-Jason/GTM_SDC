@@ -574,7 +574,7 @@ void write_tmtc_buffer_master_or_slave() {
         hv_input_v = ( ((tmtc_buffer->hv_input_v >> 4) << 8) | ((tmtc_buffer->hv_input_v << 4) | (tmtc_buffer->hv_input_i_v & 0x0F)) );
     }
 
-    // fromTASA
+    // from TASA
     fprintf(output_file, \
     "%u;%u;%u;%u;%u;%u;%u", \
     tmtc_buffer->source_sequence_count, tmtc_buffer->gicd_year, tmtc_buffer->gicd_day_of_year, tmtc_buffer->gicd_hour, tmtc_buffer->gicd_minute, tmtc_buffer->gicd_second, tmtc_buffer->gicd_subsecond);
@@ -703,18 +703,14 @@ void parse_science_packet(unsigned char *target) {
                 // all 45 bytes have been stored in science_sync_master_buffer
                 if (science_sync_master_buffer_counter == 45) {
 
-                    unsigned char byte_buffer[1];
-                    for (size_t j = 0; j < 45; j++) {
-                        memcpy(byte_buffer, science_sync_master_buffer+j, 1);
-                        printf("%X;", byte_buffer[0]);
-                        if (j == 44) {
-                            printf("\n");
-                        }
-                    }
-
                     // check sync data tail
                     if (!is_science_sync_tail(science_sync_master_buffer+42)) {
-                        log_error("Please check sync header defined in ICD!");
+                        // log_error("Please check sync header defined in ICD!");
+
+                        // recover 45 bytes in science_sync_master_buffer
+                        for (size_t j = 0; j < 45/3; j++) {
+                            parse_science_event_data(science_sync_master_buffer+(j*3));
+                        }
                     }
 
                     // look for sync data header and have complete sync data
@@ -761,7 +757,12 @@ void parse_science_packet(unsigned char *target) {
 
                     // check sync data tail
                     if (!is_science_sync_tail(science_sync_slave_buffer+42)) {
-                        log_error("Please check sync header defined in ICD!");
+                        // log_error("Please check sync header defined in ICD!");
+
+                        // recover 45 bytes in science_sync_slave_buffer
+                        for (size_t j = 0; j < 45/3; j++) {
+                            parse_science_event_data(science_sync_slave_buffer+(j*3));
+                        }
                     }
 
                     // look for sync data header and have complete sync data
@@ -797,12 +798,15 @@ int is_science_sync_header(unsigned char *target) {
 void parse_science_event_data(unsigned char *target) {
 
     // check event time or event adc
-    if ((*target & 0x80) == 0x80) { // event time case
+    if ((*target & 0xC0) == 0x80) { // event time case
         parse_science_event_time(target);
     }
-    else { // event adc case
+    else if ((*target & 0xC0) == 0x40) { // event adc case
         parse_science_event_adc(target);
     } 
+    else { // weird 3 bytes
+        fprintf(raw_output_file, "unknow 3 bytes: %1u\n", science_buffer->gtm_id);
+    }
 }
 
 void parse_science_event_time(unsigned char *target) {
@@ -904,36 +908,40 @@ void export_science_pipeline_output() {
 
         // separate master and slave cases
         if (science_buffer->gtm_id == 0) { // master
+            fprintf(science_pipeline_output_file, "%u", science_buffer->gtm_id);
+
             fprintf(science_pipeline_output_file, \
-            "%u; \
-            %u;%u;%u;%u; \
-            %u;%u;%u; \
-            %u;%u;%u; \
-            %u;%u;%u;%u; \
-            %u;%d; \
-            %u;%u;%u;%d\n", \
-            science_buffer->gtm_id, \
-            science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_second, \
+            ";%u;%u;%u;%u;%u \
+            ;%u;%u;%u \
+            ;%u;%u;%u \
+            ;%u;%u;%u;%u", \
+            science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_second, \
             science_buffer->master_sync_x, science_buffer->master_sync_y, science_buffer->master_sync_z, \
             science_buffer->master_sync_v_x, science_buffer->master_sync_v_y, science_buffer->master_sync_v_z, \
-            science_buffer->master_sync_quaternion_1, science_buffer->master_sync_quaternion_2, science_buffer->master_sync_quaternion_3, science_buffer->master_sync_quaternion_4, \
+            science_buffer->master_sync_quaternion_1, science_buffer->master_sync_quaternion_2, science_buffer->master_sync_quaternion_3, science_buffer->master_sync_quaternion_4);
+
+            fprintf(science_pipeline_output_file, \
+            ";%u;%d \
+            ;%u;%u;%u;%d\n", \
             science_buffer->master_sync_pps_counts, science_buffer->master_event_time_fine_time_counter, \
             science_buffer->event_adc_citiroc_id, science_buffer->event_adc_channel_id, science_buffer->event_adc_gain, science_buffer->event_adc_adc_value);
         }
         else { // slave
+            fprintf(science_pipeline_output_file, "%u", science_buffer->gtm_id);
+
             fprintf(science_pipeline_output_file, \
-            "%u; \
-            %u;%u;%u;%u; \
-            %u;%u;%u; \
-            %u;%u;%u; \
-            %u;%u;%u;%u; \
-            %u;%d; \
-            %u;%u;%u;%d\n", \
-            science_buffer->gtm_id, \
-            science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_second, \
+            ";%u;%u;%u;%u;%u \
+            ;%u;%u;%u \
+            ;%u;%u;%u \
+            ;%u;%u;%u;%u", \
+            science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_second, \
             science_buffer->slave_sync_x, science_buffer->slave_sync_y, science_buffer->slave_sync_z, \
             science_buffer->slave_sync_v_x, science_buffer->slave_sync_v_y, science_buffer->slave_sync_v_z, \
-            science_buffer->slave_sync_quaternion_1, science_buffer->slave_sync_quaternion_2, science_buffer->slave_sync_quaternion_3, science_buffer->slave_sync_quaternion_4, \
+            science_buffer->slave_sync_quaternion_1, science_buffer->slave_sync_quaternion_2, science_buffer->slave_sync_quaternion_3, science_buffer->slave_sync_quaternion_4);
+
+            fprintf(science_pipeline_output_file, \
+            ";%u;%d \
+            ;%u;%u;%u;%d\n", \
             science_buffer->slave_sync_pps_counts, science_buffer->slave_event_time_fine_time_counter, \
             science_buffer->event_adc_citiroc_id, science_buffer->event_adc_channel_id, science_buffer->event_adc_gain, science_buffer->event_adc_adc_value);
         }
@@ -1040,6 +1048,7 @@ void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byt
 }
 
 void write_science_sync_data() {
+
     // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // for master
         if (export_mode == 1 || export_mode == 3) {
@@ -1060,7 +1069,7 @@ void write_science_sync_data() {
     }
     else { // for slave
         if (export_mode == 1 || export_mode == 3) {
-            fprintf(raw_output_file, "sync beginning: %1u; %5u; %3u\n", \
+            fprintf(raw_output_file, "sync: %1u; %5u; %3u\n", \
             science_buffer->slave_sync_gtm_id, science_buffer->slave_sync_pps_counts, science_buffer->slave_sync_cmd_sequence_number);
 
             fprintf(raw_output_file, "sync utc: %3u; %2u; %2u; %2u; %3u\n", \

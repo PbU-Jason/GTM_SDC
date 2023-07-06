@@ -108,8 +108,6 @@ int parse_science_data(int input_file_pointer, char *input_file_path) {
         // parse science data (all 1110 bytes data are loaded into science_1110_byte_buffer_counter)
         if (science_1110_byte_buffer_counter == SCIENCE_HEADER_SIZE+SCIENCE_DATA_SIZE) {
 
-            log_message("check 1");
-
             // if all data is healthy, parse it out
             parse_science_packet(scienc_1110_byte_buffer);
 

@@ -420,9 +420,7 @@ class MainWindow_controller(QtWidgets.QMainWindow):
 
                     # self.Initailize_Output_Files(Input_Decoder_Filename)
 
-                    print('in here')
                     new_file_pointer = C_Decoder(Input_Decoder_Filename, self.Decode_Modes, self.Export_Modes, InitailFilePointer=0) 
-                    print('out here')
 
                     print('current file pointer:', new_file_pointer)
                     new_file_pointer_cache = new_file_pointer
