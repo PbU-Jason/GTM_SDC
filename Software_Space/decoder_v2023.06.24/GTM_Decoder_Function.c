@@ -187,6 +187,17 @@ void open_all_file(char *input_file_path) {
             if (export_mode == 1) {
                 raw_output_path = str_append(input_file_path, "_science_raw.txt");
                 raw_output_file = fopen(raw_output_path, "a");
+                if (ftell(raw_output_file) == 0) {
+                    fprintf(raw_output_file, "================================================================================\n");
+                    fprintf(raw_output_file, "packet: gtm_id; previous_crc8; sequence_count\n");
+                    fprintf(raw_output_file, "sync         : gtm_id; pps_counts; cmd_sequence_number\n");
+                    fprintf(raw_output_file, "sync      utc: day_of_year; hour; minute; second; subsecond\n");
+                    fprintf(raw_output_file, "sync attitude: x; y; z; v_x; v_y; v_z; q_1; q_2; q_3; q_4\n");
+                    fprintf(raw_output_file, "event time: buffer_id; fine_time_counter\n");
+                    fprintf(raw_output_file, "event  adc: hit_flag; gtm_id; citiroc_id; channel_id; gain; adc_value\n");
+                    fprintf(raw_output_file, "unknow 3 bytes: gtm_id\n");
+                    fprintf(raw_output_file, "================================================================================\n");
+                }
                 free(raw_output_path);
             }
             else if (export_mode == 2) {
@@ -200,6 +211,17 @@ void open_all_file(char *input_file_path) {
             else if (export_mode == 3) {
                 raw_output_path = str_append(input_file_path, "_science_raw.txt");
                 raw_output_file = fopen(raw_output_path, "a");
+                if (ftell(raw_output_file) == 0) {
+                    fprintf(raw_output_file, "================================================================================\n");
+                    fprintf(raw_output_file, "packet: gtm_id; previous_crc8; sequence_count\n");
+                    fprintf(raw_output_file, "sync         : gtm_id; pps_counts; cmd_sequence_number\n");
+                    fprintf(raw_output_file, "sync      utc: day_of_year; hour; minute; second; subsecond\n");
+                    fprintf(raw_output_file, "sync attitude: x; y; z; v_x; v_y; v_z; q_1; q_2; q_3; q_4\n");
+                    fprintf(raw_output_file, "event time: buffer_id; fine_time_counter\n");
+                    fprintf(raw_output_file, "event  adc: hit_flag; gtm_id; citiroc_id; channel_id; gain; adc_value\n");
+                    fprintf(raw_output_file, "unknow 3 bytes: gtm_id\n");
+                    fprintf(raw_output_file, "================================================================================\n");
+                }
                 free(raw_output_path);
 
                 science_pipeline_output_path = str_append(input_file_path, "_science_pipeline.csv");
@@ -708,23 +730,32 @@ void parse_science_packet(unsigned char *target) {
                 if (science_sync_master_buffer_counter == 45) {
 
                     // check sync data tail
-                    if (!is_science_sync_tail(science_sync_master_buffer+42)) {
+                    if (!is_science_sync_tail(science_sync_master_buffer+42)) { // is not sync tail
                         // log_error("Please check sync header defined in ICD!");
 
                         // recover 45 bytes in science_sync_master_buffer
                         for (size_t j = 0; j < 45/3; j++) {
                             parse_science_event_data(science_sync_master_buffer+(j*3));
                         }
+
+                        // look for sync data header and have complete sync data
+                        stop_find_sync_data_header_master_flag = 0;
+                        have_complete_sync_data_master_flag = 1;
+
+                        // reset science_sync_master_buffer_counter
+                        science_sync_master_buffer_counter = 0;
                     }
+                    else { // is sync tail
 
-                    // look for sync data header and have complete sync data
-                    stop_find_sync_data_header_master_flag = 0;
-                    have_complete_sync_data_master_flag = 1;
+                        // look for sync data header and have complete sync data
+                        stop_find_sync_data_header_master_flag = 0;
+                        have_complete_sync_data_master_flag = 1;
 
-                    // reset science_sync_master_buffer_counter
-                    science_sync_master_buffer_counter = 0;
+                        // reset science_sync_master_buffer_counter
+                        science_sync_master_buffer_counter = 0;
 
-                    parse_science_sync_data(science_sync_master_buffer);
+                        parse_science_sync_data(science_sync_master_buffer);
+                    }
                 }
             }
         }
@@ -760,23 +791,32 @@ void parse_science_packet(unsigned char *target) {
                 if (science_sync_slave_buffer_counter == 45) {
 
                     // check sync data tail
-                    if (!is_science_sync_tail(science_sync_slave_buffer+42)) {
+                    if (!is_science_sync_tail(science_sync_slave_buffer+42)) { // is not sync tail
                         // log_error("Please check sync header defined in ICD!");
 
                         // recover 45 bytes in science_sync_slave_buffer
                         for (size_t j = 0; j < 45/3; j++) {
                             parse_science_event_data(science_sync_slave_buffer+(j*3));
                         }
+
+                        // look for sync data header and have complete sync data
+                        stop_find_sync_data_header_slave_flag = 0;
+                        have_complete_sync_data_slave_flag = 1;
+
+                        // reset science_sync_slave_buffer_counter
+                        science_sync_slave_buffer_counter = 0;
                     }
+                    else { // is sync tail
 
-                    // look for sync data header and have complete sync data
-                    stop_find_sync_data_header_slave_flag = 0;
-                    have_complete_sync_data_slave_flag = 1;
+                        // look for sync data header and have complete sync data
+                        stop_find_sync_data_header_slave_flag = 0;
+                        have_complete_sync_data_slave_flag = 1;
 
-                    // reset science_sync_slave_buffer_counter
-                    science_sync_slave_buffer_counter = 0;
+                        // reset science_sync_slave_buffer_counter
+                        science_sync_slave_buffer_counter = 0;
 
-                    parse_science_sync_data(science_sync_slave_buffer);
+                        parse_science_sync_data(science_sync_slave_buffer);
+                    }
                 }
             }
         }
@@ -852,6 +892,7 @@ void parse_science_event_time(unsigned char *target) {
 }
 
 void write_science_event_time() {
+
     // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // for master
         if (export_mode == 1 || export_mode == 3) {
@@ -900,7 +941,7 @@ void parse_science_event_adc(unsigned char *target) {
 
 void write_science_event_adc() {
     if (export_mode == 1 || export_mode == 3) {
-        fprintf(raw_output_file, "event adc: ");
+        fprintf(raw_output_file, "event  adc: ");
         fprintf(raw_output_file, "%1u; %1u; %1u;", \
         science_buffer->event_adc_hit_flag, science_buffer->event_adc_gtm_id, science_buffer->event_adc_citiroc_id);
         fprintf(raw_output_file, "%2u; %1u; %6d\n", \
@@ -921,7 +962,7 @@ void export_science_pipeline_output() {
             //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
             ";%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u", \
-            science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_second, \
+            science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_subsecond, \
             science_buffer->master_sync_x, science_buffer->master_sync_y, science_buffer->master_sync_z, \
             science_buffer->master_sync_v_x, science_buffer->master_sync_v_y, science_buffer->master_sync_v_z, \
             science_buffer->master_sync_quaternion_1, science_buffer->master_sync_quaternion_2, science_buffer->master_sync_quaternion_3, science_buffer->master_sync_quaternion_4);
@@ -938,7 +979,7 @@ void export_science_pipeline_output() {
             //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
             ";%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u", \
-            science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_second, \
+            science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_subsecond, \
             science_buffer->slave_sync_x, science_buffer->slave_sync_y, science_buffer->slave_sync_z, \
             science_buffer->slave_sync_v_x, science_buffer->slave_sync_v_y, science_buffer->slave_sync_v_z, \
             science_buffer->slave_sync_quaternion_1, science_buffer->slave_sync_quaternion_2, science_buffer->slave_sync_quaternion_3, science_buffer->slave_sync_quaternion_4);
@@ -963,92 +1004,160 @@ int is_science_sync_tail(unsigned char *target) {
 }
 
 void parse_science_sync_data(unsigned char *target) {
-    unsigned char *first_byte_pointer;
+    // due to automatic padding in structure alignment
+    // it's not good to use relative position to find address
     
-    // redefine first byte pointer base on master ot slave
+    // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // master
-        first_byte_pointer = (unsigned char *)&(science_buffer->master_sync_header);
+
+        // header
+        memcpy(science_buffer->master_sync_header, target, 1);
+
+        // gtm id
+        science_buffer->master_sync_gtm_id = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
+
+        // pps counts
+        *(target+1) = *(target+1) & 0x7F; // mask gtm id
+        memcpy(&(science_buffer->master_sync_pps_counts), target+1, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_pps_counts), 2);
+
+        // cmd sequence number
+        memcpy(&(science_buffer->master_sync_cmd_sequence_number), target+3, 1);
+
+        parse_science_sync_utc(target+4);
+        parse_science_sync_attitude(target+10);
+
+        // tail
+        memcpy(&(science_buffer->master_sync_tail), target+42, 3);
+
+        write_science_sync_data();
     }
     else { // slave
-        first_byte_pointer = (unsigned char *)&(science_buffer->slave_sync_header);
+
+        // header
+        memcpy(science_buffer->slave_sync_header, target, 1);
+
+        // gtm id
+        science_buffer->slave_sync_gtm_id = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
+
+        // pps counts
+        *(target+1) = *(target+1) & 0x7F; // mask gtm id
+        memcpy(&(science_buffer->slave_sync_pps_counts), target+1, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_pps_counts), 2);
+
+        // cmd sequence number
+        memcpy(&(science_buffer->slave_sync_cmd_sequence_number), target+3, 1);
+
+        parse_science_sync_utc(target+4);
+        parse_science_sync_attitude(target+10);
+
+        // tail
+        memcpy(&(science_buffer->slave_sync_tail), target+42, 3);
+
+        write_science_sync_data();
     }
-
-    // header
-    memcpy(first_byte_pointer, target, 1);
-
-    // gtm id
-    *(first_byte_pointer+1) = ((*(target+1) & 0x80) == 0x80) ? 1 : 0; // 0 = master; 1 = slave
-
-    // pps counts
-    *(target+1) = *(target+1) & 0x7F; // mask gtm id
-    memcpy(first_byte_pointer+2, target+1, 2);
-    simple_big2little_endian(first_byte_pointer+2, 2);
-
-    // cmd sequence number
-    memcpy(first_byte_pointer+4, target+3, 1);
-
-    parse_science_sync_utc(target+4, first_byte_pointer);
-    parse_science_sync_attitude(target+10, first_byte_pointer);
-
-    // tail
-    memcpy(first_byte_pointer+43, target+42, 3);
-
-    write_science_sync_data();
 }
 
-void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
-    unsigned char *first_byte_pointer_in_sync_utc;
+void parse_science_sync_utc(unsigned char *target) {
 
-    first_byte_pointer_in_sync_utc = first_byte_pointer_in_sync_data+5;
-    // unsigned char [1] = 1 byte
+    // separate master and slave cases
+    if (science_buffer->gtm_id == 0) { // master
 
-    // day of year
-    memcpy(first_byte_pointer_in_sync_utc, target, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_utc, 2);
+        // day of year
+        memcpy(&(science_buffer->master_sync_day_of_year), target, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_day_of_year), 2);
 
-    // hour
-    memcpy(first_byte_pointer_in_sync_utc+2, target+2, 1);
+        // hour
+        memcpy(&(science_buffer->master_sync_hour), target+2, 1);
 
-    // minute
-    memcpy(first_byte_pointer_in_sync_utc+3, target+3, 1);
+        // minute
+        memcpy(&(science_buffer->master_sync_minute), target+3, 1);
 
-    // second
-    memcpy(first_byte_pointer_in_sync_utc+4, target+4, 1);
+        // second
+        memcpy(&(science_buffer->master_sync_second), target+4, 1);
 
-    // subsecond
-    memcpy(first_byte_pointer_in_sync_utc+5, target+5, 1);
+        // subsecond
+        memcpy(&(science_buffer->master_sync_subsecond), target+5, 1);
+    }
+    else { // slave
+
+        // day of year
+        memcpy(&(science_buffer->slave_sync_day_of_year), target, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_day_of_year), 2);
+
+        // hour
+        memcpy(&(science_buffer->slave_sync_hour), target+2, 1);
+
+        // minute
+        memcpy(&(science_buffer->slave_sync_minute), target+3, 1);
+
+        // second
+        memcpy(&(science_buffer->slave_sync_second), target+4, 1);
+
+        // subsecond
+        memcpy(&(science_buffer->slave_sync_subsecond), target+5, 1);
+    }
 }
 
-void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data) {
-    unsigned char *first_byte_pointer_in_sync_attitude;
+void parse_science_sync_attitude(unsigned char *target) {
 
-    first_byte_pointer_in_sync_attitude = first_byte_pointer_in_sync_data+11;
+    // separate master and slave cases
+    if (science_buffer->gtm_id == 0) { // master
 
-    // x, y & z position
-    memcpy(first_byte_pointer_in_sync_attitude, target, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+4, target+4, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+4, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+8, target+8, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+8, 4);
+        // x, y & z position
+        memcpy(&(science_buffer->master_sync_x), target, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_x), 4);
+        memcpy(&(science_buffer->master_sync_y), target+4, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_y), 4);
+        memcpy(&(science_buffer->master_sync_z), target+8, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_z), 4);
 
-    // x, y & z velocity
-    memcpy(first_byte_pointer_in_sync_attitude+12, target+12, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+12, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+16, target+16, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+16, 4);
-    memcpy(first_byte_pointer_in_sync_attitude+20, target+20, 4);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+20, 4);
+        // x, y & z velocity
+        memcpy(&(science_buffer->master_sync_v_x), target+12, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_v_x), 4);
+        memcpy(&(science_buffer->master_sync_v_y), target+16, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_v_y), 4);
+        memcpy(&(science_buffer->master_sync_v_z), target+20, 4);
+        simple_big2little_endian(&(science_buffer->master_sync_v_z), 4);
 
-    // quaternion
-    memcpy(first_byte_pointer_in_sync_attitude+24, target+24, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+24, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+26, target+26, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+6, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+28, target+28, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+28, 2);
-    memcpy(first_byte_pointer_in_sync_attitude+30, target+30, 2);
-    simple_big2little_endian(first_byte_pointer_in_sync_attitude+30, 2);
+        // quaternion
+        memcpy(&(science_buffer->master_sync_quaternion_1), target+24, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_quaternion_1), 2);
+        memcpy(&(science_buffer->master_sync_quaternion_2), target+26, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_quaternion_2), 2);
+        memcpy(&(science_buffer->master_sync_quaternion_3), target+28, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_quaternion_3), 2);
+        memcpy(&(science_buffer->master_sync_quaternion_4), target+30, 2);
+        simple_big2little_endian(&(science_buffer->master_sync_quaternion_4), 2);
+    }
+    else { // slave
+
+        // x, y & z position
+        memcpy(&(science_buffer->slave_sync_x), target, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_x), 4);
+        memcpy(&(science_buffer->slave_sync_y), target+4, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_y), 4);
+        memcpy(&(science_buffer->slave_sync_z), target+8, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_z), 4);
+
+        // x, y & z velocity
+        memcpy(&(science_buffer->slave_sync_v_x), target+12, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_v_x), 4);
+        memcpy(&(science_buffer->slave_sync_v_y), target+16, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_v_y), 4);
+        memcpy(&(science_buffer->slave_sync_v_z), target+20, 4);
+        simple_big2little_endian(&(science_buffer->slave_sync_v_z), 4);
+
+        // quaternion
+        memcpy(&(science_buffer->slave_sync_quaternion_1), target+24, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_quaternion_1), 2);
+        memcpy(&(science_buffer->slave_sync_quaternion_2), target+26, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_quaternion_2), 2);
+        memcpy(&(science_buffer->slave_sync_quaternion_3), target+28, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_quaternion_3), 2);
+        memcpy(&(science_buffer->slave_sync_quaternion_4), target+30, 2);
+        simple_big2little_endian(&(science_buffer->slave_sync_quaternion_4), 2);
+    }
 }
 
 void write_science_sync_data() {
@@ -1056,11 +1165,11 @@ void write_science_sync_data() {
     // separate master and slave cases
     if (science_buffer->gtm_id == 0) { // for master
         if (export_mode == 1 || export_mode == 3) {
-            fprintf(raw_output_file, "sync: %1u; %5u; %3u\n", \
+            fprintf(raw_output_file, "sync         : %1u; %5u; %3u\n", \
             science_buffer->master_sync_gtm_id, science_buffer->master_sync_pps_counts, science_buffer->master_sync_cmd_sequence_number);
 
-            fprintf(raw_output_file, "sync utc: %3u; %2u; %2u; %2u; %3u\n", \
-            science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_minute, science_buffer->master_sync_subsecond);
+            fprintf(raw_output_file, "sync      utc: %3u; %2u; %2u; %2u; %3u\n", \
+            science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_subsecond);
             
             fprintf(raw_output_file, "sync attitude: ");
             fprintf(raw_output_file, "%10u; %10u; %10u;", \
@@ -1073,11 +1182,11 @@ void write_science_sync_data() {
     }
     else { // for slave
         if (export_mode == 1 || export_mode == 3) {
-            fprintf(raw_output_file, "sync: %1u; %5u; %3u\n", \
+            fprintf(raw_output_file, "sync         : %1u; %5u; %3u\n", \
             science_buffer->slave_sync_gtm_id, science_buffer->slave_sync_pps_counts, science_buffer->slave_sync_cmd_sequence_number);
 
-            fprintf(raw_output_file, "sync utc: %3u; %2u; %2u; %2u; %3u\n", \
-            science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_minute, science_buffer->slave_sync_subsecond);
+            fprintf(raw_output_file, "sync      utc: %3u; %2u; %2u; %2u; %3u\n", \
+            science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_subsecond);
             
             fprintf(raw_output_file, "sync attitude: ");
             fprintf(raw_output_file, "%10u; %10u; %10u;", \

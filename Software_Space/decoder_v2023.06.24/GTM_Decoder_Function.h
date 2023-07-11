@@ -127,7 +127,7 @@ typedef struct Science {
     /// sync_data ///
 
     // for master
-    unsigned char master_sync_header[1];
+    unsigned char master_sync_header[1]; // unsigned char [1] = 1 byte
     uint8_t       master_sync_gtm_id; // 0 = master; 1 = slave
     uint16_t      master_sync_pps_counts;
     uint8_t       master_sync_cmd_sequence_number;
@@ -273,8 +273,8 @@ void write_science_event_adc();
 void export_science_pipeline_output();
 int is_science_sync_tail(unsigned char *target);
 void parse_science_sync_data(unsigned char *target);
-void parse_science_sync_utc(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data);
-void parse_science_sync_attitude(unsigned char *target, unsigned char *first_byte_pointer_in_sync_data);
+void parse_science_sync_utc(unsigned char *target);
+void parse_science_sync_attitude(unsigned char *target);
 void write_science_sync_data();
 
 /// parse_science_data_end ///
