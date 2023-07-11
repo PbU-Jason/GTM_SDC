@@ -572,6 +572,10 @@ void write_tmtc_buffer_master_or_slave() {
         input_v = ( ((tmtc_buffer->input_v >> 4) << 8) | ((tmtc_buffer->input_v << 4) | (tmtc_buffer->input_i_v & 0x0F)) );
         hv_input_i = ( ((tmtc_buffer->hv_input_i >> 4) << 8) | ((tmtc_buffer->hv_input_i << 4) | (tmtc_buffer->hv_input_i_v >> 4)) );
         hv_input_v = ( ((tmtc_buffer->hv_input_v >> 4) << 8) | ((tmtc_buffer->hv_input_v << 4) | (tmtc_buffer->hv_input_i_v & 0x0F)) );
+        // ((tmtc_buffer->input_i >> 4) << 8) is ok, it's like ((tmtc_buffer->input_i & 0xF0) << 4)
+        // ((tmtc_buffer->input_v >> 4) << 8) is ok, it's like ((tmtc_buffer->input_v & 0xF0) << 4)
+        // ((tmtc_buffer->hv_input_i >> 4) << 8) is ok, it's like ((tmtc_buffer->hv_input_i & 0xF0) << 4)
+        // ((tmtc_buffer->hv_input_v >> 4) << 8) is ok, it's like ((tmtc_buffer->hv_input_v & 0xF0) << 4)
     }
 
     // from TASA
@@ -818,7 +822,9 @@ void parse_science_event_time(unsigned char *target) {
 
         // for buffer id
         memcpy(buffer_id_buffer, target, 1);
-        buffer_id_buffer[0] = (buffer_id_buffer[0] << 2) >> 4; // remove bits 23 & 22 and bits 17 & 16
+        buffer_id_buffer[0] = (buffer_id_buffer[0] << 2); // remove bits 23 & 22
+        buffer_id_buffer[0] = (buffer_id_buffer[0] >> 4); // remove bits 17 & 16
+        // (buffer_id_buffer[0] << 2) >> 4 == (buffer_id_buffer[0] >> 2) which is wrong!
         memcpy(&(science_buffer->master_event_time_buffer_id), buffer_id_buffer, 1);
 
         // for fine time counter
@@ -830,7 +836,9 @@ void parse_science_event_time(unsigned char *target) {
 
         // for buffer id
         memcpy(buffer_id_buffer, target, 1);
-        buffer_id_buffer[0] = (buffer_id_buffer[0] << 2) >> 4; // remove bits 23 & 22 and bits 17 & 16
+        buffer_id_buffer[0] = (buffer_id_buffer[0] << 2); // remove bits 23 & 22
+        buffer_id_buffer[0] = (buffer_id_buffer[0] >> 4); // remove bits 17 & 16
+        // (buffer_id_buffer[0] << 2) >> 4 == (buffer_id_buffer[0] >> 2) which is wrong!
         memcpy(&(science_buffer->slave_event_time_buffer_id), buffer_id_buffer, 1);
 
         // for fine time counter
@@ -873,10 +881,10 @@ void parse_science_event_adc(unsigned char *target) {
     science_buffer->event_adc_citiroc_id = (adc_buffer[0] & 0x10) ? 1 : 0; // 0 = A = 1; 1 = B = 2
 
     // channel id
-    science_buffer->event_adc_channel_id = (adc_buffer[0] << 4) >> 4;
+    science_buffer->event_adc_channel_id = ((adc_buffer[0] & 0x0F) << 1) | (adc_buffer[1] >> 7);
 
     // gain
-    science_buffer->event_adc_gain = (adc_buffer[0] & 0x40) ? 1 : 0; // 0 = low; 1 = high
+    science_buffer->event_adc_gain = (adc_buffer[1] & 0x40) ? 1 : 0; // 0 = low; 1 = high
 
     // adc value
     adc_value_temp = ( ((adc_buffer[1] & 0x3F) << 8) | (adc_buffer[2]) );
@@ -893,9 +901,9 @@ void parse_science_event_adc(unsigned char *target) {
 void write_science_event_adc() {
     if (export_mode == 1 || export_mode == 3) {
         fprintf(raw_output_file, "event adc: ");
-        fprintf(raw_output_file, "%1u; %1d; %1u;", \
+        fprintf(raw_output_file, "%1u; %1u; %1u;", \
         science_buffer->event_adc_hit_flag, science_buffer->event_adc_gtm_id, science_buffer->event_adc_citiroc_id);
-        fprintf(raw_output_file, "%2u; %1u; %6u\n", \
+        fprintf(raw_output_file, "%2u; %1u; %6d\n", \
         science_buffer->event_adc_channel_id, science_buffer->event_adc_gain, science_buffer->event_adc_adc_value);
     }
 
@@ -910,38 +918,34 @@ void export_science_pipeline_output() {
         if (science_buffer->gtm_id == 0) { // master
             fprintf(science_pipeline_output_file, "%u", science_buffer->gtm_id);
 
+            //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
-            ";%u;%u;%u;%u;%u \
-            ;%u;%u;%u \
-            ;%u;%u;%u \
-            ;%u;%u;%u;%u", \
+            ";%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u", \
             science_buffer->master_sync_day_of_year, science_buffer->master_sync_hour, science_buffer->master_sync_minute, science_buffer->master_sync_second, science_buffer->master_sync_second, \
             science_buffer->master_sync_x, science_buffer->master_sync_y, science_buffer->master_sync_z, \
             science_buffer->master_sync_v_x, science_buffer->master_sync_v_y, science_buffer->master_sync_v_z, \
             science_buffer->master_sync_quaternion_1, science_buffer->master_sync_quaternion_2, science_buffer->master_sync_quaternion_3, science_buffer->master_sync_quaternion_4);
 
+            //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
-            ";%u;%d \
-            ;%u;%u;%u;%d\n", \
+            ";%u;%u;%u;%u;%u;%d\n", \
             science_buffer->master_sync_pps_counts, science_buffer->master_event_time_fine_time_counter, \
             science_buffer->event_adc_citiroc_id, science_buffer->event_adc_channel_id, science_buffer->event_adc_gain, science_buffer->event_adc_adc_value);
         }
         else { // slave
             fprintf(science_pipeline_output_file, "%u", science_buffer->gtm_id);
 
+            //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
-            ";%u;%u;%u;%u;%u \
-            ;%u;%u;%u \
-            ;%u;%u;%u \
-            ;%u;%u;%u;%u", \
+            ";%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u;%u", \
             science_buffer->slave_sync_day_of_year, science_buffer->slave_sync_hour, science_buffer->slave_sync_minute, science_buffer->slave_sync_second, science_buffer->slave_sync_second, \
             science_buffer->slave_sync_x, science_buffer->slave_sync_y, science_buffer->slave_sync_z, \
             science_buffer->slave_sync_v_x, science_buffer->slave_sync_v_y, science_buffer->slave_sync_v_z, \
             science_buffer->slave_sync_quaternion_1, science_buffer->slave_sync_quaternion_2, science_buffer->slave_sync_quaternion_3, science_buffer->slave_sync_quaternion_4);
 
+            //  weird! can't use \ to jump line?
             fprintf(science_pipeline_output_file, \
-            ";%u;%d \
-            ;%u;%u;%u;%d\n", \
+            ";%u;%u;%u;%u;%u;%d\n", \
             science_buffer->slave_sync_pps_counts, science_buffer->slave_event_time_fine_time_counter, \
             science_buffer->event_adc_citiroc_id, science_buffer->event_adc_channel_id, science_buffer->event_adc_gain, science_buffer->event_adc_adc_value);
         }
