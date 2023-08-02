@@ -1,2 +1,2 @@
-# GTM_SDC
- This repository is the SDC (Science Data Center) at NTHU HK_Lab of the space mission GTM (Gamma-ray Transients Monitor) on board Formosat-8B.
+# Introduction
+This repository stores the code for Science Data Center (SDC) of Gamma-ray Transients Monitor (GTM), the secondary science payload on board Formosat-8B satellite and the first space telescope in Taiwan.
