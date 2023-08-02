@@ -339,6 +339,7 @@ class UiDecoderLink(object):
         # Connect pyqt signal
         self.decoder_thread.decoder_thread_open_tmtc_signal.connect(self.decoder_plot_open_window_tmtc) 
         self.decoder_thread.decoder_thread_open_science_signal.connect(self.decoder_plot_open_window_science) 
+        self.decoder_thread.decoder_thread_clear_layout_signal.connect(self.decoder_clear_layout) 
         self.decoder_thread.decoder_thread_file_signal.connect(self.decoder_cache_file_dirname_basename)
         self.decoder_thread.decoder_thread_update_count_signal.connect(self.decoder_cache_update_count)
         self.decoder_thread.decoder_thread_plot_tmtc_signal.connect(self.decoder_plot_tmtc)
@@ -417,6 +418,12 @@ class UiDecoderLink(object):
             self.decoder_plot_open_window_list.append(globals()['self.decoder_plot_science_pg_layout_slave_a_hg'])
             self.decoder_plot_open_window_list.append(globals()['self.decoder_plot_science_pg_layout_slave_a_lg'])
     
+    def decoder_clear_layout(self):
+
+        # Clear all opened layout
+        for decoder_plot_open_window_science in self.decoder_plot_open_window_list:
+            decoder_plot_open_window_science.clear()
+
     def decoder_cache_file_dirname_basename(self, file_list):
         
         # Cache dirname and basename
@@ -497,9 +504,6 @@ class UiDecoderLink(object):
 
         else: # just display on screen
             pass
-        
-        # Refresh close all figure state
-        self.decoder_close_all_figure_refresh()
     
     def decoder_update_plot_tmtc(self, df_list):
 
@@ -539,9 +543,6 @@ class UiDecoderLink(object):
 
         else: # just display on screen
             pass
-        
-        # Refresh close all figure state
-        self.decoder_close_all_figure_refresh()
 
     def decoder_plot_science_robotic(self, info_list):
         
@@ -640,9 +641,6 @@ class UiDecoderLink(object):
 
                 else: # just display on screen
                     pass
-            
-            # Refresh close all figure state
-            self.decoder_close_all_figure_refresh()
 
     ### decoder_start_end ###
 

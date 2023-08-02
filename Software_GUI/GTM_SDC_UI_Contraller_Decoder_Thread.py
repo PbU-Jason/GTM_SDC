@@ -23,6 +23,7 @@ class UiDecoderThread(QThread):
     # Create pyqt signal
     decoder_thread_open_tmtc_signal = pyqtSignal()
     decoder_thread_open_science_signal = pyqtSignal()
+    decoder_thread_clear_layout_signal = pyqtSignal()
     decoder_thread_file_signal = pyqtSignal(list)
     decoder_thread_update_count_signal = pyqtSignal(int)
     decoder_thread_plot_tmtc_signal = pyqtSignal(list)
@@ -82,11 +83,11 @@ class UiDecoderThread(QThread):
             self.decoder_plot_range_min  = -1000
             self.decoder_plot_range_max  = 2**14
 
-            # Initialize changing plotting variable
-            self.decoder_initailize_plot_df_skip_number()
-
             # Decode and plot
             self.decoder_plot()
+
+            # Emit siganl back to parent class
+            self.decoder_thread_finish_signal.emit()
 
     def decoder_initailize_output_file(self, filename):
 
@@ -145,6 +146,12 @@ class UiDecoderThread(QThread):
         # Loop all file
         for decoder_cached_input_file_idx, decoder_cached_input_file in enumerate(self.parent.decoder_cached_input_file_list):
             
+            # Initailize output file
+            self.decoder_initailize_output_file(decoder_cached_input_file)
+
+            # Initialize changing plotting variable
+            self.decoder_initailize_plot_df_skip_number()
+            
             if self.parent.ui.decoder_auto_save_figure_group.isEnabled() and \
             self.parent.ui.decoder_auto_save_figure_on_check_box.isChecked(): # need auto-save figure
 
@@ -154,15 +161,15 @@ class UiDecoderThread(QThread):
             else: # just display on screen
                 pass
 
-            # Initailize output file
-            self.decoder_initailize_output_file(decoder_cached_input_file)
-            
             # Run decoder in c
             new_file_pointer = c_decoder(decoder_cached_input_file,
                                          self.parent.in_space_flag,
                                          self.parent.decode_mode, 
                                          self.parent.export_mode, 
                                          initail_file_pointer=0)
+
+            # Emit siganl back to parent class
+            self.decoder_thread_clear_layout_signal.emit()
 
             if self.parent.ui.decoder_data_import_tmtc_radio_button.isChecked(): # tmtc 
 
