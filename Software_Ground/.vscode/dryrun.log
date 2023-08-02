@@ -1,6 +1,0 @@
-make --dry-run --always-make --keep-going --print-directory
-make: Entering directory `/Users/jasonpbu/Desktop/GTM_GitHub/GTM_SDC/Decoder_Dev.'
-make: Leaving directory `/Users/jasonpbu/Desktop/GTM_GitHub/GTM_SDC/Decoder_Dev.'
- 
-make: *** No targets specified and no makefile found.  Stop.
-
