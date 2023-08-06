@@ -406,7 +406,7 @@ class Ui_MainWindow(object):
         self.decoder_auto_save_figure_on_check_box.setText(_translate("MainWindow", "On"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_decoder), _translate("MainWindow", "Decoder"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_calibrator), _translate("MainWindow", "Calibrator"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_localizor), _translate("MainWindow", "Localizor"))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_localizor), _translate("MainWindow", "Localizer"))
 
 
 if __name__ == "__main__":

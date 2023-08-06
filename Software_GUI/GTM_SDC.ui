@@ -807,7 +807,7 @@ p, li { white-space: pre-wrap; }
     </widget>
     <widget class="QWidget" name="tab_localizor">
      <attribute name="title">
-      <string>Localizor</string>
+      <string>Localizer</string>
      </attribute>
     </widget>
    </widget>

@@ -13,7 +13,7 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QStyleFactory
 
-from GTM_SDC_UI_Contraller import MainWindowController
+from GTM_SDC_UI_Controller import MainWindowController
 
 if __name__ == '__main__':
 
