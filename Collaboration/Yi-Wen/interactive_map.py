@@ -12,6 +12,8 @@ import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 from scipy.interpolate import griddata
 from skyfield.api import EarthSatellite, load
+import csv
+from datetime import datetime
 
 #常量定義
 DATA_PICKLE_SCATTER = '/Users/yw/desktop/file_orbit_and_saa/df_for_scatter.pkl'
@@ -60,7 +62,7 @@ def main():
     for xx, yy in zip(xx_all, yy_all):
         fig.add_trace(go.Scattergeo(lon=xx, lat=yy, mode='lines', line=dict(color='blue', width=1)))
     fig.write_html('SAA_contour.html')
-
+    
     #TLE
     line1 = '1 92920U 17049A   23141.04166667  .00000000  00000+0  43614-4 0  9991'
     line2 = '2 92920  97.6407 223.1803 0011733 244.4023 141.8465 15.00937976   -30'
@@ -69,22 +71,22 @@ def main():
     ts = load.timescale()
     satellite = EarthSatellite(line1, line2, 'ISS (ZARYA)', ts)
 
-    num_points = 1000
+    num_points = 5000
     times = ts.utc(2023, 7, 12, np.linspace(0, 5, num_points))
     geocentric = satellite.at(times)
     subpoint = geocentric.subpoint()
     longitudes_pred = subpoint.longitude.degrees
     latitudes_pred = subpoint.latitude.degrees
-
-    #標記軌道出現在SAA內的部分
+    
+    # 標記軌道出現在SAA內的部分
     saa_indices = np.where(z_mesh > CONTOUR_SPECIFIC_LEVEL)
     saa_longitudes = x_mesh[saa_indices]
     saa_latitudes = y_mesh[saa_indices]
 
     #添加預測軌道和標記
+    fig.add_trace(go.Scattergeo(lon=saa_longitudes, lat=saa_latitudes, mode='markers', marker=dict(color='grey', size=3)))
     fig.add_trace(go.Scattergeo(lon=longitudes_pred, lat=latitudes_pred, mode='lines', line=dict(color='blue', width=2)))
-    fig.add_trace(go.Scattergeo(lon=saa_longitudes, lat=saa_latitudes, mode='markers', marker=dict(color='red', size=3)))
-
+    
     fig.write_html('interactive_map.html')
 
 if __name__ == "__main__":

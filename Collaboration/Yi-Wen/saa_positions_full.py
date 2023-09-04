@@ -71,7 +71,7 @@ def main():
     satellite = EarthSatellite(line1, line2, 'ISS (ZARYA)', ts)
 
     num_points = 1000
-    times = ts.utc(2023, 7, 12, np.linspace(0, 5, num_points))
+    times = ts.utc(2023, 7, 12, np.linspace(0, 3, num_points))
     geocentric = satellite.at(times)
     subpoint = geocentric.subpoint()
     longitudes_pred = subpoint.longitude.degrees
@@ -86,64 +86,31 @@ def main():
     fig.add_trace(go.Scattergeo(lon=saa_longitudes, lat=saa_latitudes, mode='markers', marker=dict(color='grey', size=3)))
     fig.add_trace(go.Scattergeo(lon=longitudes_pred, lat=latitudes_pred, mode='lines', line=dict(color='blue', width=2)))
     
-#新增以下部分用於記錄TLE軌道進入和離開CONTOUR_SPECIFIC_LEVEL的時間和位置
+    fig.write_html('interactive_map.html')
+    
+    
+    #新增以下部分用於記錄TLE軌道上每個時間點的位置和Integrated SAA Flux
     saa_data = []
-    saa_level_entered = False  #標誌是否已進入CONTOUR_SPECIFIC_LEVEL
     
     for time, longitude, latitude in zip(times, longitudes_pred, latitudes_pred):
         #檢查當前時間點的位置是否在SAA內
         saa_flux = griddata((df_contour['Longitude'], df_contour['Latitude']), df_contour['Integrated SAA Flux'], (longitude, latitude), method='nearest')
         
-        event = None
-        
-        if saa_flux > CONTOUR_SPECIFIC_LEVEL:
-            if not saa_level_entered:
-                #如果進入，記錄時間和位置，並將標誌設置為True
-                event = "Enter"
-                saa_level_entered = True
-        else:
-            if saa_level_entered:
-                #如果離開，記錄時間和位置，並將標誌設置為False
-                event = "Exit"
-                saa_level_entered = False
-        
-        saa_data.append((time.utc_iso(), longitude, latitude, event))
-
-
-    for data in saa_data:
-        if data[3] == "Enter":
-            event_color = 'green'
-        elif data[3] == "Exit":
-            event_color = 'red'
-        else:
-            continue
+        saa_data.append((time.utc_iso(), longitude, latitude, saa_flux))
     
-        hover_text = f"位置: {data[1]}, {data[2]}<br>時間: {data[0]}"  
-        fig.add_trace(go.Scattergeo(
-            lon=[data[1]],
-            lat=[data[2]],
-            mode='markers',
-            marker=dict(color=event_color, size=5),
-            text=[hover_text],  
-            hoverinfo='text'  
-        ))
-    
-    fig.write_html('interactive_map.html')
-    
-     #輸出進入和離開的時間和位置
-    for data in saa_data:
-        if data[3] is not None:
-            print(f"Time: {data[0]}, Longitude: {data[1]}, Latitude: {data[2]}, Event: {data[3]}")
-
-                
     #保存CSV文件
-    with open('saa_positions.csv', 'w', newline='') as csvfile:
+    with open('saa_positions_full.csv', 'w', newline='') as csvfile:
         csv_writer = csv.writer(csvfile)
-        csv_writer.writerow(['Time', 'Longitude', 'Latitude', 'Event'])
-        for data in saa_data:
-            if data[3] is not None:
-                csv_writer.writerow(data)
+        csv_writer.writerow(['Time', 'Longitude', 'Latitude', 'Integrated SAA Flux'])
+        csv_writer.writerows(saa_data)
+
+
         
-          
+
 if __name__ == "__main__":
     main()
+    
+    
+    
+    
+    
