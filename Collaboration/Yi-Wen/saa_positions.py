@@ -71,7 +71,7 @@ def main():
     satellite = EarthSatellite(line1, line2, 'ISS (ZARYA)', ts)
 
     num_points = 1000
-    times = ts.utc(2023, 7, 12, np.linspace(0, 24, num_points))
+    times = ts.utc(2023, 7, 12, np.linspace(0, 5, num_points))
     geocentric = satellite.at(times)
     subpoint = geocentric.subpoint()
     longitudes_pred = subpoint.longitude.degrees
