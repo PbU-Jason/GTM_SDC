@@ -20,9 +20,10 @@
 
 - `CONTOUR_LEVELS` 和 `CONTOUR_SPECIFIC_LEVEL`：這些變量控制等高線圖的級別和特定等高線的值。
 
-## saa_positions
+## interactive_map
 
-在執行完程式後，將獲得一個名為`interactive_map.html`的地圖和一個名為`saa_positions.csv`的CSV文件。
+在執行完程式後，將獲得一個名為`interactive_map.html`的地圖。
+（目前進出contour位置錯誤）
 
 ## saa_positions_full
 
