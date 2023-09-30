@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
+Created on Sun Sep  3 10:34:31 2023
+
+@author: jillianwu
+version: 9/29/2023
+"""
 
 ### package ###
 import numpy as np
@@ -57,20 +63,22 @@ table2 = np.array(pd.read_csv("./1.table/" + "big_typical2_response.csv")) #file
 table3 = np.array(pd.read_csv("./1.table/" + "big_typical3_response.csv")) #file name of soft energy big table
 
 filename = "trigger_output"
-trigger_data = pd.read_csv("./3.trigger/" + filename + ".csv")
+trigger_data = pd.read_pickle(filename + ".pkl")
 
-bkg_count = np.array(trigger_data.loc[0, list(trigger_data.keys())[16: 16 + 8]])
+bkg_count = np.array(trigger_data.loc[0, list(trigger_data.keys())[23 : 23 + 8]])
 print(bkg_count)
-source_count = np.array(trigger_data.loc[0, list(trigger_data.keys())[8: 8 + 8]])
+source_count = np.array(trigger_data.loc[0, list(trigger_data.keys())[15 : 15 + 8]])
 print(source_count)
 total_count = bkg_count + source_count
 
 #==================================== calculate chi square distribution =================================
-bkg_count_tmp,tmp = np.meshgrid(bkg_count,np.arange(0,len(table1)))
+# bkg_count_tmp,tmp = np.meshgrid(bkg_count,np.arange(0,len(table1)))
 source_count_tmp,tmp = np.meshgrid(source_count,np.arange(0,len(table1)))
 total_count_tmp,tmp = np.meshgrid(total_count,np.arange(0,len(table1)))
 
-# (n*O - E)^2 / n*O
+# Chi^2 = sum((Observe - Estimate)^2 / Poisson noise)
+## Observe: source count ;Estimate: (normalization factor)*(effective area)
+# Chi^2 = sum(S^2 / P) - sum((2 * S * EA) / P) * N^2 + sum(EA^2 / P) * N^2
 N1 = np.sum(table1[:,3:11]*source_count_tmp/total_count_tmp,1) / np.sum( table1[:,3:11]**2 / total_count_tmp ,1)
 Chi_square1 = np.sum(source_count_tmp**2/total_count_tmp,1) \
     - 2*np.sum(table1[:,3:11]*source_count_tmp/total_count_tmp,1)*N1 \
@@ -101,16 +109,22 @@ elif which_table==2:
     Chi_square = Chi_square3
     location_xyz_sc = table3[index_min_chi,0:3]
 
-location_theta, location_phi  =  V2AZ(location_xyz_sc[0],location_xyz_sc[1],location_xyz_sc[2])
+# location_theta, location_phi  =  V2AZ(location_xyz_sc[0],location_xyz_sc[1],location_xyz_sc[2])
 
+# location_xyz_sc : the location of the source in the coordinate of the massmodel
 print("location_xyz_sc: " + str(location_xyz_sc))
-print("location_theta_phi: " + str((location_theta,location_phi)))
+# print("location_theta_phi: " + str((location_theta,location_phi)))
 print("which_table: " + str(which_table+1))
 
-q_sc = Quaternion(trigger_data['qw'],trigger_data['qx'],trigger_data['qy'],trigger_data['qz'])
-# q_sc = Quaternion(0,1,0,0)
-q_location_sc = Quaternion(0,location_xyz_sc[0],location_xyz_sc[1],location_xyz_sc[2])
-q_location_sky = q_sc*q_location_sc*q_sc.inverse
+
+# (qw,qx,qy,qz) is the quaternions representing the rotation relative to ECI
+# q_sc : quaternioins from trigger data
+# q_location_sc : the location of the source in the coordinate of the satellite
+# q_location_sky : q_location_sc corrected by the "inverse" rotation of the quaternions
+q_sc = Quaternion(trigger_data['Qw'] * 2**-15,trigger_data['Qx'] * 2**-15,trigger_data['Qy'] * 2**-15,trigger_data['Qz'] * 2**-15)
+q_location_sc = Quaternion(0, -1 * location_xyz_sc[0], location_xyz_sc[1], -1 * location_xyz_sc[2])    # Massmodel's x&z are the opposite of the satellite's ones
+q_location_sky = (q_sc * q_location_sc * q_sc.inverse).conjugate
+
 location_xyz_sky = [q_location_sky[1],q_location_sky[2],q_location_sky[3]]
 print("location_xyz_sky: " + str(location_xyz_sky))
 
@@ -120,24 +134,29 @@ print("location_RA_Dec: " + str((location_RA,location_Dec)))
 #================== position of earth and sun and milkyway =================
 # earth horizon
 print(trigger_data[list(trigger_data.keys())[0]][0])
-start_time_obj = datetime.strptime(trigger_data[list(trigger_data.keys())[0]][0], '%m_%d_%Y_%H_%M_%S.%f')
+start_time_obj = datetime.strptime(trigger_data[list(trigger_data.keys())[0]][0], '%Y-%m-%d %H:%M:%S')
 UTC = [start_time_obj.year, start_time_obj.month, start_time_obj.day, start_time_obj.hour, start_time_obj.minute, start_time_obj.second]
 print(UTC)
 ts = load.timescale()
 t = ts.utc(UTC[0],UTC[1],UTC[2],UTC[3],UTC[4],UTC[5])
-d = Distance(m=[trigger_data['ECIx']*1000,trigger_data['ECIy']*1000,trigger_data['ECIz']*1000]) # "*1000" for km to m
-p = Geocentric(d.au, t=t)
-g = wgs84.subpoint(p)
-sc_height = g.elevation.m
-earth_R = np.sqrt(np.sum([(trigger_data['ECIx']*1000)**2,(trigger_data['ECIy']*1000)**2,(trigger_data['ECIz']*1000)**2]))
+d = Distance(m=[trigger_data['ECIx'] * 2**-4 * 1000,trigger_data['ECIy'] * 2**-4 * 1000,trigger_data['ECIz'] * 2**-4 * 1000]) # "*1000" for km to m
+p = Geocentric(d.au, t=t)       # ECI -> ECEF
+g = wgs84.subpoint(p)           # the projection of the satellite on Earth 
+sc_height = g.elevation.m       # Altitude of the satellite
+# earth_R = np.sqrt(np.sum([(trigger_data['ECIx']*1000)**2,(trigger_data['ECIy']*1000)**2,(trigger_data['ECIz']*1000)**2]))
+earth_R = 6371 * 1000
+# print('sc_height:' + str(sc_height))
 print('earth_R= ' +str(earth_R))
-earth_V = np.array([-trigger_data['ECIx'],-trigger_data['ECIy'],-trigger_data['ECIz']])
-earth_V = earth_V/np.linalg.norm(earth_V)
+# print('trigger_data:' + str((trigger_data['ECIx'],trigger_data['ECIy'],trigger_data['ECIz'])))
+earth_V = np.array([-trigger_data['ECIx'] * 2**-4, -trigger_data['ECIy'] * 2**-4, -trigger_data['ECIz'] * 2**-4])
+earth_V = earth_V / np.linalg.norm(earth_V)
 earth_RA, earth_Dec = xyz2RD(earth_V[0],earth_V[1],earth_V[2])
 print('earth ECI: '+str((earth_V[0],earth_V[1],earth_V[2])))
 print('earth RA Dec: '+str((earth_RA, earth_Dec)))
-earth_r = 90-np.arccos(earth_R/(earth_R+sc_height))/np.pi*180
+earth_r = 90 - np.arccos(earth_R / (earth_R + sc_height)) / np.pi*180
 t_angle = np.arange(0,np.pi*2,np.pi/100)
+
+# horizon_x & horizon_y & horizon_z : the horizon block by the Earth
 horizon_x =  (np.sin(earth_r)*np.cos(-earth_Dec/180*np.pi+np.pi*0.5)*np.cos(earth_RA/180*np.pi))*np.cos(t_angle)\
             -(np.sin(earth_r)*np.sin( earth_RA /180*np.pi))*np.sin(t_angle)\
             +(np.cos(earth_r)*np.sin(-earth_Dec/180*np.pi+np.pi*0.5)*np.cos(earth_RA/180*np.pi))
@@ -148,11 +167,13 @@ horizon_z = -(np.sin(earth_r)*np.sin(-earth_Dec/180*np.pi+np.pi*0.5))*np.cos(t_a
             + np.cos(earth_r)*np.cos(-earth_Dec/180*np.pi+np.pi*0.5)
 horizon_RA = np.array([])
 horizon_Dec = np.array([])
+# (x, y, z) -> RA, DEC
 for ii in range(len(horizon_x)):
     horizon_RA_, horizon_Dec_ = xyz2RD(horizon_x[ii],horizon_y[ii],horizon_z[ii])
     horizon_RA = np.append(horizon_RA,horizon_RA_)
     horizon_Dec = np.append(horizon_Dec,horizon_Dec_)
 
+# Correcting the value of RA & DEC
 if np.count_nonzero(np.abs(np.diff(horizon_RA))>300)==1:
     is_horizon_split = False
     horizon_Dec = horizon_Dec[np.argsort(horizon_RA)]
