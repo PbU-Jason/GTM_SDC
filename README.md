@@ -7,7 +7,7 @@ This repository stores the code for the Science Data Center (SDC) of Gamma-ray T
 ## Key Architecture
 
 ```
-├── better_trigger_lacalize
+├── better_trigger_localize
 │   ├── 0.table
 │   ├── 1.input
 │   ├── 2.trigger
