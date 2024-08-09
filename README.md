@@ -12,7 +12,7 @@ This repository stores the code for the Science Data Center (SDC) of Gamma-ray T
 │   ├── 1.input
 │   ├── 2.trigger
 │   ├── 3.location
-│	├── 1.generate_input.py
+│   ├── 1.generate_input.py
 │   ├── 2.report_trigger.py
 │   └── 3.plot_location.py
 ├── gtm_dashboard
