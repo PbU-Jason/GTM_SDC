@@ -1,0 +1,24 @@
+---
+import type { Content } from '~/types';
+import WidgetWrapper2 from '../ui/WidgetWrapper2.astro';
+
+const {
+  isAfterContent = false,
+  id,
+  isDark = false,
+  classes = {},
+  bg = await Astro.slots.render('bg'),
+} = Astro.props as Content;
+---
+
+<WidgetWrapper2
+  id={id}
+  isDark={isDark}
+  containerClass={`max-w-7xl mx-auto ${isAfterContent ? 'pt-0 md:pt-0 lg:pt-0' : ''} ${classes?.container ?? ''}`}
+  bg={bg}
+>
+  <div class="mx-auto max-w-7xl p-4 md:px-8">
+    <div id="py_plot_3d"></div>
+    <div id="py_plot_2d"></div>
+  </div>
+</WidgetWrapper2>

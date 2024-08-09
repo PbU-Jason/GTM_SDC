@@ -1,0 +1,2085 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>540</width>
+    <height>810</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Arial</family>
+    <pointsize>13</pointsize>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>GTM/SDC - GUI</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QLabel" name="Title">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>10</y>
+      <width>170</width>
+      <height>40</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>30</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>GTM / SDC</string>
+    </property>
+   </widget>
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>60</y>
+      <width>500</width>
+      <height>725</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab_flow">
+     <attribute name="title">
+      <string>Flow</string>
+     </attribute>
+     <widget class="Line" name="flow_line">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>390</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="flow_operation_login_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>390</width>
+        <height>140</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Login Credentials:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="formLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>371</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="flow_operation_login_form_layout">
+        <property name="formAlignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <item row="1" column="0">
+         <widget class="QLabel" name="flow_operation_user_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Operation Server User:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="flow_operation_user_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Normal</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="flow_operation_host_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Normal</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="flow_operation_host_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Operation Server Host:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="flow_operation_password_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Operation Server Password:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="flow_operation_password_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhHiddenText|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="flow_socc_operation_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>160</y>
+        <width>450</width>
+        <height>105</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>SOCC ↔︎ Operation Server:</string>
+      </property>
+      <widget class="QWidget" name="horizontalLayoutWidget">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>431</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="flow_socc_operation_horizontal_layout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
+        <item>
+         <layout class="QVBoxLayout" name="flow_socc_operation_update_vertical_layout">
+          <property name="spacing">
+           <number>-1</number>
+          </property>
+          <property name="sizeConstraint">
+           <enum>QLayout::SetDefaultConstraint</enum>
+          </property>
+          <item>
+           <widget class="QPushButton" name="flow_socc_operation_update_socc_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Upstream Log</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="flow_socc_operation_update_operation_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Downstream Log</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="flow_socc_operation_clone_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Clone</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="flow_socc_operation_push_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Push</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="flow_archiving_login_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>410</y>
+        <width>390</width>
+        <height>140</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Login Credentials:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="formLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>371</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <layout class="QFormLayout" name="flow_archiving_login_form_layout">
+        <property name="formAlignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+        <item row="1" column="0">
+         <widget class="QLabel" name="flow_archiving_user_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Archiving Server User:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="QLineEdit" name="flow_archiving_user_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Normal</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLineEdit" name="flow_archiving_host_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhNone</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Normal</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QLabel" name="flow_archiving_host_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Archiving Server Host:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QLabel" name="flow_archiving_password_label">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Archiving Server Password:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="1">
+         <widget class="QLineEdit" name="flow_archiving_password_line">
+          <property name="inputMethodHints">
+           <set>Qt::ImhHiddenText|Qt::ImhNoAutoUppercase|Qt::ImhNoPredictiveText|Qt::ImhSensitiveData</set>
+          </property>
+          <property name="echoMode">
+           <enum>QLineEdit::Password</enum>
+          </property>
+          <property name="dragEnabled">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="flow_operation_processing_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>270</y>
+        <width>450</width>
+        <height>105</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Operation ↔︎ Processing Server:</string>
+      </property>
+      <widget class="QWidget" name="horizontalLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>431</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="flow_operation_processing_horizontal_layout">
+        <item>
+         <layout class="QVBoxLayout" name="flow_operation_processing_update_vertical_layout">
+          <item>
+           <widget class="QPushButton" name="flow_operation_processing_update_operation_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Upstream Log</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="flow_operation_processing_update_processing_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Downstream Log</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="flow_operation_processing_clone_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Clone</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="flow_operation_processing_push_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Push</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="flow_processing_archiving_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>560</y>
+        <width>450</width>
+        <height>105</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Processing → Archiving Server:</string>
+      </property>
+      <widget class="QWidget" name="horizontalLayoutWidget_4">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>431</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QHBoxLayout" name="flow_processing_archiving_group_horizontal_layout">
+        <item>
+         <layout class="QVBoxLayout" name="flow_processing_archiving_update_vertical_layout">
+          <item>
+           <widget class="QPushButton" name="flow_processing_archiving_update_processing_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Upstream Log</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="flow_processing_archiving_update_archiving_button">
+            <property name="font">
+             <font>
+              <family>Arial</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Update Downstream Log</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <widget class="QPushButton" name="flow_processing_archiving_push_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Push</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_mtl_cmd">
+     <attribute name="title">
+      <string>MTL / CMD</string>
+     </attribute>
+     <widget class="Line" name="mtl_cmd_line">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>570</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="mtl_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>450</width>
+        <height>550</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Mission Timeline:</string>
+      </property>
+      <widget class="QPushButton" name="mtl_input_2le_button">
+       <property name="geometry">
+        <rect>
+         <x>120</x>
+         <y>30</y>
+         <width>210</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Input 2-Line Element</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="mtl_input_2le_text">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>80</y>
+         <width>430</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Arial'; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'.AppleSystemUIFont'; font-size:13pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+      <widget class="Line" name="mtl_line_1">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>130</y>
+         <width>430</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="Line" name="mtl_line_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>480</y>
+         <width>430</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="mtl_generate_button">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>500</y>
+         <width>190</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Generate</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="mtl_conditions_group">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>150</y>
+         <width>430</width>
+         <height>320</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="title">
+        <string>Conditions:</string>
+       </property>
+       <widget class="QWidget" name="horizontalLayoutWidget_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>411</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="mtl_start_time_horizontal_layout">
+         <item>
+          <widget class="QLabel" name="mtl_start_time_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Start Time:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="mtl_start_time_form_layout">
+           <property name="formAlignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="mtl_current_utc_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Current UTC</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="mtl_assign_utc_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Assign UTC:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="mtl_assign_utc_line"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="horizontalLayoutWidget_5">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>110</y>
+          <width>411</width>
+          <height>141</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="mtl_period_horizontal_layout">
+         <item>
+          <widget class="QLabel" name="mtl_period_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Period:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QFormLayout" name="mtl_period_form_layout">
+           <property name="formAlignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+           <item row="0" column="0">
+            <widget class="QRadioButton" name="mtl_orbits_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Orbits:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="mtl_orbits_line"/>
+           </item>
+           <item row="1" column="0">
+            <widget class="QRadioButton" name="mtl_days_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Days:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="mtl_days_line"/>
+           </item>
+           <item row="2" column="0">
+            <widget class="QRadioButton" name="mtl_hours_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Hours:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="0">
+            <widget class="QRadioButton" name="mtl_minutes_radio_button">
+             <property name="font">
+              <font>
+               <family>Arial</family>
+               <pointsize>18</pointsize>
+              </font>
+             </property>
+             <property name="text">
+              <string>Minutes:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1">
+            <widget class="QLineEdit" name="mtl_hours_line"/>
+           </item>
+           <item row="3" column="1">
+            <widget class="QLineEdit" name="mtl_minutes_line"/>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="horizontalLayoutWidget_7">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>260</y>
+          <width>411</width>
+          <height>51</height>
+         </rect>
+        </property>
+        <layout class="QHBoxLayout" name="mtl_saa_horizontal_layout">
+         <item>
+          <widget class="QCheckBox" name="mtl_saa_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>SAA Threshold:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="mtl_saa_line"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="cmd_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>590</y>
+        <width>450</width>
+        <height>90</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Command Line:</string>
+      </property>
+      <widget class="QPushButton" name="cmd_generate_button">
+       <property name="geometry">
+        <rect>
+         <x>130</x>
+         <y>40</y>
+         <width>190</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Generate</string>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_decoder">
+     <attribute name="title">
+      <string>Decoder</string>
+     </attribute>
+     <widget class="QTextEdit" name="decoder_input_file_text">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>70</y>
+        <width>450</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="html">
+       <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Arial'; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'.AppleSystemUIFont'; font-size:13pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+     <widget class="Line" name="decoder_line_1">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>120</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="decoder_input_file_button">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>20</y>
+        <width>310</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Input Raw .dmp, .vc3 or .bin Data</string>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="decoder_data_import_group">
+      <property name="geometry">
+       <rect>
+        <x>190</x>
+        <y>140</y>
+        <width>110</width>
+        <height>110</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Data Import:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>91</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="decoder_data_import_vertical_layout">
+        <item>
+         <widget class="QRadioButton" name="decoder_data_import_tmtc_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>TMTC</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="decoder_data_import_science_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Science</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_data_type_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>140</y>
+        <width>140</width>
+        <height>110</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Data Type:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_5">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>121</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="decoder_data_type_vertical_layout">
+        <item>
+         <widget class="QRadioButton" name="decoder_data_type_in_space_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>In Space</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="decoder_data_type_on_ground_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>On Ground</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_science_export_group">
+      <property name="geometry">
+       <rect>
+        <x>330</x>
+        <y>140</y>
+        <width>140</width>
+        <height>140</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Science Export:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QWidget" name="verticalLayoutWidget_7">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>121</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <layout class="QVBoxLayout" name="decoder_science_export_vertical_layout">
+        <item>
+         <widget class="QRadioButton" name="decoder_science_export_raw_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Raw</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="decoder_science_export_pipeline_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Pipeline</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="decoder_science_export_both_radio_button">
+          <property name="font">
+           <font>
+            <family>Arial</family>
+            <pointsize>18</pointsize>
+           </font>
+          </property>
+          <property name="text">
+           <string>Both</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_display_selection_group">
+      <property name="geometry">
+       <rect>
+        <x>199</x>
+        <y>310</y>
+        <width>270</width>
+        <height>260</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Display Selection:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QGroupBox" name="decoder_display_selection_master_group">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>250</width>
+         <height>105</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhNone</set>
+       </property>
+       <property name="title">
+        <string>Master:</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="gridLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>231</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="decoder_display_selection_master_grid_layout">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="decoder_display_selection_master_s3_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 3</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="decoder_display_selection_master_s2_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 2</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="decoder_display_selection_master_s4_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 4</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="decoder_display_selection_master_s1_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 1</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="decoder_display_selection_slave_group">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>140</y>
+         <width>250</width>
+         <height>105</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="title">
+        <string>Slave:</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+       <widget class="QWidget" name="gridLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>231</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QGridLayout" name="decoder_display_selection_slave_grid_layout">
+         <item row="1" column="0">
+          <widget class="QCheckBox" name="decoder_display_selection_slave_s3_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 3</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QCheckBox" name="decoder_display_selection_slave_s2_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 2</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QCheckBox" name="decoder_display_selection_slave_s4_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 4</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="0">
+          <widget class="QCheckBox" name="decoder_display_selection_slave_s1_check_box">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Sensor 1</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_update_time_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>450</y>
+        <width>160</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Update Time (s):</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QComboBox" name="decoder_update_time_combo_box">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>141</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <item>
+        <property name="text">
+         <string>None</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>10</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>30</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>60</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>300</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>600</string>
+        </property>
+       </item>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_run_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>610</y>
+        <width>451</width>
+        <height>40</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string/>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QPushButton" name="decoder_start_button">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>0</y>
+         <width>80</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Start</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="decoder_terminate_button">
+       <property name="geometry">
+        <rect>
+         <x>310</x>
+         <y>0</y>
+         <width>120</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Terminate</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="decoder_close_all_figure_button">
+       <property name="geometry">
+        <rect>
+         <x>110</x>
+         <y>0</y>
+         <width>190</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Close All Figures</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="decoder_real_time_display_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>310</y>
+        <width>160</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Real-Time Display:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QCheckBox" name="decoder_real_time_display_on_check_box">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>150</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>On</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="Line" name="decoder_line_2">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>290</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="decoder_auto_save_figure_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>380</y>
+        <width>160</width>
+        <height>60</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <family>Arial</family>
+        <pointsize>18</pointsize>
+       </font>
+      </property>
+      <property name="title">
+       <string>Auto-Save Figure:</string>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <property name="checkable">
+       <bool>false</bool>
+      </property>
+      <widget class="QCheckBox" name="decoder_auto_save_figure_on_check_box">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>150</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>On</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="Line" name="decoder_line_3">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>580</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_calibrator">
+     <attribute name="title">
+      <string>Calibrator</string>
+     </attribute>
+    </widget>
+    <widget class="QWidget" name="tab_localizer">
+     <attribute name="title">
+      <string>Localizer</string>
+     </attribute>
+     <widget class="QGroupBox" name="find_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>10</y>
+        <width>450</width>
+        <height>351</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Find Trigger:</string>
+      </property>
+      <widget class="QPushButton" name="find_input_file_button">
+       <property name="geometry">
+        <rect>
+         <x>50</x>
+         <y>40</y>
+         <width>350</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Input Decoded and Calibrated .vc3 File</string>
+       </property>
+      </widget>
+      <widget class="QTextEdit" name="find_input_file_text">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>90</y>
+         <width>430</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Arial'; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'.AppleSystemUIFont'; font-size:13pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+      <widget class="Line" name="find_line">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>140</y>
+         <width>430</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="Line" name="find_line_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>280</y>
+         <width>430</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="find_slice_time_group">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>160</y>
+         <width>210</width>
+         <height>110</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <pointsize>18</pointsize>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="inputMethodHints">
+        <set>Qt::ImhNone</set>
+       </property>
+       <property name="title">
+        <string>Slice Time:</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="formLayoutWidget_3">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>191</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QFormLayout" name="find_slice_time_form_layout">
+         <property name="formAlignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="find_slice_time_start_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Start (s):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="find_slice_time_start_line"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="find_slice_time_end_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+            </font>
+           </property>
+           <property name="text">
+            <string>End (s):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="find_slice_time_end_line"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="find_slice_energy_group">
+       <property name="geometry">
+        <rect>
+         <x>230</x>
+         <y>160</y>
+         <width>210</width>
+         <height>110</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <weight>50</weight>
+         <bold>false</bold>
+        </font>
+       </property>
+       <property name="title">
+        <string>Slice Energy:</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+       <widget class="QWidget" name="formLayoutWidget_4">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>191</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <layout class="QFormLayout" name="find_slice_energy_form_layout">
+         <property name="formAlignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <item row="0" column="0">
+          <widget class="QLabel" name="find_slice_energy_min_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Min (keV):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="find_slice_energy_min_line"/>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="find_slice_energy_max_label">
+           <property name="font">
+            <font>
+             <family>Arial</family>
+             <pointsize>18</pointsize>
+            </font>
+           </property>
+           <property name="text">
+            <string>Max (keV):</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="find_slice_energy_max_line"/>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+      <widget class="QPushButton" name="find_search_grb_button">
+       <property name="geometry">
+        <rect>
+         <x>260</x>
+         <y>300</y>
+         <width>150</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Search GRB!</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="find_preview_lc_button">
+       <property name="geometry">
+        <rect>
+         <x>40</x>
+         <y>300</y>
+         <width>210</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Preview Light Curve</string>
+       </property>
+      </widget>
+     </widget>
+     <widget class="Line" name="localizer_line">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>370</y>
+        <width>450</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+     <widget class="QGroupBox" name="localize_group">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>390</y>
+        <width>450</width>
+        <height>210</height>
+       </rect>
+      </property>
+      <property name="font">
+       <font>
+        <weight>50</weight>
+        <bold>false</bold>
+       </font>
+      </property>
+      <property name="title">
+       <string>Report Location:</string>
+      </property>
+      <widget class="QTextEdit" name="localize_input_file_text">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>90</y>
+         <width>430</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="html">
+        <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Arial'; font-size:18pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'.AppleSystemUIFont'; font-size:13pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="localize_grb_button">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>160</y>
+         <width>170</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Localize GRB!</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="localize_input_file_button">
+       <property name="geometry">
+        <rect>
+         <x>100</x>
+         <y>40</y>
+         <width>250</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="font">
+        <font>
+         <family>Arial</family>
+         <pointsize>18</pointsize>
+        </font>
+       </property>
+       <property name="text">
+        <string>Input GRB's Trigger Info.</string>
+       </property>
+      </widget>
+      <widget class="Line" name="localize_line">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>140</y>
+         <width>430</width>
+         <height>16</height>
+        </rect>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+      </widget>
+     </widget>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>540</width>
+     <height>24</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

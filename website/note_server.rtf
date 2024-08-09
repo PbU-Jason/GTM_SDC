@@ -1,0 +1,555 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red253\green139\blue9;\red34\green255\blue6;\red251\green0\blue7;
+}
+{\*\expandedcolortbl;;\cssrgb\c100000\c61456\c0;\cssrgb\c0\c100000\c0;\cssrgb\c100000\c12195\c0;
+}
+\paperw11900\paperh16840\margl1440\margr1440\vieww23040\viewh12720\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 __### Start: 20230901\
+\
+\'97\'97\
+Color code:\
+	\cf2 orange: some important output info\cf0 \
+	\cf3 green: my comprehension\cf0 \
+	\cf4 red: maybe wrong\cf0 \
+\'97\'97\
+\
+Install brew\
+	/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"\
+\
+Add Homebrew to PATH\
+	(echo; echo 'eval "$(/opt/homebrew/bin/brew shellenv)"') >> /Users/crab0/.zprofile\
+	eval "$(/opt/homebrew/bin/brew shellenv)"\
+\
+\cf3 According to https://docs.brew.sh/Installation, /usr/local is for Intel binaries, /opt/homebrew for ARM (like Mac M1)\cf0 \
+\
+\'97\'97\
+\
+Install Nginx\
+	brew install nginx\
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf2 The default port has been set in /opt/homebrew/etc/nginx/nginx.conf to \cf4 8080 so that nginx can run without sudo\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+Start Nginx running in background\
+	brew services start nginx\
+\
+\cf3 Can turn Nginx off from Setting > General > Login items\cf0 \
+\
+\'97\'97\
+\
+Install Certbot\
+	brew install certbot\
+\
+Run Certbot\
+	sudo certbot certonly --standalone\
+\
+\cf2 Enter email address (used for urgent renewal and security notices)\
+ (Enter 'c' to cancel): ak119ka@gmail.com\cf0 \
+\
+\cf2 Please enter the domain name(s) you would like on your certificate (comma and/or\
+space separated) (Enter 'c' to cancel): crab0.astr.nthu.edu.tw\
+Requesting a certificate for crab0.astr.nthu.edu.tw\
+Successfully received certificate.\
+Certificate is saved at: /etc/letsencrypt/live/crab0.astr.nthu.edu.tw/fullchain.pem\
+Key is saved at:         /etc/letsencrypt/live/crab0.astr.nthu.edu.tw/privkey.pem\
+This certificate expires on 2023-12-02.\
+These files will be updated when the certificate renews.\cf0 \
+\
+Set up automatic renewal\
+	echo "0 0,12 * * * root $(command -v python3) -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo\
+	(command -v certbot) renew -q" | sudo tee -a /etc/crontab > /dev/null\
+\
+\'97\'97\
+\
+Change Nginx config for https (http also redirect to https)\
+    server \{\
+        listen 80;\
+        listen [::]:80;\
+        server_name crab0.astr.nthu.edu.tw;\
+        return 301 https://$host$request_uri;\
+    \}\
+\
+    server \{\
+        listen 443 ssl;\
+        listen [::]:443 ssl;\
+        server_name  crab0.astr.nthu.edu.tw;\
+\
+        ssl_certificate      /etc/letsencrypt/live/crab0.astr.nthu.edu.tw/fullchain.pem;\
+        ssl_certificate_key  /etc/letsencrypt/live/crab0.astr.nthu.edu.tw/privkey.pem;\
+\
+\'97\'97\
+\
+\cf4 Copy /dist/ in /Users/crab0/Desktop/astrowind-main/ to /opt/homebrew/var/, then Nginx can use it\cf0 \
+\
+Change Nginx config for location\
+        location / \{\
+            root /opt/homebrew/var/dist;\
+            index index.html;\
+        \}\
+\
+\'97\'97\
+\
+Check and restart Nginx (for brew installation)\
+	sudo nginx -t\
+	sudo brew services restart nginx\
+\
+\cf3 Firewall \cf4 doesn't\cf3  seem to matter\cf0 \
+\
+\'97\'97\
+\
+Install miniconda\
+\
+Create environment for backend\
+	conda create -n env_gunicorn_django python=3.10 -y\
+\
+\cf2 environment location: /Users/crab0/miniconda3/envs/env_gunicorn_django\cf0 \
+\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 Activate environment\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 	conda activate env_gunicorn_django\
+\
+Install Gunicorn\
+	conda install -c conda-forge gunicorn\
+\
+Install Django\
+	conda install -c conda-forge django\
+\
+\'97\'97\
+\
+Create Django project @ Desktop\
+	django-admin startproject gtm_backend\
+\
+Definition in settings.py\
+	ALLOWED_HOSTS = ['140.114.94.50']\
+\
+Create Gunicorn config @ Django project\
+	mkdir conf/\
+	vi conf/gunicorn_config.py\
+\
+Definition in gunicorn_config.py\
+	command = '/Users/crab0/miniconda3/envs/env_gunicorn_django/bin/gunicorn'\
+	pythonpath = '/Users/crab0/Desktop/gtm_backend'\
+	bind = '140.114.94.50:8000'\
+	workers = 3\
+\
+Start app @ Django project\
+	python manage.py startapp hello_world\
+\
+Add app in settings.py\
+INSTALLED_APPS = [\
+    'django.contrib.admin',\
+    'django.contrib.auth',\
+    'django.contrib.contenttypes',\
+    'django.contrib.sessions',\
+    'django.contrib.messages',\
+    'django.contrib.staticfiles',\
+    'hello_world',\
+]\
+\
+Change backend urls\
+from django.urls import path, include\
+\
+urlpatterns = [\
+    path('admin/', admin.site.urls),\
+    path('try/', include('hello_world.urls')),\
+]\
+\
+Create app urls\
+from django.urls import path\
+from . import views\
+\
+urlpatterns = [\
+    path('', views.index, name='index'),\
+]\
+\
+Change view in app\
+from django.http import HttpResponse\
+\
+def index(request):\
+    return HttpResponse("Hello, World!")\
+\
+Run backend in background @ Desktop\
+	gunicorn -c gtm_backend/conf/gunicorn_config.py gtm_backend.wsgi\
+	^Z\
+	bg\
+\
+\cf3 To check: ps ax|grep gunicorn\
+To kill: pkill -f gunicorn\cf0 \
+\
+Change Nginx config for background\
+        server_name  crab0.astr.nthu.edu.tw 140.114.94.50;\
+\
+        location /try/ \{\
+            proxy_pass http://140.114.94.50:8000;\
+        \}\
+\
+\'97\'97\
+\
+Install Node.js for npm\
+	npm install\
+	npm run dev \
+	npm run build\
+\
+\cf4 I\'92ve tried to run \'91npm run astro add react\'92 to use React\'92s jsx, after that, need to run \'91npm install -g astro\'92, then can use astro again\cf0 \
+\
+\'97\'97\
+\
+Start app @ Django project\
+	python manage.py startapp possition\
+\
+Add app in settings.py\
+INSTALLED_APPS = [\
+    'django.contrib.admin',\
+    'django.contrib.auth',\
+    'django.contrib.contenttypes',\
+    'django.contrib.sessions',\
+    'django.contrib.messages',\
+    'django.contrib.staticfiles',\
+    'hello_world',\
+    'possition',\
+]\
+\
+Change backend urls\
+urlpatterns = [\
+    path('admin/', admin.site.urls),\
+    path('try/', include('hello_world.urls')),\
+    path(\'91possition/\'91, include('possition.urls')),\
+]\
+\
+Create app urls\
+from django.urls import path\
+from . import views\
+\
+urlpatterns = [\
+    path('', views.now_lon_lat, name='now_lon_lat'),\
+]\
+\
+Change view in app\
+from django.http import JsonResponse\
+\
+def now_lon_lat(request):\
+    \'85\
+    return JsonResponse(\{'lon': f'\{np.around(orbit[0,0], 3)\}', 'lat': f'\{np.around(orbit[0,1], 3)\}'\})\
+\
+Change Nginx config for background\
+        location /ppp/ \{\
+            proxy_pass http://140.114.94.50:8000/possition/;\
+        \}\
+\
+\'97\'97\
+\
+Make Django API can send response to front-end\'92s request\
+	pip install django-cors-headers\
+\
+\cf3 In conda env still can use pip\cf0 \
+	\
+INSTALLED_APPS = [\
+    'django.contrib.admin',\
+    'django.contrib.auth',\
+    'django.contrib.contenttypes',\
+    'django.contrib.sessions',\
+    'django.contrib.messages',\
+    'django.contrib.staticfiles',\
+    'corsheaders',\
+    'hello_world',\
+    'possition',\
+]\
+\
+MIDDLEWARE = [\
+    'django.middleware.security.SecurityMiddleware',\
+    'django.contrib.sessions.middleware.SessionMiddleware',\
+    'django.middleware.common.CommonMiddleware',\
+    'django.middleware.csrf.CsrfViewMiddleware',\
+    'django.contrib.auth.middleware.AuthenticationMiddleware',\
+    'django.contrib.messages.middleware.MessageMiddleware',\
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',\
+    'corsheaders.middleware.CorsMiddleware',\
+    'django.middleware.common.CommonMiddleware',\
+]\
+\
+CORS_ALLOW_ALL_ORIGINS = True\
+\
+\cf3 This method can make front-end fetch data. Otherwise, need to use \'91no-cors\'92 mode in fetch, which will get an useless opaque object!\cf0 \
+\
+Make request in html script\
+  <div id="ttryy"></div>\
+  <script>\
+  var t = document.getElementById("ttryy");\
+  document.addEventListener("DOMContentLoaded", function () \{\
+    fetch('https://crab0.astr.nthu.edu.tw/ppp/')\
+      .then((response) => \{\
+        return response.json()\
+      \})\
+      .then((data) => \{\
+        t.innerHTML = `\
+        <div>$\{data.try\}</div>\
+        `;\
+      \})\
+      .catch((error) => \{\
+        console.error('Error fetching data:', error);\
+      \});\
+  \});\
+  </script>\
+\
+\'97\'97\
+\
+Open Django administration\
+        location /admin/ \{\
+            proxy_pass http://140.114.94.50:8000/admin/;\
+        \}\
+\
+\cf3 Django will automatically redirect admin/ to admin/login/\'85\cf0 \
+\
+Fix css style missing in Nginx\
+	@ settings.py\
+		# STATIC_URL = 'static/'\
+		STATIC_URL = '/static/'\
+		import os\
+		STATIC_ROOT = os.path.join(BASE_DIR, 'static')\
+	\
+	@ Django project\
+		python manage.py collectstatic\
+\
+\cf3 Above two steps collect css for Django administration to BASE_DIR/static/\cf0 \
+\
+	@ nginx.conf\
+	user crab0 staff;\
+	\
+           	location /static/ \{\
+               		autoindex off;\
+               		root /Users/crab0/Desktop/gtm_backend/;\
+           	\}\
+\
+\cf3 Add \'93user crab0 staff;\'94 make Nginx can root to normal folder, so \'93\cf4 Copy /dist/ in /Users/crab0/Desktop/astrowind-main/ to /opt/homebrew/var/, then Nginx can use it\cf3 \'94 is wrong! Can use /Users/crab0/Desktop/gtm_frontend/dist/ for now!\
+\
+\cf4 \'93location /admin/\'93 seems to automatically refer to \'93location /static/ \'94 for css style\cf0 \
+\
+\'97\'97\
+\
+\pard\pardeftab720\partightenfactor0
+\cf0 Nginx HTTP file server @ crab0\
+        location /gtm_archive/ \{\
+            autoindex on;\
+            autoindex_exact_size off;\
+            root /Users/crab0/Desktop/;\
+        \}\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\pardeftab720\partightenfactor0
+\cf3 \'93autoindex_exact_size off;\'94 will use kb, mb, \'85 to show size\
+\
+\pard\pardeftab720\partightenfactor0
+\cf0 Nginx HTTP file server from crab3\
+        location /crab3/ \{\
+            proxy_pass https://crab3.astr.nthu.edu.tw/SDC/https_download/;\
+        \}\
+\
+\pard\pardeftab720\partightenfactor0
+\cf3 Use \'93proxy_pass\'94 to call Nginx HTTP file server @ crab3\cf0 \
+\cf3 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \'97\'97\
+\
+Push default database @ Django project\
+	python manage.py migrate\
+\
+Create admin superuser\
+	gtm\
+	nthuhk518\
+\
+Add CSRF_TRUSTED_ORIGINS @ settings.py\
+	CSRF_TRUSTED_ORIGINS=['https://crab0.astr.nthu.edu.tw']\
+\
+\cf3 Without CSRF_TRUSTED_ORIGINS, superuser can\'92t login\cf0 \
+\
+Start app @ Django project\
+	python manage.py startapp grb_database\
+\
+Add app in settings.py\
+INSTALLED_APPS = [\
+    'grb_database',\
+]\
+\
+Create GRB database @ model.py in app\
+class GRB(models.Model):\
+    name = models.CharField('GRB', max_length=50, blank=False)\
+    position_ra = models.CharField('RA (deg)', max_length=20, blank=False)\
+    position_dec = models.CharField('DEC (def)', max_length=20, blank=False)\
+    time_trigger = models.CharField('Trigger UTC', max_length=50, blank=False)\
+    time_t50 = models.CharField('T50 (s)', max_length=20, blank=False)\
+    time_t90 = models.CharField('T90 (s)', max_length=20, blank=False)\
+    note = models.TextField('Note', blank=True)\
+\
+    def __str__(self):\
+        return self.name\
+\
+    class Meta:\
+        ordering = ["name"]\
+\
+Register GRB database into admin\
+from .models import GRB\
+\
+admin.site.register(GRB)\
+\
+Make and push migration @ Django project\
+	python manage.py makemigrations\
+	python manage.py migrate \
+\
+\'97\'97\
+\
+Change backend urls\
+urlpatterns = [\
+    path('table/', include('grb_database.urls')),\
+]\
+\
+Create app urls\
+from django.urls import path\
+from . import views\
+\
+urlpatterns = [\
+    path('', views.download_table, name='download_table'),\
+]\
+\
+Change view in app\
+from .models import GRB\
+\
+def download_table(request):\
+    grb_db = GRB.objects.all().order_by('name').values()\
+    return render(request, "table.html", \{'db': grb_db, 'db_keys': grb_db[0].keys()\})\
+\
+Change templates dir @ setting.py\
+TEMPLATES = [\
+    \{\
+        'DIRS': [os.path.join(BASE_DIR, 'grb_database/templates')],\
+    \},\
+]\
+\
+Create table.html @ grb_database/templates\
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">\
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">\
+\
+<div class="container">\
+    <table id="example" class="display nowrap" style="width:100%">\
+        <thead>\
+            <tr>\
+                \{% for key in db_keys %\}\
+                    \{% if forloop.counter != 1 %\}\
+                        <th>\{\{ key \}\}</th>\
+                    \{% endif %\}\
+                \{% endfor%\}\
+            </tr>\
+        </thead>\
+        <tbody>\
+            \{% for grb in db %\}\
+                <tr>\
+                \{% for value in grb.values %\}\
+                    \{% if forloop.counter != 1 %\}\
+                        <td>\{\{ value \}\}</td>\
+                    \{% endif %\}\
+                \{% endfor%\}\
+                </tr>\
+            \{% endfor%\}\
+        </tbody>\
+    </table>\
+</div>\
+\
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.0.js"></script>\
+\
+\{% load static %\}\
+<script type="text/javascript" src="\{% static 'grb_database/js/script.js' %\}"></script>\
+\
+<script type="text/javascript" src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>\
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>\
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>\
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>\
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>\
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>\
+<script type="text/javascript" src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>\
+\
+Add grb_database/js/script.js @ gtm_backend/static/\
+$(document).ready(function() \{\
+    $('#example').DataTable( \{\
+        dom: 'Bfrtip',\
+        buttons: [\
+            'copy', 'csv', 'excel', 'pdf', 'print'\
+        ]\
+    \} );\
+\} );\
+\
+\cf4 Due to \'93STATIC_ROOT = os.path.join(BASE_DIR, 'static\'92)\'94 @ setting.py, static files should be placed @ gtm_backend/static/\
+\cf0 \
+\cf3 Above css and js are referred to datatables, note that you should import jquery by \'93<script type="text/javascript" src="https://code.jquery.com/jquery-3.7.0.js"></script>\'94, then \'93grb_database/js/script.js\'94 works!\cf0 \
+\
+\'97\'97\
+\
+Change position api @ Django response fig as json str\
+    # output fig with div type\
+    fig.update_layout(height=800)\
+    plot_json_2d = fig.to_json()\
+    # plot_div_2d = plot(fig, output_type='div', include_plotlyjs=False)\
+        \
+    fig.update_geos(projection_rotation_lon=orbit[0, 0], \
+                    projection_rotation_lat=orbit[0, 1],\
+                    projection_type='orthographic')\
+\
+    # output fig with div type\
+    fig.update_layout(margin=dict(l=50, r=50, t=50, b=0), height=800)\
+    plot_json_3d = fig.to_json()\
+    # plot_div_3d = plot(fig, output_type='div', include_plotlyjs=False)\
+    #====================\
+\
+    return JsonResponse(\{'alt': f'\{np.around(orbit_alt[0], 1)\}', 'lon': f'\{np.around(orbit[0,0], 3)\}', 'lat': f'\{np.around(orbit[0,1], 3)\}',\
+    'plot_json_2d': plot_json_2d, 'plot_json_3d': plot_json_3d,\})\
+\
+Change addEventListener\
+  <script>\
+    var py_alt = document.getElementById("py_alt");\
+    var py_lon = document.getElementById("py_lon");\
+    var py_lat = document.getElementById("py_lat");\
+    document.addEventListener("DOMContentLoaded", function () \{\
+      fetch('https://crab0.astr.nthu.edu.tw/ppp/')\
+        .then((response) => \{\
+          return response.json()\
+        \})\
+        .then((all_data) => \{\
+          py_alt.innerHTML = `$\{all_data.alt\} km`;\
+          py_lon.innerHTML = `$\{all_data.lon\}\'b0`;\
+          py_lat.innerHTML = `$\{all_data.lat\}\'b0`;\
+          var json_3d = JSON.parse(all_data.plot_json_3d);\
+          var json_2d = JSON.parse(all_data.plot_json_2d);\
+          Plotly.react('py_plot_3d', json_3d.data, json_3d.layout);\
+          Plotly.react('py_plot_2d', json_2d.data, json_2d.layout);\
+        \})\
+        .catch((error) => \{\
+          console.error('Error fetching data:', error);\
+        \});\
+    \});\
+  </script>\
+\
+\cf3 document.getElementById is very useful\
+JSON.parse(json str) can recover str to json\
+\'93Plotly.react('py_plot_3d', json_3d.data, json_3d.layout);\'94 can remake an interactive fig in website, which avoids script issue in script\'92s innerHTML!\cf0 \
+\
+\'97\'97\
+\
+### End: 20230921\
+\
+\'97\'97\
+\
+Update https certificates\
+\pard\tx560\tx1120\tx1680\tx2240\tx2800\tx3360\tx3920\tx4480\tx5040\tx5600\tx6160\tx6720\pardirnatural\partightenfactor0
+\cf0 sudo brew services stop nginx\
+sudo certbot renew --dry-run\
+sudo certbot renew\
+sudo brew services restart nginx\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\'97\'97\
+\
+### End: 20240305\
+}

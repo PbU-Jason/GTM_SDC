@@ -1,0 +1,15 @@
+---
+const { footNote = '', theme = 'light' } = Astro.props;
+---
+
+<footer class:list={[{ dark: theme === 'dark' }, 'relative border-t border-gray-200 dark:border-slate-800 not-prose']}>
+  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 dark:text-slate-300">
+    <div class="md:items-center py-6 md:py-8" style='text-align:center'>
+      <div class="text-sm dark:text-slate-400">
+        <a href='https://astro.build/themes/'>
+          <Fragment set:html={footNote} />
+        </a>
+      </div>
+    </div>
+  </div>
+</footer>

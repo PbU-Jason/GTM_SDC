@@ -1,0 +1,310 @@
+---
+import Layout from '~/layouts/PageLayout.astro';
+import Hero3 from '~/components/widgets/Hero3.astro';
+import Features_try from '~/components/widgets/Features_try.astro';
+
+const metadata = {
+  title: 'About us',
+};
+---
+
+<Layout metadata={metadata}>
+  <!-- Hero Widget ******************* -->
+
+  <Hero3
+    tagline="About us"
+  >
+    <Fragment slot="title">
+      Team Members
+    </Fragment>
+  </Hero3>
+
+  <!-- Features2 Widget ************** -->
+
+  <Features_try
+    columns={3}
+    items={[
+      {
+        title: 'Hsiang-Kuang Chang',
+        description: 'Principal Investigator',
+        image: {
+          src: '/images/member/Hsiang-Kuang Chang.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'hkchang@mx.nthu.edu.tw',
+      },
+      {
+        title: 'Chih-hsun Lin',
+        description: 'Co-Principal Investigator',
+        image: {
+          src: '/images/member/Chih-hsun Lin.PNG',
+          alt: '',
+        },
+        from: 'Institute of Physics, Academia Sinica',
+        //email: 'chihhsun.lin@phys.sinica.edu.tw',
+      },
+      {
+        title: 'Che-Chih Tsao',
+        description: 'Co-Principal Investigator',
+        image: {
+          src: '/images/member/Che-Chih Tsao.PNG',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'cctsao@pme.nthu.edu.tw',
+      },
+      {
+        title: 'Chin-Ping Hu',
+        description: 'Assistant Professor',
+        image: {
+          src: '/images/member/Chin-Ping Hu.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NCUE',
+        //email: 'cphu0821@cc.ncue.edu.tw',
+      },
+      {
+        title: 'Ching-Fen Tan',
+        description: 'Project Manager',
+        image: {
+          src: '/images/member/Ching-Fen Tan.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'tan@mx.nthu.edu.tw',
+      },
+      {
+        title: 'Jr-Yue Hsiang',
+        description: 'Research Assistant',
+        image: {
+          src: '/images/member/Jr-Yue Hsiang.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'abird119222322@gmail.com',
+      },
+      {
+        title: 'Che-Yen Chu',
+        description: 'PhD Student',
+        image: {
+          src: '/images/member/Che-Yen Chu.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'jck37330@gmail.com',
+      },
+      {
+        title: 'Yung-Wei Chang',
+        description: 'PhD Student',
+        image: {
+          src: '/images/member/Yung-Wei Chang.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NCU',
+        //email: 'willychang20@gmail.com',
+      },
+      {
+        title: 'An-Hsuan Feng',
+        description: 'PhD Student',
+        image: {
+          src: '/images/member/An-Hsuan Feng.jpg',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'p86242@hotmail.com',
+      },
+      {
+        title: 'Chao-Xi Wang',
+        description: 'PhD Student',
+        image: {
+          src: '/images/member/Chao-Xi Wang.JPG',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'e18813029@gmail.com',
+      },
+      {
+        title: 'Chien-Ying Yan',
+        description: 'PhD Student',
+        image: {
+          src: '/images/member/Chien-Ying Yan.JPG',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'abby030778@gmail.com',
+      },
+      {
+        title: 'Hao-Min Chang',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Hao-Min Chang.jpeg',
+          alt: '',
+        },
+        from: 'Department of Physics, NTHU',
+        //email: 'hankchang01@gmail.com',
+      },
+      {
+        title: 'Yan-Fu Chen',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Yan-Fu Chen.jpeg',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'cyf12370@gapp.nthu.edu.tw',
+      },
+      {
+        title: 'Yun-Hsin Chung',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Yun-Hsin Chung.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'pogchamp303@g-mail.nsysu.edu.tw',
+      },
+      // {
+      //   title: 'Zi-Jun Gong',
+      //   description: 'Graduate Student',
+      //   image: {
+      //     src: '/images/member/Zi-Jun Gong.jpg',
+      //     alt: '',
+      //   },
+      //   from: 'Department of Power Mechanical',
+      //   from2: 'Engineering, NTHU',
+      //   email: '1105103143@nkust.edu.tw',
+      // },
+      {
+        title: 'Chien-You Huang',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Chien-You Huang.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NTHU',
+        //email: 'ak119ka@gmail.com',
+      },
+      {
+        title: 'Chia-Yu Lu',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Chia-Yu Lu.jpg',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'letusgo98@gmail.com  ',
+      },
+      // {
+      //   title: 'Guo-Sing Lin',
+      //   description: 'Graduate Student',
+      //   image: {
+      //     src: '/images/member/Guo-Sing Lin.jpg',
+      //     alt: '',
+      //   },
+      //   from: 'Department of Power Mechanical',
+      //   from2: 'Engineering, NTHU',
+      //   email: 'diligentlin@gmail.com',
+      // },
+      {
+        title: 'Keng-Li Lai',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Keng-Li Lai.jpg',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'dear.marklai@gmail.com',
+      },
+      {
+        title: 'Tzu-Hsuan Lin',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Tzu-Hsuan Lin.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NTHU',
+        //email: 'qtp010629@gmail.com ',
+      },
+      {
+        title: 'Chih-En Wu',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Chih-En Wu.jpg',
+          alt: '',
+        },
+        from: 'Institute of Astronomy, NTHU',
+        //email: 'jillian3331145@gmail.com',
+      },
+      {
+        title: 'Chun-Wei Wu',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Chun-Wei Wu.jpg',
+          alt: '',
+        },
+        from: 'Department of Power Mechanical',
+        from2: 'Engineering, NTHU',
+        //email: 'willywuama@gapp.nthu.edu.tw',
+      },
+      {
+        title: 'Shun-Jia Yang',
+        description: 'Graduate Student',
+        image: {
+          src: '/images/member/Shun-Jia Yang.jpg',
+          alt: '',
+        },
+        from: 'Department of Electrical and ',
+        from2: 'Control Engineering, NYCU',
+        //email: 'a26413768@gmail.com',
+      },
+      {
+        title: 'Yi-Wen Huang',
+        description: 'Undergraduate Student',
+        image: {
+          src: '/images/member/Yi-Wen Huang.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NCUE',
+        //email: 's1023133@gm.ncue.edu.tw',
+      },
+      // {
+      //   title: 'Zhen-Hong Liao',
+      //   description: 'Undergraduate Student',
+      //   image: {
+      //     src: '/images/member/Zhen-Hong Liao.jpg',
+      //     alt: '',
+      //   },
+      //   from: 'Department of Power Mechanical',
+      //   from2: 'Engineering, NTHU',
+      //   email: 'zhenhong2436@gmail.com',
+      // },
+      {
+        title: 'Tzu-Hsiang Su',
+        description: 'Undergraduate Student',
+        image: {
+          src: '/images/member/Tzu-Hsiang Su.jpg',
+          alt: '',
+        },
+        from: 'Department of Physics, NTHU',
+        //email: 'thisisianemail@gmail.com',
+      },
+      {
+        title: 'Yi-Ning Tsao',
+        description: 'Undergraduate Student',
+        image: {
+          src: '/images/member/Yi-Ning Tsao.jpg',
+          alt: '',
+        },
+        from: 'Arete Honors Program, NYCU',
+        //email: 'ync010113@gmail.com',
+      },
+    ]}
+  />
+
+</Layout>

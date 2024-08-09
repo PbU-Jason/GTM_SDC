@@ -1,6 +1,0 @@
-.c.o:
-	x86_64-w64-mingw32-gcc -fPIC -c $<
-
-all: GTM_Decoder_Function.o GTM_Decoder_Parse_Science_Data.o GTM_Decoder_Parse_TMTC_Data.o GTM_Decoder_Main.o
-	x86_64-w64-mingw32-gcc -shared GTM_Decoder_Function.o GTM_Decoder_Parse_Science_Data.o GTM_Decoder_Parse_TMTC_Data.o -o libheader.dll
-	x86_64-w64-mingw32-gcc -shared GTM_Decoder_Main.o -Wl,-rpath=. -L . -lheader -o GTM_Decoder_Main.dll
