@@ -1,4 +1,4 @@
-Stop update until 2024/08/09!
+Stop updates until 2024/08/09! (minor additions on 2024/10/04)
 
 ## Introduction
 
@@ -15,6 +15,8 @@ This repository stores the code for the Science Data Center (SDC) of Gamma-ray T
 │   ├── 1.generate_input.py
 │   ├── 2.report_trigger.py
 │   └── 3.plot_location.py
+├── efficiency_study
+│   └── s/lgrb_pool.py
 ├── gtm_dashboard
 │   └── dashboard.py
 ├── gtm_gui
