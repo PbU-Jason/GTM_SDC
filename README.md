@@ -23,7 +23,7 @@ This repository stores the code for the Science Data Center (SDC) of Gamma-ray T
 │   ├── GTM_SDC_Start.py
 │   ├── Makefile_Linux
 │   ├── Makefile_MacOS
-│   ├── Makefile_Windows
+│   └── Makefile_Windows
 └── website
     ├── gtm_backend
     ├── gtm_frontend
